@@ -11,6 +11,7 @@ import Categories from "../components/HomePage/Categories";
 import Footer from "../components/HomePage/MainFooter";
 import Notification from "../components/HomePage/Notification";
 
+
 const user = {
   isLoggedIn: true,
   name: "chayma",
@@ -18,7 +19,6 @@ const user = {
 
 const Home: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={styles.container}>
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    fontSize: 24,
+    fontSize: 25,
     fontWeight: "bold",
     marginVertical: 20,
   },

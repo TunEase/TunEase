@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, TextInput, Text, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 interface HeaderProps {
   searchQuery: string;
@@ -21,7 +21,6 @@ const Header: React.FC<HeaderProps> = ({ searchQuery, setSearchQuery }) => {
 };
 
 export default Header;
-
 const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
