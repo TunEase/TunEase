@@ -11,13 +11,12 @@ import Categories from "../components/HomePage/Categories";
 import Footer from "../components/HomePage/MainFooter";
 import Notification from "../components/HomePage/Notification";
 
-
 const user = {
   isLoggedIn: true,
   name: "chayma",
 };
 
-const Home: React.FC = () => {
+const Home: React.FC = (navigation) => {
   const [searchQuery, setSearchQuery] = useState("");
   return (
     <View style={styles.mainContainer}>
@@ -29,7 +28,7 @@ const Home: React.FC = () => {
           {user.isLoggedIn ? `Welcome, ${user.name}` : "Welcome User"}
         </Text>
         {/* Service Categories */}
-        <Categories />
+        <Categories navigation={navigation} />
         {/* CTA Button */}
         <TouchableOpacity style={styles.ctaButton} onPress={() => {}}>
           <Text style={styles.ctaText}>Book a New Appointment</Text>

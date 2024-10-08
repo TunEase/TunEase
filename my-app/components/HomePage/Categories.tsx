@@ -1,5 +1,6 @@
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
+
 import {
   ScrollView,
   StyleSheet,
@@ -8,36 +9,68 @@ import {
   View,
 } from "react-native";
 
-const Categories: React.FC = () => {
+interface CategoriesProps {
+  navigation: any;
+}
+
+const Categories: React.FC<CategoriesProps> = ({ navigation }) => {
   return (
     <ScrollView contentContainerStyle={styles.categoriesContainer}>
       <Text style={styles.sectionHeader}>Categories</Text>
 
       <View style={styles.categories}>
-        <TouchableOpacity style={styles.card} onPress={() => {}}>
-          <FontAwesome5 name="city" size={24} color="#3B82F6" />
-          <Text style={styles.cardText}>Baladia</Text>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: "Baladia" })
+          }
+        >
+          <Text style={styles.categories}>Baladia</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: "Bousta" })
+          }
+        >
           <FontAwesome5 name="envelope" size={24} color="#3B82F6" />
           <Text style={styles.cardText}>Bousta</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: "Markez" })
+          }
+        >
           <MaterialIcons name="local-police" size={24} color="#3B82F6" />
           <Text style={styles.cardText}>Markez</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.categoriesScrollable}>
-        <TouchableOpacity style={styles.card} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: "Mo3tamdia" })
+          }
+        >
           <FontAwesome5 name="city" size={24} color="#3B82F6" />
           <Text style={styles.cardText}>Mo3tamdia</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: "Kbadha" })
+          }
+        >
           <FontAwesome5 name="city" size={24} color="#3B82F6" />
           <Text style={styles.cardText}>Kbadha</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: "Mahkma" })
+          }
+        >
           <FontAwesome5 name="city" size={24} color="#3B82F6" />
           <Text style={styles.cardText}>Mahkma</Text>
         </TouchableOpacity>

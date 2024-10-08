@@ -21,6 +21,7 @@ const Footer: React.FC = () => {
         <FontAwesome5 name="sign-out-alt" size={24} color="#007bff" />
         <Text style={styles.footerText}>Logout</Text>
       </TouchableOpacity>
+      
     </View>
   );
 };
