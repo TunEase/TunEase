@@ -14,7 +14,7 @@ import { useAuth } from "./hooks/useAuth";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     const insertData = async () => {
@@ -28,10 +28,6 @@ export default function App() {
 
     insertData();
   }, []);
-
-  // if (loading) {
-  //   return <Text>Loading...</Text>; // You can add a loading spinner here
-  // }
 
   return (
     <NavigationContainer>
