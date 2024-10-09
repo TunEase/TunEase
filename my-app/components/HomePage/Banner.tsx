@@ -21,26 +21,31 @@ const Header: React.FC<HeaderProps> = ({ searchQuery, setSearchQuery }) => {
 };
 
 export default Header;
+
 const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
     alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    backgroundColor: "#FFFFFF", // Clean white background
+    borderBottomWidth: 2,
+    borderBottomColor: "#0D47A1", // Subtle blue line at the bottom of the header
   },
   appName: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#3B82F6",
+    color: "#0D47A1", // Darker blue for the app name text
   },
   searchBar: {
     marginTop: 10,
-    padding: 10,
+    padding: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
+    borderColor: "#1565C0", // Medium blue border for the search bar
+    borderRadius: 20,
     width: "90%",
     fontSize: 16,
+    backgroundColor: "#E3F2FD", // Light blue background for the search bar
+    color: "#0D47A1", // Dark blue text inside the search bar
   },
 });

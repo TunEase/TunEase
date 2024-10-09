@@ -1,20 +1,28 @@
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import React from "react";
-import Home from "../my-app/screens/HomePage";
+import AppNavigator from "./AppNavigation";
 import CategoryDetails from "./components/HomePage/CategoryDetails";
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
-export default function App() {
+const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
+      <Stack.Navigator initialRouteName="HomePage">
+        <Stack.Screen
+          name="CategoryDetails"
+          component={CategoryDetails}
+          initialParams={{ category: "Baladia" }}
+        />
+        <Stack.Screen
+          name="navigation"
+          component={AppNavigator}
+          initialParams={{ category: "Baladia" }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
-}
+};
 
-
+export default App;

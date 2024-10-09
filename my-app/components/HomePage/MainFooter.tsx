@@ -4,44 +4,39 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const Footer: React.FC = () => {
   return (
-    <View style={styles.footer}>
-      <TouchableOpacity>
-        <FontAwesome5 name="home" size={24} color="#007bff" />
-        <Text style={styles.footerText}>Home</Text>
-      </TouchableOpacity>
-      <TouchableOpacity>
-        <FontAwesome5 name="heart" size={24} color="#007bff" />
-        <Text style={styles.footerText}>Favorites</Text>
-      </TouchableOpacity>
-      <TouchableOpacity>
-        <FontAwesome5 name="user" size={24} color="#007bff" />
-        <Text style={styles.footerText}>Profile</Text>
-      </TouchableOpacity>
-      <TouchableOpacity>
-        <FontAwesome5 name="sign-out-alt" size={24} color="#007bff" />
-        <Text style={styles.footerText}>Logout</Text>
-      </TouchableOpacity>
-      
+    <View style={styles.footerContainer}>
+      {[
+        { icon: "home", label: "Home" },
+        { icon: "heart", label: "Favorites" },
+        { icon: "user", label: "Profile" },
+        { icon: "sign-out-alt", label: "Logout" },
+      ].map(({ icon, label }, idx) => (
+        <TouchableOpacity key={idx} style={styles.footerItem}>
+          <FontAwesome5 name={icon} size={24} color="#FF6B6B" />
+          <Text style={styles.footerText}>{label}</Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
+
 export default Footer;
+
 const styles = StyleSheet.create({
-  footer: {
+  footerContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#f0f0f0",
-    borderTopColor: "#ccc",
+    backgroundColor: "#F5F5F5", // Light gray footer background
     borderTopWidth: 1,
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+    borderTopColor: "#B0BEC5", // Light border for separation
     paddingVertical: 10,
   },
+  footerItem: {
+    alignItems: "center",
+  },
   footerText: {
-    fontSize: 10,
-    color: "#007bff",
-    textAlign: "center",
+    fontSize: 12,
+    color: "#1565C0", // Darker blue for footer text
+    marginTop: 5,
   },
 });

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import {
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
 } from "react-native";
+import ButtonStyles from "../components/Form/Button";
 import Header from "../components/HomePage/Banner";
 import Categories from "../components/HomePage/Categories";
 import Footer from "../components/HomePage/MainFooter";
@@ -16,30 +17,30 @@ const user = {
   name: "chayma",
 };
 
-const Home: React.FC = (navigation) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  return (
-    <View style={styles.mainContainer}>
-      <SafeAreaView style={styles.container}>
-        {/* App Header */}
-        <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-        {/* User-specific Greeting */}
-        <Text style={styles.header}>
-          {user.isLoggedIn ? `Welcome, ${user.name}` : "Welcome User"}
-        </Text>
-        {/* Service Categories */}
-        <Categories navigation={navigation} />
-        {/* CTA Button */}
-        <TouchableOpacity style={styles.ctaButton} onPress={() => {}}>
-          <Text style={styles.ctaText}>Book a New Appointment</Text>
-        </TouchableOpacity>
-        {/* Notifications */}
-        <Notification />
-      </SafeAreaView>
+interface HomeProps {
+  navigation: any;
+}
 
-      {/* Footer */}
+const Home: React.FC<HomeProps> = ({ navigation }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  return (
+    <SafeAreaView style={styles.mainContainer}>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <Text style={styles.welcomeText}>
+          {user.isLoggedIn ? `Welcome , ${user.name}!` : "Welcome User"}
+        </Text>
+        <Categories navigation={navigation} />
+        <TouchableOpacity style={ButtonStyles.primaryButton}>
+          <TouchableOpacity style={styles.ctaButton}>
+            <Text style={styles.ctaText}>Book a New Appointment</Text>
+          </TouchableOpacity>
+        </TouchableOpacity>
+        <Notification />
+      </ScrollView>
       <Footer />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -48,30 +49,34 @@ export default Home;
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    justifyContent: "space-between",
+    backgroundColor: "#E3F2FD", // Light blue background
   },
-  container: {
+  contentContainer: {
     flexGrow: 1,
+    paddingVertical: 20,
     alignItems: "center",
-    padding: 16,
+    backgroundColor: "#FFFFFF", // White background for content
   },
-
-  header: {
-    fontSize: 25,
-    fontWeight: "bold",
-    marginVertical: 20,
+  welcomeText: {
+    fontSize: 26,
+    fontWeight: "600",
+    color: "#0D47A1", // Medium blue for text
+    marginVertical: 15,
+    textAlign: "center",
   },
   ctaButton: {
-    backgroundColor: "#007bff",
-    padding: 15,
-    borderRadius: 10,
-    width: "80%",
-    alignItems: "center",
+    backgroundColor: "#0D47A1", // Medium blue button
+    paddingHorizontal: 25,
+    borderRadius: 30,
     marginVertical: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   ctaText: {
     fontSize: 18,
-    color: "#fff",
-    fontWeight: "bold",
+    color: "#FFFFFF", // White text on buttons
+    fontWeight: "700",
   },
 });
