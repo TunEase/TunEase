@@ -1,32 +1,75 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, TextInput, Image, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { updateUserProfile } from '../services/userProfileService';
+import { fetchUserProfile, updateUserProfile } from '../services/userProfileService';
+
+interface UserProfile {
+  name: string;
+  email: string;
+  phone?: string; // Make phone optional
+  role: string;
+  password: string;
+  avatarUrl?: string; // Make avatarUrl optional
+}
 
 const UserProfile: React.FC = () => {
-
   const navigation = useNavigation();
-  const [profile, setProfile] = useState<{name: string, email: string, phone: string, role: string, password: string, avatarUrl: string} | null>({name:"", email:"", phone:"", role:"", password:"", avatarUrl:""});
+  const [profile, setProfile] = useState<UserProfile | null>({
+    name: "",
+    email: "",
+    phone: "", // Initialize phone as an empty string
+    role: "",
+    password: "",
+    avatarUrl: "", // Initialize avatarUrl as an empty string
+  });
   const [isLoading, setIsLoading] = useState(true);
   const userId = 'user_id_here'; // Replace with the actual user ID from authentication
 
-  // useEffect(() => {
-  //   const loadProfile = async () => {
-  //     try {
-  //       const userProfile = await fetchUserProfile(userId);
-  //       setProfile(userProfile);
-  //     } catch (error) {
-  //       console.error('Error fetching profile:', error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-  //   loadProfile();
-  // }, [userId]);
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const userProfile = await fetchUserProfile(userId);
+        setProfile(userProfile as UserProfile);  
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProfile();
+  }, [userId]);
+
+  const validateEmail = (email: string) => email.includes('@') && email.includes('.');
 
   const handleUpdateProfile = async () => {
-    if (profile && profile.name) {
-      const updates = { name: profile.name, email: profile.email, phone: profile.phone, role: profile.role, password: profile.password };
+    if (profile) {
+      if (!profile.name) {
+        alert('Name cannot be empty.');
+        return;
+      }
+      if (!profile.email) {
+        alert('Email cannot be empty.');
+        return;
+      }
+      // Validate email
+      if (!validateEmail(profile.email)) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      // Validate password length
+      if (profile.password.length < 6) {
+        alert('Password must be at least 6 characters long.');
+        return;
+      }
+
+      const updates: UserProfile = { 
+        name: profile.name, 
+        email: profile.email, 
+        phone: profile.phone || '', // Ensure phone is a string
+        role: profile.role, 
+        password: profile.password 
+      };
+
       try {
         const success = await updateUserProfile(userId, updates);
         if (success) {
@@ -38,13 +81,13 @@ const UserProfile: React.FC = () => {
         alert('An error occurred while updating the profile: ' + error.message);
       }
     } else {
-      alert('Name cannot be empty.');
+      alert('Profile data is missing.');
     }
   };
 
-  // if (isLoading) {
-  //   return <ActivityIndicator size="large" color="#0000ff" />;
-  // }
+  if (isLoading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
   return (
     <SafeAreaView style={styles.mainContainer}>
@@ -74,7 +117,7 @@ const UserProfile: React.FC = () => {
           onChangeText={(text) => setProfile(profile ? { ...profile, role: text } : null)}
           placeholder="Role"
         />
-             <TextInput 
+        <TextInput 
           style={styles.input}
           value={profile?.phone || ''}
           onChangeText={(text) => setProfile(profile ? { ...profile, phone: text } : null)}
@@ -97,11 +140,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 20,
   },
+  infoContainer: {
+    padding: 10,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 10,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   avatar: {
     width: 100,
     height: 100,
     borderRadius: 50,
     marginBottom: 20,
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  jobTitle: {
+    fontSize: 18,
+    color: 'gray',
   },
   input: {
     borderWidth: 1,
@@ -115,6 +175,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
     color: "#3B82F6",
+  },
+  bio: {
+    fontSize: 14,
+    color: 'darkgray',
+  },
+  profilePicture: {
+    width: 100, // Width of the image
+    height: 100, // Height of the image
+    borderRadius: 50, // Makes the image circular
+    marginBottom: 20, // Space below the image
   },
 });
 

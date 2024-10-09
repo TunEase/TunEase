@@ -18,15 +18,13 @@ const Categories: React.FC<CategoriesProps> = ({ navigation }) => {
     <ScrollView contentContainerStyle={styles.categoriesContainer}>
       <Text style={styles.sectionHeader}>Categories</Text>
 
-      <View style={styles.categoriesScrollable}>
+      <View style={styles.categories}>
         <TouchableOpacity
-        style={styles.card}
           onPress={() =>
             navigation.navigate("CategoryDetails", { category: "Baladia" })
           }
         >
-          <FontAwesome5 name="city" size={24} color="#3B82F6" />
-          <Text  style={styles.cardText}>Baladia</Text>
+          <Text style={styles.categories}>Baladia</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.card}

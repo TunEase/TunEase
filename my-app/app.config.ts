@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -23,6 +23,7 @@ export default {
       foregroundImage: "./assets/adaptive-icon.png", // Adaptive icon
       backgroundColor: "#ffffff", // Background color for adaptive icon
     },
+    package: "com.yourappname",
   },
   web: {
     // Web-specific configurations (if needed)

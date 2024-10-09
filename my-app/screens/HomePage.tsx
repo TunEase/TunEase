@@ -6,32 +6,39 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Header from '../components/HomePage/Banner'; 
-import Categories from '../components/HomePage/Categories'; 
-import Footer from '../components/HomePage/MainFooter';  
-import Notification from '../components/HomePage/Notification';
+import Header from "../components/HomePage/Banner";
+import Categories from "../components/HomePage/Categories";
+import Footer from "../components/HomePage/MainFooter";
+import Notification from "../components/HomePage/Notification";
 
 const user = {
   isLoggedIn: true,
   name: "chayma",
 };
 
-const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
+const Home: React.FC = (navigation) => {
   const [searchQuery, setSearchQuery] = useState("");
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={styles.container}>
+        {/* App Header */}
         <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        {/* User-specific Greeting */}
         <Text style={styles.header}>
           {user.isLoggedIn ? `Welcome, ${user.name}` : "Welcome User"}
         </Text>
+        {/* Service Categories */}
         <Categories navigation={navigation} />
+        {/* CTA Button */}
         <TouchableOpacity style={styles.ctaButton} onPress={() => {}}>
           <Text style={styles.ctaText}>Book a New Appointment</Text>
         </TouchableOpacity>
+        {/* Notifications */}
         <Notification />
       </SafeAreaView>
-      {/* <Footer navigation={navigation} /> */}
+
+      {/* Footer */}
+      <Footer />
     </View>
   );
 };

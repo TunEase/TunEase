@@ -21,6 +21,10 @@ export const fetchUserProfile = async (userId: string): Promise<UserProfile | nu
     console.error('Error fetching user profile:', error);
     return null;
   }
+  if (!data) {
+    console.warn('No user profile found for userId:', userId); // Warn if no data is found
+    return null;
+  }
 
   return data as UserProfile;
 };
@@ -38,3 +42,4 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
 
   return true;
 };
+
