@@ -5,7 +5,9 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 import Header from "../components/HomePage/Banner";
 import Categories from "../components/HomePage/Categories";
 import Footer from "../components/HomePage/MainFooter";
@@ -24,8 +26,11 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         <Categories navigation={navigation} />
         <TouchableOpacity style={styles.ctaButton}>
-          <Text style={styles.ctaText}>Book a New Appointment</Text>
+          <View style={styles.ctaContent}>
+            <Icon name="add" size={30} color="#FFFFFF" />
+          </View>
         </TouchableOpacity>
+        <Text style={styles.ctaText}>Book a New Appointment</Text>
         <Notification />
       </ScrollView>
       <Footer />
@@ -64,9 +69,14 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
+  ctaContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   ctaText: {
     fontSize: 18,
-    color: "#FFFFFF",
+    color: "#3572EF",
     fontWeight: "700",
+    marginLeft: 10,
   },
 });
