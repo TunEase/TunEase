@@ -34,7 +34,7 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Image source={require("../../assets/TunEse.jpg")} style={styles.logo} />
+      <Image source={require("../../assets/log.jpg")} style={styles.logo} />
       <Text style={styles.title}>Login</Text>
       {error && <Text style={styles.errorText}>{error}</Text>}
       <TextInput
@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 100, // Adjust the width as needed
     height: 100, // Adjust the height as needed
+    borderRadius: 50, // This makes the image circular
     alignSelf: "center", // Center the logo
     marginBottom: 20, // Space between logo and title
   },

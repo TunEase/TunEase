@@ -45,7 +45,7 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1], // Aspect ratio for a square image
+      aspect: [1, 1],
       quality: 1,
     });
 
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   image: {
     width: 100,
     height: 100,
-    borderRadius: 50, // This makes the image circular
+    borderRadius: 50,
     alignSelf: "center",
     marginBottom: 20,
     borderColor: "#ccc",
