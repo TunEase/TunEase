@@ -6,16 +6,10 @@ import {
   Text,
   TouchableOpacity,
 } from "react-native";
-import ButtonStyles from "../components/Form/Button";
 import Header from "../components/HomePage/Banner";
 import Categories from "../components/HomePage/Categories";
 import Footer from "../components/HomePage/MainFooter";
 import Notification from "../components/HomePage/Notification";
-
-const user = {
-  isLoggedIn: true,
-  name: "chayma",
-};
 
 interface HomeProps {
   navigation: any;
@@ -28,14 +22,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     <SafeAreaView style={styles.mainContainer}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-        <Text style={styles.welcomeText}>
-          {user.isLoggedIn ? `Welcome , ${user.name}!` : "Welcome User"}
-        </Text>
         <Categories navigation={navigation} />
-        <TouchableOpacity style={ButtonStyles.primaryButton}>
-          <TouchableOpacity style={styles.ctaButton}>
-            <Text style={styles.ctaText}>Book a New Appointment</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.ctaButton}>
+          <Text style={styles.ctaText}>Book a New Appointment</Text>
         </TouchableOpacity>
         <Notification />
       </ScrollView>
@@ -49,24 +38,25 @@ export default Home;
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: "#E3F2FD", // Light blue background
+    backgroundColor: "#FFFFFF",
   },
   contentContainer: {
     flexGrow: 1,
     paddingVertical: 20,
     alignItems: "center",
-    backgroundColor: "#FFFFFF", // White background for content
+    backgroundColor: "#FFFFFF",
   },
   welcomeText: {
     fontSize: 26,
     fontWeight: "600",
-    color: "#0D47A1", // Medium blue for text
+    color: "#3572EF",
     marginVertical: 15,
     textAlign: "center",
   },
   ctaButton: {
-    backgroundColor: "#0D47A1", // Medium blue button
-    paddingHorizontal: 25,
+    backgroundColor: "#42A5F5",
+    paddingHorizontal: 50,
+    paddingVertical: 20,
     borderRadius: 30,
     marginVertical: 20,
     shadowColor: "#000",
@@ -76,7 +66,7 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     fontSize: 18,
-    color: "#FFFFFF", // White text on buttons
+    color: "#FFFFFF",
     fontWeight: "700",
   },
 });

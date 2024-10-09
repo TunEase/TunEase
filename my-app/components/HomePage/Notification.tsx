@@ -21,13 +21,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "600",
     marginBottom: 10,
-    color: "#0D47A1", // Updated to a medium blue
+    color: "#3572EF",
     textAlign: "center",
   },
   notifications: {
     width: "85%",
     padding: 20,
-    backgroundColor: "#E3F2FD", // Light blue background
+    backgroundColor: "#E3F2FD",
     borderRadius: 15,
     marginVertical: 50,
     alignSelf: "center",
@@ -35,11 +35,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowOffset: { width: 2, height: 5 },
     shadowRadius: 10,
-    elevation: 5, // Light shadow effect for a modern look
+    elevation: 5,
   },
   noNotificationText: {
     fontSize: 18,
-    color: "#1565C0", // Darker blue for the text
+    color: "#3572EF",
     fontWeight: "500",
     textAlign: "center",
     marginTop: 10,

@@ -54,7 +54,7 @@ const CategoryDetails: React.FC<{ route: any; navigation: any }> = ({
       )}
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.navigate("navigation")}
+        onPress={() => navigation.navigate("Home")}
       >
         <TouchableOpacity style={ButtonStyles.primaryButton}>
           <Text style={styles.backButtonText}>Back to Categories</Text>
@@ -69,13 +69,13 @@ export default CategoryDetails;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF", // White background
+    backgroundColor: "#FFFFFF",
     padding: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#0D47A1", // Medium blue title text
+    color: "#3572EF",
     marginBottom: 20,
     textAlign: "center",
   },
@@ -84,18 +84,18 @@ const styles = StyleSheet.create({
   },
   letterItem: {
     fontSize: 18,
-    color: "#1565C0", // Darker blue for list items
+    color: "#1E201E",
     marginBottom: 10,
   },
   backButton: {
-    backgroundColor: "#42A5F5", // Soft blue back button
+    backgroundColor: "#42A5F5",
     padding: 15,
     borderRadius: 25,
     marginTop: 20,
     alignItems: "center",
   },
   backButtonText: {
-    color: "#FFFFFF", // White text for button
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
   },

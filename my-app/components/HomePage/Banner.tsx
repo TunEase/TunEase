@@ -10,12 +10,14 @@ const Header: React.FC<HeaderProps> = ({ searchQuery, setSearchQuery }) => {
   return (
     <View style={styles.headerContainer}>
       <Text style={styles.appName}>TunEase</Text>
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Search..."
-        value={searchQuery}
-        onChangeText={(text) => setSearchQuery(text)}
-      />
+      <View style={styles.searchNotificationContainer}>
+        <TextInput
+          style={styles.searchBar}
+          placeholder="Search..."
+          value={searchQuery}
+          onChangeText={(text) => setSearchQuery(text)}
+        />
+      </View>
     </View>
   );
 };
@@ -28,24 +30,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF", // Clean white background
+    backgroundColor: "#FFFFFF",
     borderBottomWidth: 2,
-    borderBottomColor: "#0D47A1", // Subtle blue line at the bottom of the header
+    borderBottomColor: "#FFFFFF",
   },
   appName: {
-    fontSize: 32,
+    fontSize: 33,
     fontWeight: "bold",
-    color: "#0D47A1", // Darker blue for the app name text
+    color: "#3572EF",
+  },
+  searchNotificationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 15,
+    width: "80%",
   },
   searchBar: {
-    marginTop: 10,
-    padding: 12,
+    flex: 1,
+    padding: 10,
     borderWidth: 1,
-    borderColor: "#1565C0", // Medium blue border for the search bar
+    borderColor: "#1565C0",
     borderRadius: 20,
-    width: "90%",
     fontSize: 16,
-    backgroundColor: "#E3F2FD", // Light blue background for the search bar
-    color: "#0D47A1", // Dark blue text inside the search bar
+    backgroundColor: "#E3F2FD",
+    color: "#0D47A1",
+  },
+  notificationIcon: {
+    marginLeft: 10,
   },
 });

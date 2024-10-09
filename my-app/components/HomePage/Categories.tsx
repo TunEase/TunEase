@@ -19,10 +19,10 @@ const Categories: React.FC<CategoriesProps> = ({ navigation }) => {
 
       <View style={styles.categoriesScrollable}>
         {[
-          { icon: "city", title: "Baladia", color: "#FF6B6B" },
-          { icon: "envelope", title: "Bousta", color: "#4ECDC4" },
-          { icon: "shield-alt", title: "Markez", color: "#1D3557" },
-          { icon: "envelope", title: "Kbadha", color: "#FF6B6B" },
+          { title: "Baladia", icon: "landmark", color: "#FF6F61" },
+          { title: "Bousta", icon: "envelope", color: "#6A5ACD" },
+          { title: "Markez", icon: "building", color: "#20B2AA" },
+          { title: "Baladia", icon: "landmark", color: "#AF6F65" },
         ].map(({ icon, title, color }, idx) => (
           <TouchableOpacity
             key={idx}
@@ -46,13 +46,13 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#1565C0", // Darker blue for the section header
+    color: "#3572EF",
     marginVertical: 15,
   },
   categoriesContainer: {
     alignItems: "center",
     paddingVertical: 20,
-    backgroundColor: "#FFFFFF", // White background for the whole section
+    backgroundColor: "#FFFFFF",
   },
   categoriesScrollable: {
     flexDirection: "row",
@@ -60,14 +60,14 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   card: {
-    backgroundColor: "#E3F2FD", // Light blue background for cards
+    backgroundColor: "#E3F2FD",
     padding: 20,
     borderRadius: 25,
     margin: 10,
     alignItems: "center",
     width: 120,
     borderWidth: 1,
-    borderColor: "#BBDEFB", // Light blue border
+    borderColor: "#BBDEFB",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 1, height: 3 },
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   cardText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#0D47A1", // Medium blue for the text
+    color: "#0D47A1",
     marginTop: 8,
   },
 });

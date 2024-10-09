@@ -7,12 +7,12 @@ const Footer: React.FC = () => {
     <View style={styles.footerContainer}>
       {[
         { icon: "home", label: "Home" },
-        { icon: "heart", label: "Favorites" },
+        { icon: "bell", label: "Notification" },
         { icon: "user", label: "Profile" },
         { icon: "sign-out-alt", label: "Logout" },
       ].map(({ icon, label }, idx) => (
         <TouchableOpacity key={idx} style={styles.footerItem}>
-          <FontAwesome5 name={icon} size={24} color="#FF6B6B" />
+          <FontAwesome5 name={icon} size={24} color="#3572EF" />
           <Text style={styles.footerText}>{label}</Text>
         </TouchableOpacity>
       ))}
@@ -26,17 +26,18 @@ const styles = StyleSheet.create({
   footerContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#F5F5F5", // Light gray footer background
+    backgroundColor: "#E3F2FD",
     borderTopWidth: 1,
-    borderTopColor: "#B0BEC5", // Light border for separation
+    borderTopColor: "#1D242B",
     paddingVertical: 10,
   },
   footerItem: {
     alignItems: "center",
+    color: "#1D242B",
   },
   footerText: {
     fontSize: 12,
-    color: "#1565C0", // Darker blue for footer text
+    color: "#1D242B",
     marginTop: 5,
   },
 });

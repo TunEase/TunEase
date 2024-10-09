@@ -10,7 +10,7 @@ const AppNavigator = () => {
       <Stack.Screen
         name="Home"
         component={Home}
-        options={{ headerShown: false }} // This hides the navigation header
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
