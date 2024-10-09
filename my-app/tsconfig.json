@@ -2,8 +2,13 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "esModuleInterop": true, // Enables emit interoperability between CommonJS and ES Modules
-    "skipLibCheck": true,
-    "allowJs": true // Skips type checking of declaration files
-  }
+    "jsx": "react-native",
+    "esModuleInterop": true
+  },
+  "include": [
+    "/*", // Update this to match your actual source directory
+    "env.d.ts" // Adjust if necessary
+  ],
 }
+
+
