@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Image,
 } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { supabase } from "../../services/supabaseClient";
@@ -33,6 +34,7 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Image source={require("../../assets/TunEse.jpg")} style={styles.logo} />
       <Text style={styles.title}>Login</Text>
       {error && <Text style={styles.errorText}>{error}</Text>}
       <TextInput
@@ -64,6 +66,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     backgroundColor: "#f7f7f7",
+  },
+  logo: {
+    width: 100, // Adjust the width as needed
+    height: 100, // Adjust the height as needed
+    alignSelf: "center", // Center the logo
+    marginBottom: 20, // Space between logo and title
   },
   title: {
     fontSize: 28,
