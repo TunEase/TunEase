@@ -16,17 +16,89 @@ export const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPAB
 // Function to insert sample data
 export const insertSampleData = async () => {
   const users = [
-    { name: 'Alice Johnson', email: 'alice.johnson@example.com', password: 'hashed_password1', role: 'CLIENT', phone: '123-456-7890' },
-    { name: 'Bob Smith', email: 'bob.smith@example.com', password: 'hashed_password2', role: 'BUSINESS_MANAGER', phone: '234-567-8901' },
-    { name: 'Charlie Brown', email: 'charlie.brown@example.com', password: 'hashed_password3', role: 'ADMIN', phone: '345-678-9012' },
-    { name: 'Dana White', email: 'dana.white@example.com', password: 'hashed_password4', role: 'CLIENT', phone: '456-789-0123' },
-    { name: 'Evan Davis', email: 'evan.davis@example.com', password: 'hashed_password5', role: 'BUSINESS_MANAGER', phone: '567-890-1234' },
-    { name: 'Fiona Green', email: 'fiona.green@example.com', password: 'hashed_password6', role: 'ADMIN', phone: '678-901-2345' },
-    { name: 'George Martin', email: 'george.martin@example.com', password: 'hashed_password7', role: 'CLIENT', phone: '789-012-3456' },
-    { name: 'Hannah Lee', email: 'hannah.lee@example.com', password: 'hashed_password8', role: 'CLIENT', phone: '890-123-4567' },
-    { name: 'Ian Brown', email: 'ian.brown@example.com', password: 'hashed_password9', role: 'BUSINESS_MANAGER', phone: '901-234-5678' },
-    { name: 'Jane Doe', email: 'jane.doe@example.com', password: 'hashed_password10', role: 'CLIENT', phone: '012-345-6789' }
+    { name: 'Alice Johnson', email: 'abdelmajidnc10@gmail.com', password: 'Majid123', role: 'CLIENT', phone: '123-456-7890' },
+    // { name: 'Bob Smith', email: 'bob.smith@example.com', password: 'hashed_password2', role: 'BUSINESS_MANAGER', phone: '234-567-8901' },
+    // { name: 'Charlie Brown', email: 'charlie.brown@example.com', password: 'hashed_password3', role: 'ADMIN', phone: '345-678-9012' },
+    // { name: 'Dana White', email: 'dana.white@example.com', password: 'hashed_password4', role: 'CLIENT', phone: '456-789-0123' },
+    // { name: 'Evan Davis', email: 'evan.davis@example.com', password: 'hashed_password5', role: 'BUSINESS_MANAGER', phone: '567-890-1234' },
+    // { name: 'Fiona Green', email: 'fiona.green@example.com', password: 'hashed_password6', role: 'ADMIN', phone: '678-901-2345' },
+    // { name: 'George Martin', email: 'george.martin@example.com', password: 'hashed_password7', role: 'CLIENT', phone: '789-012-3456' },
+    // { name: 'Hannah Lee', email: 'hannah.lee@example.com', password: 'hashed_password8', role: 'CLIENT', phone: '890-123-4567' },
+    // { name: 'Ian Brown', email: 'ian.brown@example.com', password: 'hashed_password9', role: 'BUSINESS_MANAGER', phone: '901-234-5678' },
+    // { name: 'Jane Doe', email: 'jane.doe@example.com', password: 'hashed_password10', role: 'CLIENT', phone: '012-345-6789' }
   ];
+
+  // Main function to register users and insert into public.user
+  
+
+
+  const insertFakeData = async () => {
+
+  
+
+
+
+
+
+
+    // for (const user of users) {
+      // Register user in auth.users
+
+      const { data,  error } = await supabase.auth.signUp({
+        email: "abdelmajidnc10@gmail.com",
+        password:"Majid@",
+      options:{
+      data:{
+        username:"qkkqkk"   ,
+    
+        },
+
+      }
+      });
+  
+      if (error) {
+
+
+        console.error('Error registering user:', error);
+     return
+      }
+
+  
+      if (data) {
+
+   
+        console.log(`Inserted user`);
+      }
+    // }
+  };
+
+
+
+
+
+  
+  // Call the function to insert fake data
+  // insertFakeData();
+ const  signUp= async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error){
+
+      console.log("error.message",error);
+      return
+    } 
+    
+    return data;
+  }
+   
+
+
+
+  
+
+
+  signUp("abdelmajidnc@gmail.com","majid@")
+
+
 
   const businesses = [
     { name: 'City Hospital', description: 'Provides comprehensive health services.', address: '123 Health St, City', business_type: 'PUBLIC', manager_id: null, phone: '123-456-7890', email: 'info@cityhospital.example.com' },
