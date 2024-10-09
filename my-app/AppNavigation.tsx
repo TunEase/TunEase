@@ -1,3 +1,4 @@
+import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import CategoryDetails from "./components/HomePage/CategoryDetails";
 import Home from "./screens/HomePage";

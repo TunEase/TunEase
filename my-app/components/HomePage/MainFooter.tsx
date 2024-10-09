@@ -1,8 +1,18 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StackNavigationProp } from '@react-navigation/stack';
 
-const Footer: React.FC = () => {
+type RootStackParamList = {
+  UserProfile: undefined; // Define your route here
+  // ... other routes ...
+};
+
+interface FooterProps {
+  navigation: StackNavigationProp<RootStackParamList>;
+}
+
+const Footer: React.FC<FooterProps> = ({ navigation }) => {
   return (
     <View style={styles.footer}>
       <TouchableOpacity>
@@ -13,19 +23,20 @@ const Footer: React.FC = () => {
         <FontAwesome5 name="heart" size={24} color="#007bff" />
         <Text style={styles.footerText}>Favorites</Text>
       </TouchableOpacity>
-      <TouchableOpacity>
-        <FontAwesome5 name="user" size={24} color="#007bff" />
+      <TouchableOpacity onPress={() => navigation.navigate('UserProfile')}>
+        <FontAwesome5 name="user" size={24} color="#007bff" />   
         <Text style={styles.footerText}>Profile</Text>
       </TouchableOpacity>
-      <TouchableOpacity>
+      <TouchableOpacity>  
         <FontAwesome5 name="sign-out-alt" size={24} color="#007bff" />
         <Text style={styles.footerText}>Logout</Text>
       </TouchableOpacity>
-      
     </View>
   );
 };
+
 export default Footer;
+
 const styles = StyleSheet.create({
   footer: {
     flexDirection: "row",

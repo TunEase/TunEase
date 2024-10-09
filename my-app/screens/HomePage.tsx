@@ -16,29 +16,22 @@ const user = {
   name: "chayma",
 };
 
-const Home: React.FC = (navigation) => {
+const Home: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={styles.container}>
-        {/* App Header */}
         <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-        {/* User-specific Greeting */}
         <Text style={styles.header}>
           {user.isLoggedIn ? `Welcome, ${user.name}` : "Welcome User"}
         </Text>
-        {/* Service Categories */}
         <Categories navigation={navigation} />
-        {/* CTA Button */}
         <TouchableOpacity style={styles.ctaButton} onPress={() => {}}>
           <Text style={styles.ctaText}>Book a New Appointment</Text>
         </TouchableOpacity>
-        {/* Notifications */}
         <Notification />
       </SafeAreaView>
-
-      {/* Footer */}
-      <Footer />
+      <Footer navigation={navigation} />
     </View>
   );
 };
