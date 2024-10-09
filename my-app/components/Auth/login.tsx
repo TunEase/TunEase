@@ -20,15 +20,16 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      setError(error.message);
+    if (loginError) {
+      setError(loginError.message);
     } else {
       console.log("User logged in:", data.user);
+      navigation.navigate("Home");
     }
   };
 
@@ -68,11 +69,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#f7f7f7",
   },
   logo: {
-    width: 100, // Adjust the width as needed
-    height: 100, // Adjust the height as needed
-    borderRadius: 50, // This makes the image circular
-    alignSelf: "center", // Center the logo
-    marginBottom: 20, // Space between logo and title
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignSelf: "center",
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,

@@ -23,20 +23,38 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
   const [error, setError] = useState<string | null>(null);
   const [image, setImage] = useState<string | null>(null);
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSignup = async () => {
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    if (!validateEmail(email)) {
+      setError("Invalid email format");
+      return;
+    }
+
+    const { data: success, error: signupError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          username,
+        },
+      },
     });
 
-    if (error) {
-      setError(error.message);
-    } else {
+    if (signupError) {
+      setError(signupError.message);
+      return;
+    }
+    if (success) {
+      console.log("User signed up and email saved:", success);
       navigation.navigate("Login");
     }
   };
