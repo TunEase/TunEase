@@ -14,6 +14,9 @@ import { insertSampleData } from "./services/supabaseClient";
 import AllBusinesses from "./screens/AllBusinesses";
 import AllServices from "./screens/OneServices";
 import ServiceDetails from "./screens/ServiceDetails";
+import Feedback from "./screens/Feedback";
+import FAQs from "./screens/FAQs";
+import Review from "./screens/Review";
 
 const Stack = createNativeStackNavigator();
 
@@ -45,6 +48,9 @@ export default function App() {
         <Stack.Screen name="AllBusinesses" component={AllBusinesses} />
         <Stack.Screen name="AllServices" component={AllServices} />
         <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+        <Stack.Screen name="Feedback" component={Feedback} />
+        <Stack.Screen name="FAQs" component={FAQs} />
+        <Stack.Screen name="Review" component={Review} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
