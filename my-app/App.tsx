@@ -11,6 +11,9 @@ import Categories from "./components/HomePage/Categories";
 import CategoryDetails from "./components/HomePage/CategoryDetails";
 import { useAuth } from "./hooks/useAuth";
 import { insertFakeData } from "./services/supabaseClient";
+import UserProfile from "./screens/UserProfile";
+ 
+
 
 const Stack = createNativeStackNavigator();
 
@@ -39,9 +42,11 @@ export default function App() {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Categories" component={Categories} />
         <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
-        {/* <Stack.Screen name="BusinessProfile" component={BusinessProfile} /> */}
+        <Stack.Screen name="UserProfile" component={UserProfile} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
   );
-}
+};
+
+
