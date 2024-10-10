@@ -71,7 +71,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
         <Notification />
       </ScrollView>
-      <Footer />
+      <Footer navigation={navigation} />
     </SafeAreaView>
   );
 };

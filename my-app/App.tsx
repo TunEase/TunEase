@@ -12,7 +12,7 @@ import CategoryDetails from "./components/HomePage/CategoryDetails";
 import { useAuth } from "./hooks/useAuth";
 import { insertSampleData } from "./services/supabaseClient";
 import AllBusinesses from "./screens/AllBusinesses";
-import AllServices from "./screens/AllServices";
+import AllServices from "./screens/OneServices";
 import ServiceDetails from "./screens/ServiceDetails";
 
 const Stack = createNativeStackNavigator();

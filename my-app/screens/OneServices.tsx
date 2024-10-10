@@ -60,7 +60,6 @@ const AllServices: React.FC<{ route: any; navigation: any }> = ({
                   navigation.navigate("ServiceDetails", {
                     name: item.name,
                     description: item.description,
-                    // Pass any other service properties you want to display
                   })
                 }
               >

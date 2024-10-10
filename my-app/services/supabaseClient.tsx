@@ -156,15 +156,15 @@ export const insertSampleData = async () => {
   ];
 
   // Insert users and retrieve their IDs
-  // const insertedUsers: any[] = [];
-  // for (const user of users) {
-  //   const { data, error } = await supabase.from('users').insert([user]).select(); // .select() returns the inserted row with IDs
-  //   if (error) {
-  //     console.error('Error inserting user:', error);
-  //   } else {
-  //     insertedUsers.push(data[0]); // Store the entire inserted user object for easy access later
-  //   }
-  // }
+  const insertedUsers: any[] = [];
+  for (const user of users) {
+    const { data, error } = await supabase.from('users').insert([user]).select(); // .select() returns the inserted row with IDs
+    if (error) {
+      console.error('Error inserting user:', error);
+    } else {
+      insertedUsers.push(data[0]); // Store the entire inserted user object for easy access later
+    }
+  }
 // Insert businesses and retrieve their IDs
 // const insertedBusinesses: any[] = [];
 // for (const business of businesses) {
