@@ -12,10 +12,18 @@ import CategoryDetails from "./components/HomePage/CategoryDetails";
 import { useAuth } from "./hooks/useAuth";
 import { insertSampleData } from "./services/supabaseClient";
 import AllBusinesses from "./screens/AllBusinesses";
+<<<<<<< HEAD
 import OneServices from "./screens/OneServices";
 import UserProfile from "./screens/UserProfile"; // Add this line
 // import ServiceDetails from "./screens/ServiceDetails";
 import AllService from "./screens/AllService";
+=======
+import AllServices from "./screens/OneServices";
+import ServiceDetails from "./screens/ServiceDetails";
+import Feedback from "./screens/Feedback";
+import FAQs from "./screens/FAQs";
+import Review from "./screens/Review";
+>>>>>>> 3367f641be28694b480e4f1fa7b07671d6dec4f7
 
 const Stack = createNativeStackNavigator();
 
@@ -45,9 +53,17 @@ export default function App() {
         <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
         {/* <Stack.Screen name="BusinessProfile" component={BusinessProfile} /> */}
         <Stack.Screen name="AllBusinesses" component={AllBusinesses} />
+<<<<<<< HEAD
         <Stack.Screen name="AllService" component={AllService} />
         <Stack.Screen name="UserProfile" component={UserProfile} />
         {/* <Stack.Screen name="ServiceDetails" component={ServiceDetails} /> */}
+=======
+        <Stack.Screen name="AllServices" component={AllServices} />
+        <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+        <Stack.Screen name="Feedback" component={Feedback} />
+        <Stack.Screen name="FAQs" component={FAQs} />
+        <Stack.Screen name="Review" component={Review} />
+>>>>>>> 3367f641be28694b480e4f1fa7b07671d6dec4f7
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
