@@ -1,18 +1,13 @@
--- Supabase AI is experimental and may produce incorrect answers
--- Always verify the output before executing
-
-create table
-  user_profile (
-    id uuid primary key references auth.users,
-    name varchar(255),
-    email varchar(255) not null unique,
-    password varchar(255) not null,
-    role varchar(20) not null check (role in ('ADMIN', 'CLIENT', 'BUSINESS_MANAGER')),
-    phone varchar(20),
-    created_at timestamp default now(),
-    updated_at timestamp default now()
-  );
-
+CREATE TABLE user_profile (
+    id uuid PRIMARY KEY REFERENCES auth.users(id),
+    name VARCHAR(255),
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'CLIENT' CHECK (role IN ('ADMIN', 'CLIENT', 'BUSINESS_MANAGER')),
+    phone VARCHAR(20),
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now()
+);
 create table
   business (
     id uuid primary key default uuid_generate_v4 (),

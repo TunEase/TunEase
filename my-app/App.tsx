@@ -9,7 +9,7 @@ import Signup from "./components/Auth/signup";
 import Categories from "./components/HomePage/Categories";
 import CategoryDetails from "./components/HomePage/CategoryDetails";
 import { useAuth } from "./hooks/useAuth";
-import { insertSampleData } from "./services/supabaseClient";
+import { insertFakeData } from "./services/supabaseClient";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,7 +19,7 @@ export default function App() {
   useEffect(() => {
     const insertData = async () => {
       try {
-        await insertSampleData();
+        await insertFakeData();
         console.log("Sample data inserted successfully.");
       } catch (error) {
         console.error("Error inserting sample data:", error);
