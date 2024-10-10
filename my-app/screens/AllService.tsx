@@ -1,69 +1,97 @@
-import React from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import React, { useEffect, useState } from "react";
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+import { supabase } from "../services/supabaseClient";
 
-const services = [
-  { id: '1', name: 'Electrician', icon: 'flash' },
-  { id: '2', name: 'AC repair', icon: 'air-conditioner' },
-  { id: '3', name: 'Cleaning', icon: 'broom' },
-  { id: '4', name: 'Cooking', icon: 'chef-hat' },
-  { id: '5', name: 'Gardening', icon: 'flower' },
-  { id: '6', name: 'Laundry', icon: 'washing-machine' },
-  { id: '7', name: 'Pest control', icon: 'spray' },
-  { id: '8', name: 'Salon', icon: 'scissors-cutting' },
-  { id: '9', name: 'Painting', icon: 'brush' },
-  { id: '10', name: 'Plumber', icon: 'water-pump' },
-];
+const AllService: React.FC<{  navigation: any }> = ({ navigation }) => {
+  const [services, setServices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const ServiceScreen = () => {
-  const renderItem = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.serviceItem}>
-      <Icon name={item.icon} size={40} color="#4A90E2" />
-      <Text style={styles.serviceText}>{item.name}</Text>
-    </TouchableOpacity>
-  );
+  useEffect(() => {
+    const fetchServices = async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+      
+      if (error) {
+        console.error("Error fetching services:", error);
+      } else {
+        setServices(data);
+      }
+      setLoading(false);
+    };
+
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <FlatList
         data={services}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.serviceCard}
+            onPress={() =>
+              navigation.navigate("ServiceDetails", {
+                name: item.name,
+                description: item.description,
+              })
+            }
+          >
+            <Text style={styles.serviceName}>{item.name}</Text>
+            <Text style={styles.serviceDescription}>{item.description}</Text>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item) => item.id.toString()}
       />
-    </View>
+    </SafeAreaView>
   );
 };
+
+export default AllService;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F2F2F2",
   },
-  row: {
-    justifyContent: 'space-between',
+  loadingText: {
+    fontSize: 18,
+    color: "#00796B",
+    textAlign: "center",
+    marginTop: 20,
   },
-  serviceItem: {
-    backgroundColor: '#FFFFFF',
+  serviceCard: {
+    backgroundColor: "#FFFFFF",
+    padding: 15,
     borderRadius: 10,
-    padding: 20,
     marginBottom: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '48%',
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 10,
-    elevation: 5,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  serviceText: {
-    marginTop: 10,
+  serviceName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+  },
+  serviceDescription: {
     fontSize: 14,
-    color: '#333333',
+    color: "#666",
   },
 });
-
-export default ServiceScreen;

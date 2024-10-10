@@ -10,8 +10,7 @@ import {
   FlatList,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
-
-const AllBusinesses: React.FC = ({ navigation }) => {
+const AllBusinesses: React.FC= ({ navigation }) => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
