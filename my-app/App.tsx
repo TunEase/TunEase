@@ -1,16 +1,19 @@
-import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
+import * as React from "react";
+import { useEffect } from "react";
+import Home from "../my-app/screens/HomePage";
+import BusinessProfile from "./components/Allbusiness/BusinessProfile";
 import Login from "./components/Auth/login";
 import Signup from "./components/Auth/signup";
-import Home from "../my-app/screens/HomePage";
-import CategoryDetails from "./components/HomePage/CategoryDetails";
 import Categories from "./components/HomePage/Categories";
+import CategoryDetails from "./components/HomePage/CategoryDetails";
+import { useAuth } from "./hooks/useAuth";
 import { insertSampleData } from "./services/supabaseClient";
 import UserProfile from "./screens/UserProfile";
-import { useEffect } from "react"; 
-import { useAuth } from "./hooks/useAuth";
+ 
+
 
 const Stack = createNativeStackNavigator();
 
@@ -32,7 +35,8 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={user ? "Home" : "Login"}>
+      {/* <Stack.Navigator initialRouteName={user ? "Home" : "Login"}>  */}
+      <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={Signup} />
         <Stack.Screen name="Home" component={Home} />

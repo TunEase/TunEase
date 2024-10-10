@@ -6,41 +6,42 @@ const Notification: React.FC = () => {
     <ScrollView>
       <View style={styles.notifications}>
         <Text style={styles.sectionHeader}>Notifications</Text>
-        <Text>You have no new notifications.</Text>
+        <Text style={styles.noNotificationText}>
+          You have no new notifications.
+        </Text>
       </View>
     </ScrollView>
   );
 };
+
 export default Notification;
+
 const styles = StyleSheet.create({
   sectionHeader: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontWeight: "700",
     marginBottom: 10,
-    color: "#007bff",
+    color: "#00796B",
+    textAlign: "center",
   },
   notifications: {
-    width: "100%",
+    width: "85%",
     padding: 20,
-    backgroundColor: "#ffe6e6",
-    borderRadius: 10,
-    marginVertical: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    marginVertical: 50,
+    alignSelf: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 2, height: 5 },
+    shadowRadius: 10,
+    elevation: 6,
   },
-  mainContainer: {
-    flex: 1,
-    justifyContent: "space-between",
+  noNotificationText: {
+    fontSize: 18,
+    color: "#0D47A1",
+    fontWeight: "500",
+    textAlign: "center",
+    marginTop: 10,
   },
-  container: {
-    flexGrow: 1,
-    alignItems: "center",
-    padding: 16,
-  },
-  headerContainer: {
-    width: "100%",
-    alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
- 
 });

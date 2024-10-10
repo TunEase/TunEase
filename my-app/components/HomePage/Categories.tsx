@@ -1,6 +1,5 @@
-import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import React from "react";
-
 import {
   ScrollView,
   StyleSheet,
@@ -16,70 +15,27 @@ interface CategoriesProps {
 const Categories: React.FC<CategoriesProps> = ({ navigation }) => {
   return (
     <ScrollView contentContainerStyle={styles.categoriesContainer}>
-      <Text style={styles.sectionHeader}>Categories</Text>
-
-      <View style={styles.categories}>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("CategoryDetails", { category: "Baladia" })
-          }
-        >
-          <Text style={styles.categories}>Baladia</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            navigation.navigate("CategoryDetails", { category: "Bousta" })
-          }
-        >
-          <FontAwesome5 name="envelope" size={24} color="#3B82F6" />
-          <Text style={styles.cardText}>Bousta</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            navigation.navigate("CategoryDetails", { category: "Markez" })
-          }
-        >
-          <MaterialIcons name="local-police" size={24} color="#3B82F6" />
-          <Text style={styles.cardText}>Markez</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.sectionHeader}>Browse Categories</Text>
 
       <View style={styles.categoriesScrollable}>
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            navigation.navigate("CategoryDetails", { category: "Mo3tamdia" })
-          }
-        >
-          <FontAwesome5 name="city" size={24} color="#3B82F6" />
-          <Text style={styles.cardText}>Mo3tamdia</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            navigation.navigate("CategoryDetails", { category: "Kbadha" })
-          }
-        >
-          <FontAwesome5 name="city" size={24} color="#3B82F6" />
-          <Text style={styles.cardText}>Kbadha</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            navigation.navigate("CategoryDetails", { category: "Mahkma" })
-          }
-        >
-          <FontAwesome5 name="city" size={24} color="#3B82F6" />
-          <Text style={styles.cardText}>Mahkma</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.actionRow}>
-        <Text style={styles.questionText}>What do you want?</Text>
-        <TouchableOpacity style={styles.scrollButton} onPress={() => {}}>
-          <FontAwesome5 name="bars" size={24} color="#007bff" />
-        </TouchableOpacity>
+        {[
+          { title: "Baladia", icon: "landmark", color: "#FF6F61" },
+          { title: "Bousta", icon: "envelope", color: "#6A5ACD" },
+          { title: "Markez", icon: "building", color: "#20B2AA" },
+          { title: "kbadha", icon: "landmark", color: "#AF6F65" },
+          { title: "See All", icon: "plus", color: "#FF6F61" },
+        ].map(({ icon, title, color }, idx) => (
+          <TouchableOpacity
+            key={idx}
+            style={[styles.card, { borderColor: color, shadowColor: color }]}
+            onPress={() =>
+              navigation.navigate("CategoryDetails", { category: title })
+            }
+          >
+            <FontAwesome5 name={icon} size={24} color={color} />
+            <Text style={[styles.cardText, { color }]}>{title}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
     </ScrollView>
   );
@@ -89,21 +45,15 @@ export default Categories;
 
 const styles = StyleSheet.create({
   sectionHeader: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#007bff",
+    fontSize: 19,
+    fontWeight: "700",
+    color: "#00796B",
+    marginVertical: 15,
   },
-
   categoriesContainer: {
     alignItems: "center",
     paddingVertical: 20,
-  },
-  categories: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
-    marginBottom: 10,
+    backgroundColor: "#F2F2F2",
   },
   categoriesScrollable: {
     flexDirection: "row",
@@ -111,44 +61,22 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   card: {
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#E8F5E9",
     padding: 20,
-    borderRadius: 15,
-    margin: 5,
+    borderRadius: 25,
+    margin: 10,
     alignItems: "center",
-    width: "30%",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 2, height: 4 },
-    shadowRadius: 5,
-    elevation: 4,
+    width: 120,
+    borderWidth: 1,
+    borderColor: "#B0BEC5",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 5,
   },
   cardText: {
     fontSize: 16,
     fontWeight: "600",
-    marginTop: 10,
-    color: "#3B82F6",
-  },
-  actionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 20,
-  },
-  questionText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#3B82F6",
-    marginRight: 10,
-  },
-  scrollButton: {
-    padding: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 2, height: 4 },
-    shadowRadius: 5,
-    elevation: 4,
+    marginTop: 8,
   },
 });

@@ -1,6 +1,5 @@
-import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import CategoryDetails from "./components/HomePage/CategoryDetails";
+import React from "react";
 import Home from "./screens/HomePage";
 
 const Stack = createStackNavigator();
@@ -8,8 +7,11 @@ const Stack = createStackNavigator();
 const AppNavigator = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="HomePage" component={Home} />
-      <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
+      <Stack.Screen
+        name="Home"
+        component={Home}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
