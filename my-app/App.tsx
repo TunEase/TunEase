@@ -4,12 +4,12 @@ import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { useEffect } from "react";
 import Home from "../my-app/screens/HomePage";
-import BusinessProfile from "./components/Allbusiness/EditBusinessProfile";
 import Login from "./components/Auth/login";
 import Signup from "./components/Auth/signup";
 import Categories from "./components/HomePage/Categories";
 import CategoryDetails from "./components/HomePage/CategoryDetails";
 import { useAuth } from "./hooks/useAuth";
+import UserProfile from "./screens/UserProfile";
 import { insertSampleData } from "./services/supabaseClient";
 
 const Stack = createNativeStackNavigator();
@@ -39,7 +39,7 @@ export default function App() {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Categories" component={Categories} />
         <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
-        <Stack.Screen name="BusinessProfile" component={BusinessProfile} />
+        <Stack.Screen name="UserProfile" component={UserProfile} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>

@@ -20,16 +20,6 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const businessProfileData = {
-    name: "",
-    description: " ",
-    imageUrl: "",
-    phoneNumber: "",
-    email: "",
-    address: "",
-    businessType: "",
-  };
-
   return (
     <SafeAreaView style={styles.mainContainer}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
@@ -46,26 +36,27 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.CTA}
-          onPress={() =>
-            navigation.navigate("BusinessProfile", businessProfileData)
-          }
-        >
+        <TouchableOpacity style={styles.CTA}>
           <View style={styles.ctaContent}>
             <Text style={styles.ctaText}>All Business</Text>
+            {/* <TouchableOpacity style={styles.ctaButton}>
+              <Icon name="person" size={25} color="#FFFFFF" />
+            </TouchableOpacity> */}
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.CTA}>
           <View style={styles.ctaContent}>
             <Text style={styles.ctaText}>All Services</Text>
+            {/* <TouchableOpacity style={styles.ctaButton}>
+              <Icon name="tablet" size={25} color="#FFFFFF" />
+            </TouchableOpacity> */}
           </View>
         </TouchableOpacity>
 
         <Notification />
       </ScrollView>
-      <Footer />
+      <Footer navigation={navigation} />
     </SafeAreaView>
   );
 };
@@ -73,22 +64,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 export default Home;
 
 const styles = StyleSheet.create({
-  imageContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-    // backgroundColor: "#E8F5E9",
-    // paddingHorizontal: 10,
-    // paddingVertical: 3,
-    // marginBottom: 15,
-    // borderRadius: 10,
-    // width: "90%",
-  },
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-  },
   mainContainer: {
     flex: 1,
     backgroundColor: "#F2F2F2",

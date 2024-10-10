@@ -1,21 +1,37 @@
 import { FontAwesome5 } from "@expo/vector-icons";
+import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const Footer: React.FC = () => {
+type RootStackParamList = {
+  UserProfile: undefined; // Define your route here
+  // ... other routes ...
+  Login: undefined;
+};
+
+interface FooterProps {
+  navigation: StackNavigationProp<RootStackParamList>;
+}
+
+const Footer: React.FC<FooterProps> = ({ navigation }) => {
   return (
     <View style={styles.footerContainer}>
-      {[
-        { icon: "home", label: "Home" },
-        { icon: "bell", label: "Notification" },
-        { icon: "user", label: "Profile" },
-        { icon: "sign-out-alt", label: "Logout" },
-      ].map(({ icon, label }, idx) => (
-        <TouchableOpacity key={idx} style={styles.footerItem}>
-          <FontAwesome5 name={icon} size={24} color="#00796B" />
-          <Text style={styles.footerText}>{label}</Text>
-        </TouchableOpacity>
-      ))}
+      <TouchableOpacity>
+        <FontAwesome5 name="home" size={24} color="00796B" />
+        <Text style={styles.footerText}>Home</Text>
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <FontAwesome5 name="bell" size={24} color="#00796B" />
+        <Text style={styles.footerText}>Notification</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("UserProfile")}>
+        <FontAwesome5 name="user" size={24} color="#00796B" />
+        <Text style={styles.footerText}>Profile</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <FontAwesome5 name="sign-out-alt" size={24} color="#00796B" />
+        <Text style={styles.footerText}>Logout</Text>
+      </TouchableOpacity>
     </View>
   );
 };
