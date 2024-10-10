@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { useEffect } from "react";
 import Home from "../my-app/screens/HomePage";
-import BusinessProfile from "./components/Allbusiness/BusinessProfile";
+import BusinessProfile from "./components/Allbusiness/EditBusinessProfile";
 import Login from "./components/Auth/login";
 import Signup from "./components/Auth/signup";
 import Categories from "./components/HomePage/Categories";

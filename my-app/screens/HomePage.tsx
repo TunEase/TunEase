@@ -21,15 +21,13 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const businessProfileData = {
-    name: "Chayma",
-    description:
-      " This Bank is a leading financial institution offering a wide range of personal and business banking services designed to help individuals and businesses achieve their financial goals.",
-    imageUrl:
-      "https://th.bing.com/th/id/OIP.Wwx0rF6dzvMPZSXome45_wHaHa?rs=1&pid=ImgDetMain",
-    phoneNumber: "92202106",
-    email: "chayma@gmail.com",
-    address: "le Kef",
-    businessType: "Bank:",
+    name: "",
+    description: " ",
+    imageUrl: "",
+    phoneNumber: "",
+    email: "",
+    address: "",
+    businessType: "",
   };
 
   return (
@@ -56,18 +54,12 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         >
           <View style={styles.ctaContent}>
             <Text style={styles.ctaText}>All Business</Text>
-            <TouchableOpacity style={styles.ctaButton}>
-              <Icon name="person" size={25} color="#FFFFFF" />
-            </TouchableOpacity>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.CTA}>
           <View style={styles.ctaContent}>
             <Text style={styles.ctaText}>All Services</Text>
-            <TouchableOpacity style={styles.ctaButton}>
-              <Icon name="tablet" size={25} color="#FFFFFF" />
-            </TouchableOpacity>
           </View>
         </TouchableOpacity>
 
@@ -81,6 +73,22 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 export default Home;
 
 const styles = StyleSheet.create({
+  imageContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+    // backgroundColor: "#E8F5E9",
+    // paddingHorizontal: 10,
+    // paddingVertical: 3,
+    // marginBottom: 15,
+    // borderRadius: 10,
+    // width: "90%",
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
   mainContainer: {
     flex: 1,
     backgroundColor: "#F2F2F2",
@@ -109,8 +117,8 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     backgroundColor: "#00796B",
-    paddingHorizontal: 15,
-    paddingVertical: 9,
+    paddingHorizontal: 13,
+    paddingVertical: 5,
     borderRadius: 40,
     shadowColor: "#000",
     shadowOpacity: 0.1,
