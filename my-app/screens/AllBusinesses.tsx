@@ -10,8 +10,13 @@ import {
   FlatList,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-const AllBusinesses: React.FC = ({ navigation }) => {
+interface AllBusinessesProps {
+  navigation: NativeStackNavigationProp<any>;
+}
+
+const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,6 +72,14 @@ const AllBusinesses: React.FC = ({ navigation }) => {
                     }
                   >
                     <Text style={styles.buttonText}>Services</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {
+                      console.log("Profile button pressed for:", item.name);
+                    }}
+                  >
+                    <Text style={styles.buttonText}>Profile</Text>
                   </TouchableOpacity>
                 </View>
               </View>
