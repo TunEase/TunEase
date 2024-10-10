@@ -9,7 +9,7 @@ import CategoryDetails from "./components/HomePage/CategoryDetails";
 import Categories from "./components/HomePage/Categories";
 import { insertSampleData } from "./services/supabaseClient";
 import UserProfile from "./screens/UserProfile";
-import { useEffect } from "react";
+import { useEffect } from "react"; 
 import { useAuth } from "./hooks/useAuth";
 
 const Stack = createNativeStackNavigator();

@@ -5,23 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="24d74845-655a-4b3b-95cd-0cff15056fe4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/my-app/assets/Startup.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/assets/TunEse.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/assets/camera.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/assets/camera2.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/assets/creative.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/assets/done.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/assets/key.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/assets/log.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/assets/login.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/assets/simple.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/components/Auth/login.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/my-app/components/Auth/signup.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my-app/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my-app/hooks/useAuth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/hooks/useAuth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my-app/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/my-app/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/screens/UserProfile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/screens/UserProfile.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/services/userProfileService.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/services/userProfileService.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,7 +36,7 @@
     &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Merging dali&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;dali&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/dghar/OneDrive/Bureau/projet44/TunEase&quot;
   }
