@@ -35,7 +35,7 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Image source={require("../../assets/log.jpg")} style={styles.logo} />
+      <Image source={require("../../assets/TUN.png")} style={styles.logo} />
       <Text style={styles.title}>Login</Text>
       {error && <Text style={styles.errorText}>{error}</Text>}
       <TextInput
