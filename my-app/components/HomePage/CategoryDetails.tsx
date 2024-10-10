@@ -1,64 +1,47 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import ButtonStyles from "../Form/Button";
-
 const lettresBaladia = ["Madhmoun", "Rokhsa Bine", "Ta3rif bel imdha"];
 const lettresBousta = ["chahria", "manda"];
 const lettresMarkez = ["bita9t ta3rif", "passport"];
-const lettreskbadha = ["tenbri", "tranfert flous"];
+const lettresKbadha = ["tenbri", "tranfert flous"];
+
 const CategoryDetails: React.FC<{ route: any; navigation: any }> = ({
   route,
   navigation,
 }) => {
   const { category } = route.params;
 
+  const getLettres = () => {
+    switch (category) {
+      case "Baladia":
+        return lettresBaladia;
+      case "Bousta":
+        return lettresBousta;
+      case "Markez":
+        return lettresMarkez;
+      case "Kbadha":
+        return lettresKbadha;
+      default:
+        return [];
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{category}</Text>
-      {category === "Baladia" && (
-        <View style={styles.letterList}>
-          {lettresBaladia.map((lettre, index) => (
-            <Text key={index} style={styles.letterItem}>
-              {lettre}
-            </Text>
-          ))}
-        </View>
-      )}
-      {category === "Bousta" && (
-        <View style={styles.letterList}>
-          {lettresBousta.map((lettre, index) => (
-            <Text key={index} style={styles.letterItem}>
-              {lettre}
-            </Text>
-          ))}
-        </View>
-      )}
-      {category === "Markez" && (
-        <View style={styles.letterList}>
-          {lettresMarkez.map((lettre, index) => (
-            <Text key={index} style={styles.letterItem}>
-              {lettre}
-            </Text>
-          ))}
-        </View>
-      )}
-      {category === "Kbadha" && (
-        <View style={styles.letterList}>
-          {lettreskbadha.map((lettre, index) => (
-            <Text key={index} style={styles.letterItem}>
-              {lettre}
-            </Text>
-          ))}
-        </View>
-      )}
+      <View style={styles.letterList}>
+        {getLettres().map((lettre, index) => (
+          <Text key={index} style={styles.letterItem}>
+            {lettre}
+          </Text>
+        ))}
+      </View>
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.navigate("Home")}
       >
-        <TouchableOpacity style={ButtonStyles.primaryButton}>
-          <Text style={styles.backButtonText}>Back to Categories</Text>
-        </TouchableOpacity>
+        <Text style={styles.backButtonText}>Back to Categories</Text>
       </TouchableOpacity>
     </View>
   );
@@ -74,8 +57,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#3572EF",
+    fontWeight: "700",
+    color: "#00796B",
     marginBottom: 20,
     textAlign: "center",
   },
@@ -88,7 +71,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   backButton: {
-    backgroundColor: "#42A5F5",
+    backgroundColor: "#00796B",
     padding: 15,
     borderRadius: 25,
     marginTop: 20,

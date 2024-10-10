@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
         { icon: "sign-out-alt", label: "Logout" },
       ].map(({ icon, label }, idx) => (
         <TouchableOpacity key={idx} style={styles.footerItem}>
-          <FontAwesome5 name={icon} size={24} color="#3572EF" />
+          <FontAwesome5 name={icon} size={24} color="#00796B" />
           <Text style={styles.footerText}>{label}</Text>
         </TouchableOpacity>
       ))}
@@ -26,14 +26,14 @@ const styles = StyleSheet.create({
   footerContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#E3F2FD",
+    backgroundColor: "#F2F2F2",
     borderTopWidth: 1,
-    borderTopColor: "#1D242B",
-    paddingVertical: 10,
+    borderTopColor: "#B0BEC5",
+    paddingVertical: 12,
+    elevation: 4,
   },
   footerItem: {
     alignItems: "center",
-    color: "#1D242B",
   },
   footerText: {
     fontSize: 12,
