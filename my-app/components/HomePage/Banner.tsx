@@ -16,6 +16,7 @@ const Header: React.FC<HeaderProps> = ({ searchQuery, setSearchQuery }) => {
           placeholder="Search..."
           value={searchQuery}
           onChangeText={(text) => setSearchQuery(text)}
+          placeholderTextColor="#A7A9BE"
         />
       </View>
     </View>
@@ -28,34 +29,32 @@ const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
     alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 2,
-    borderBottomColor: "#FFFFFF",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    backgroundColor: "#F2F2F2",
+    borderBottomWidth: 1,
+    borderBottomColor: "#B0BEC5",
+    elevation: 3,
   },
   appName: {
-    fontSize: 33,
+    fontSize: 30,
     fontWeight: "bold",
-    color: "#3572EF",
+    color: "#00796B",
   },
   searchNotificationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 15,
-    width: "80%",
+    marginTop: 10,
+    width: "90%",
   },
   searchBar: {
     flex: 1,
-    padding: 10,
+    padding: 12,
     borderWidth: 1,
-    borderColor: "#1565C0",
-    borderRadius: 20,
+    borderColor: "#00796B",
+    borderRadius: 25,
     fontSize: 16,
-    backgroundColor: "#E3F2FD",
-    color: "#0D47A1",
-  },
-  notificationIcon: {
-    marginLeft: 10,
+    backgroundColor: "#E8F5E9",
+    color: "#004D40",
   },
 });
