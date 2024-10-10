@@ -235,10 +235,11 @@ export const insertFakeData = async () => {
   }
 
   console.log("Sample data inserted successfully!");
+ 
 };
 
 // Example usage
-// insertFakeData();
+insertFakeData();
 
 // Example usage
 // insertFakeData();
