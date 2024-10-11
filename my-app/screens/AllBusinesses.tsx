@@ -10,23 +10,13 @@ import {
   FlatList,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
-import { StackNavigationProp } from '@react-navigation/stack'; // Import navigation types
-import { RouteProp } from '@react-navigation/native';
-type RootStackParamList = {
-  AllBusinesses: undefined;
-  AllServices: { businessId: number };
-};
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-// Define the props type for your screen
-type AllBusinessesScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  'AllBusinesses'
->;
-type Props = {
-  navigation: AllBusinessesScreenNavigationProp;
-  // route: AllBusinessesScreenRouteProp; // Uncomment if you need to use route
-};
-const AllBusinesses: React.FC<Props> = ({ navigation }) => {
+interface AllBusinessesProps {
+  navigation: NativeStackNavigationProp<any>;
+}
+
+const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -82,6 +72,14 @@ const AllBusinesses: React.FC<Props> = ({ navigation }) => {
                     }
                   >
                     <Text style={styles.buttonText}>Services</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {
+                      console.log("Profile button pressed for:", item.name);
+                    }}
+                  >
+                    <Text style={styles.buttonText}>Profile</Text>
                   </TouchableOpacity>
                 </View>
               </View>
