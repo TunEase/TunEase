@@ -36,12 +36,15 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.CTA}>
+        <TouchableOpacity
+          style={styles.CTA}
+          onPress={() => navigation.navigate("AllBusinesses")}
+        >
           <View style={styles.ctaContent}>
-            <Text style={styles.ctaText}>All Business</Text>
-            {/* <TouchableOpacity style={styles.ctaButton}>
-              <Icon name="person" size={25} color="#FFFFFF" />
-            </TouchableOpacity> */}
+            <Text style={styles.ctaText}>View All Businesses</Text>
+            <TouchableOpacity style={styles.ctaButton}>
+              <Icon name="business" size={25} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
 
