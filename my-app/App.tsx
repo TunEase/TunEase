@@ -17,6 +17,7 @@ import ServiceDetails from "./screens/ServiceDetails";
 import Feedback from "./screens/Feedback";
 import FAQs from "./screens/FAQs";
 import Review from "./screens/Review";
+import UserProfile from "./screens/UserProfile";
 
 const Stack = createNativeStackNavigator();
 
@@ -51,6 +52,7 @@ export default function App() {
         <Stack.Screen name="Feedback" component={Feedback} />
         <Stack.Screen name="FAQs" component={FAQs} />
         <Stack.Screen name="Review" component={Review} />
+        <Stack.Screen name="UserProfile" component={UserProfile} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>

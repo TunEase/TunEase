@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -45,51 +44,46 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.header}>All Businesses</Text>
-        {businesses.length === 0 ? (
-          <Text style={styles.noBusinessesText}>No businesses found.</Text>
-        ) : (
-          <FlatList
-            data={businesses}
-            renderItem={({ item }) => (
-              <View style={styles.businessCard}>
-                <Image
-                  source={{ uri: item.imageUrl }}
-                  style={styles.businessImage}
-                />
-                <Text style={styles.businessName}>{item.name}</Text>
-                <Text style={styles.businessDescription}>
-                  {item.description}
-                </Text>
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() =>
-                      navigation.navigate("AllServices", {
-                        businessId: item.id,
-                      })
-                    }
-                  >
-                    <Text style={styles.buttonText}>Services</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => {
-                      console.log("Profile button pressed for:", item.name);
-                    }}
-                  >
-                    <Text style={styles.buttonText}>Profile</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-            keyExtractor={(item) => item.id.toString()}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-          />
+      <FlatList
+        data={businesses}
+        renderItem={({ item }) => (
+          <View style={styles.businessCard}>
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={styles.businessImage}
+            />
+            <Text style={styles.businessName}>{item.name}</Text>
+            <Text style={styles.businessDescription}>{item.description}</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() =>
+                  navigation.navigate("AllServices", {
+                    businessId: item.id,
+                  })
+                }
+              >
+                <Text style={styles.buttonText}>Services</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => {
+                  console.log("Profile button pressed for:", item.name);
+                }}
+              >
+                <Text style={styles.buttonText}>Profile</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
-      </ScrollView>
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        ListHeaderComponent={<Text style={styles.header}>All Businesses</Text>}
+        ListEmptyComponent={
+          <Text style={styles.noBusinessesText}>No businesses found.</Text>
+        }
+      />
     </SafeAreaView>
   );
 };
@@ -100,9 +94,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
-  },
-  contentContainer: {
-    padding: 20,
   },
   header: {
     fontSize: 28,
