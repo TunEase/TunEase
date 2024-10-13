@@ -19,7 +19,7 @@ interface ServiceDetailsProps {
     },
     "params"
   >;
-  navigation: any; // You can replace 'any' with a more specific type if needed
+  navigation: any;
 }
 
 const ServiceDetails: React.FC<ServiceDetailsProps> = ({

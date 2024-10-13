@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { useEffect } from "react";
-import Home from "../my-app/screens/HomePage";
+import Home from "./screens/HomePage";
 import BusinessProfile from "./components/Allbusiness/BusinessProfile";
 import Login from "./components/Auth/login";
 import Signup from "./components/Auth/signup";
@@ -17,7 +17,10 @@ import ServiceDetails from "./screens/ServiceDetails";
 import Feedback from "./screens/Feedback";
 import FAQs from "./screens/FAQs";
 import Review from "./screens/Review";
-import UserProfile from "./screens/UserProfile";
+import ProfileScreen from "./screens/ProfileScreen";
+import UsernameSettings from "./screens/UsernameSettings";
+import ProfileSettings from "./screens/ProfileSettings";
+import Notification from "./screens/Notification";
 
 const Stack = createNativeStackNavigator();
 
@@ -52,7 +55,10 @@ export default function App() {
         <Stack.Screen name="Feedback" component={Feedback} />
         <Stack.Screen name="FAQs" component={FAQs} />
         <Stack.Screen name="Review" component={Review} />
-        <Stack.Screen name="UserProfile" component={UserProfile} />
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+        <Stack.Screen name="UsernameSettings" component={UsernameSettings} />
+        <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
+        <Stack.Screen name="Notification" component={Notification} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>

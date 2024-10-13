@@ -18,23 +18,33 @@ interface AllBusinessesProps {
 const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0); // Track the current page
+  const [hasMore, setHasMore] = useState(true); // Track if there are more businesses to load
+
+  const fetchBusinesses = async (page: number) => {
+    const { data, error } = await supabase
+      .from("business")
+      .select("*")
+      .range(page * 6, (page + 1) * 6 - 1); // Fetch 6 businesses at a time
+
+    if (error) {
+      console.error("Error fetching businesses:", error);
+    } else {
+      console.log("Fetched businesses:", data);
+      if (data.length > 0) {
+        setBusinesses((prev) => [...prev, ...data]); // Append new businesses
+      } else {
+        setHasMore(false); // No more businesses to load
+      }
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const fetchBusinesses = async () => {
-      const { data, error } = await supabase.from("business").select("*");
-      if (error) {
-        console.error("Error fetching businesses:", error);
-      } else {
-        console.log("Fetched businesses:", data);
-        setBusinesses(data);
-      }
-      setLoading(false);
-    };
+    fetchBusinesses(page);
+  }, [page]);
 
-    fetchBusinesses();
-  }, []);
-
-  if (loading) {
+  if (loading && page === 0) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.loadingText}>Loading...</Text>
@@ -83,6 +93,14 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
         ListEmptyComponent={
           <Text style={styles.noBusinessesText}>No businesses found.</Text>
         }
+        onEndReached={() => {
+          if (hasMore) {
+            setLoading(true);
+            setPage((prev) => prev + 1); // Load the next page
+          }
+        }}
+        onEndReachedThreshold={0.5} // Trigger when 50% of the list is visible
+        ListFooterComponent={loading ? <Text>Loading more...</Text> : null} // Show loading indicator at the bottom
       />
     </SafeAreaView>
   );
