@@ -18,23 +18,23 @@ interface AllBusinessesProps {
 const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0); // Track the current page
-  const [hasMore, setHasMore] = useState(true); // Track if there are more businesses to load
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
   const fetchBusinesses = async (page: number) => {
     const { data, error } = await supabase
       .from("business")
       .select("*")
-      .range(page * 6, (page + 1) * 6 - 1); // Fetch 6 businesses at a time
+      .range(page * 6, (page + 1) * 6 - 1);
 
     if (error) {
       console.error("Error fetching businesses:", error);
     } else {
       console.log("Fetched businesses:", data);
       if (data.length > 0) {
-        setBusinesses((prev) => [...prev, ...data]); // Append new businesses
+        setBusinesses((prev) => [...prev, ...data]);
       } else {
-        setHasMore(false); // No more businesses to load
+        setHasMore(false);
       }
     }
     setLoading(false);
@@ -96,11 +96,11 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
         onEndReached={() => {
           if (hasMore) {
             setLoading(true);
-            setPage((prev) => prev + 1); // Load the next page
+            setPage((prev) => prev + 1);
           }
         }}
-        onEndReachedThreshold={0.5} // Trigger when 50% of the list is visible
-        ListFooterComponent={loading ? <Text>Loading more...</Text> : null} // Show loading indicator at the bottom
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={loading ? <Text>Loading more...</Text> : null}
       />
     </SafeAreaView>
   );
