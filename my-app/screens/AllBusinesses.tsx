@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   cancelButton: {
-    backgroundColor: "#FF6347", // Red color for the cancel button
+    backgroundColor: "#FF6347",
   },
   cancelButtonText: {
     color: "white",
