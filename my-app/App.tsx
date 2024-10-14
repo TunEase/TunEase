@@ -14,12 +14,21 @@ import AllServices from "./screens/OneServices";
 import UserProfile from "./screens/UserProfile";
 import ServiceDetails from "./screens/ServiceDetails";
 import Feedback from "./screens/Feedback";
+import AppointmentSettings from "./screens/AppointmentSettings";
+import BusinessProfile from "./screens/BusinessProfile";
+import EditProfileScreen from "./screens/EditProfileScreen";
 import FAQs from "./screens/FAQs";
 import Review from "./screens/Review";
 import Onboarding from "./screens/OnBoarding";
 import { useAuth } from "./hooks/useAuth";
-import { insertFakeData } from "./services/supabaseClient";
+// import { insertFakeData } from "./services/supabaseClient";
 import { OnBoardingScreen1,OnBoardingScreen2 } from "./screens/OnBoarding2" ;
+import ProfileScreen from "./screens/ProfileScreen";
+import UsernameSettings from "./screens/UsernameSettings";
+import ProfileSettings from "./screens/ProfileSettings";
+import Notification from "./screens/Notification";
+import Statistics from "./screens/Statistics";
+import UpdateQA from "./screens/UpdateQ&A";
 
 const Stack = createNativeStackNavigator();
 
@@ -37,18 +46,18 @@ export default function App() {
     checkOnboardingStatus();
   }, []);
 
-  useEffect(() => {
-    const insertData = async () => {
-      try {
-        await insertFakeData();
-        console.log("Sample data inserted successfully.");
-      } catch (error) {
-        console.error("Error inserting sample data:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const insertData = async () => {
+  //     try {
+  //       await insertFakeData();
+  //       console.log("Sample data inserted successfully.");
+  //     } catch (error) {
+  //       console.error("Error inserting sample data:", error);
+  //     }
+  //   };
 
-    insertData();
-  }, []);
+  //   insertData();
+  // }, []);
 
   // Handle loading state while checking onboarding status
   if (isOnboardingCompleted === null) {
@@ -83,6 +92,19 @@ export default function App() {
         <Stack.Screen name="Feedback" component={Feedback} />
         <Stack.Screen name="FAQs" component={FAQs} />
         <Stack.Screen name="Review" component={Review} />
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+        <Stack.Screen name="UsernameSettings" component={UsernameSettings} />
+        <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
+        <Stack.Screen name="Notification" component={Notification} />
+
+        <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
+        <Stack.Screen name="BusinessProfile" component={BusinessProfile} />
+        <Stack.Screen name="UpdateQA" component={UpdateQA} />
+        <Stack.Screen
+          name="AppointmentSettings"
+          component={AppointmentSettings}
+        />
+        <Stack.Screen name="Statistics" component={Statistics} />
       </Stack.Navigator>
       <StatusBar style="auto" />
       </AuthProvider>

@@ -13,7 +13,6 @@ import { useAuth } from "../hooks/useAuth";
 
 const Review: React.FC = () => {
   const { user } = useAuth();
-  console.log("current user", user);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [helpfulCount, setHelpfulCount] = useState(4923);
@@ -24,12 +23,11 @@ const Review: React.FC = () => {
       const newReview = {
         rating,
         text: reviewText,
-        name: user?.name,
+        name: user?.name || "Anonymous",
         date: new Date().toLocaleString(),
       };
 
       setReviews([newReview, ...reviews]);
-      console.log("Review submitted:", newReview);
       setRating(0);
       setReviewText("");
     }
@@ -140,9 +138,9 @@ const styles = StyleSheet.create({
   },
   reviewContainer: {
     marginBottom: 15,
-    padding: 10,
+    padding: 15,
     backgroundColor: "#fff",
-    borderRadius: 5,
+    borderRadius: 10,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
@@ -151,6 +149,7 @@ const styles = StyleSheet.create({
   reviewText: {
     fontSize: 16,
     color: "#333",
+    marginBottom: 5,
   },
   userName: {
     fontSize: 14,
