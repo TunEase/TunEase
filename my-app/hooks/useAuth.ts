@@ -3,6 +3,7 @@ import { supabase } from "../services/supabaseClient";
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -11,17 +12,18 @@ export const useAuth = () => {
       if (error) {
         console.error("Error fetching session:", error);
       } else {
-        setUser(data.session?.user || null);
+        const sessionUser = data.session?.user || null;
+        setUser(sessionUser);
+        setRole(sessionUser?.user_metadata?.role || null); // Get role from metadata
       }
       setLoading(false);
     };
 
     fetchSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user || null);
+      setRole(session?.user?.user_metadata?.role || null); // Set role on auth state change
     });
 
     return () => {
@@ -32,7 +34,8 @@ export const useAuth = () => {
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setRole(null); // Clear role on logout
   };
 
-  return { user, loading, logout };
+  return { user, role, loading, logout }; // Expose role in return
 };
