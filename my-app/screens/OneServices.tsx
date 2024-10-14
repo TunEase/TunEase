@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
 
-const AllServices: React.FC<{ route: any; navigation: any }> = ({
+const OneServices: React.FC<{ route: any; navigation: any }> = ({
   route,
   navigation,
 }) => {
@@ -74,7 +74,7 @@ const AllServices: React.FC<{ route: any; navigation: any }> = ({
   );
 };
 
-export default AllServices;
+export default OneServices;
 
 const styles = StyleSheet.create({
   container: {

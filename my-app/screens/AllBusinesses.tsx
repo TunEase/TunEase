@@ -1,5 +1,4 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { createStackNavigator } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -10,19 +9,42 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ListRenderItem,
+  Modal,
 } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../services/supabaseClient";
+
+interface Business {
+  id: number;
+  name: string;
+  imageUrl: string;
+  rating: number;
+}
 
 interface AllBusinessesProps {
   navigation: NativeStackNavigationProp<any>;
 }
 
 const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
-  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const itemsPerPage = 6;
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedBusinessId, setSelectedBusinessId] = useState<number | null>(
+    null
+  );
+
+  const toggleModal = (businessId: number | null = null) => {
+    setSelectedBusinessId(businessId);
+    setModalVisible(!modalVisible);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
 
   useEffect(() => {
     const fetchBusinesses = async (page: number) => {
@@ -34,7 +56,6 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
       if (error) {
         console.error("Error fetching businesses:", error);
       } else {
-        console.log("Fetched businesses:", data);
         setBusinesses((prev) => [...prev, ...data]);
       }
       setLoading(false);
@@ -50,6 +71,27 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
     }
   };
 
+  const renderStars = (rating: number): JSX.Element => (
+    <View style={styles.ratingContainer}>
+      <FontAwesome name="star" size={16} color="#FFD700" />
+      <Text style={styles.ratingText}>{` ${rating.toFixed(1)}`}</Text>
+    </View>
+  );
+
+  const renderItem: ListRenderItem<Business> = ({ item }) => (
+    <TouchableOpacity
+      style={styles.businessCard}
+      onPress={() => toggleModal(item.id)}
+    >
+      <Image source={{ uri: item.imageUrl }} style={styles.businessImage} />
+      <Text style={styles.businessName}>{item.name}</Text>
+      {renderStars(item.rating || 0)}
+      <TouchableOpacity style={styles.favoriteIcon}>
+        <FontAwesome name="heart-o" size={24} color="#FF6347" />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
   if (loading && businesses.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -62,45 +104,52 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <Text style={styles.header}>All Businesses</Text>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={closeModal}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Choose an option:</Text>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  closeModal();
+                  if (selectedBusinessId !== null) {
+                    navigation.navigate("OneServices", {
+                      businessId: selectedBusinessId,
+                    });
+                  }
+                }}
+              >
+                <Text style={styles.modalButtonText}>Services</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  closeModal();
+                  navigation.navigate("BusinessProfile");
+                }}
+              >
+                <Text style={styles.modalButtonText}>Profile</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={closeModal}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
         {businesses.length === 0 ? (
           <Text style={styles.noBusinessesText}>No businesses found.</Text>
         ) : (
           <FlatList
             data={businesses}
-            renderItem={({ item }) => (
-              <View style={styles.businessCard}>
-                <Image
-                  source={{ uri: item.imageUrl }}
-                  style={styles.businessImage}
-                />
-                <Text style={styles.businessName}>{item.name}</Text>
-                <Text style={styles.businessDescription}>
-                  {item.description}
-                </Text>
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() =>
-                      navigation.navigate("AllServices", {
-                        businessId: item.id,
-                      })
-                    }
-                  >
-                    <Text style={styles.buttonText}>Services</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() =>
-                      navigation.navigate("BusinessProfile", {
-                        businessId: item.id,
-                      })
-                    }
-                  >
-                    <Text style={styles.buttonText}>Profile</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
+            renderItem={renderItem}
             keyExtractor={(item) => item.id.toString()}
             numColumns={2}
             columnWrapperStyle={styles.row}
@@ -157,6 +206,7 @@ const styles = StyleSheet.create({
     flex: 1,
     maxWidth: "45%",
     alignItems: "center",
+    position: "relative",
   },
   businessImage: {
     width: "100%",
@@ -165,36 +215,25 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   businessName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
     color: "#333",
     marginBottom: 5,
     textAlign: "center",
   },
-  businessDescription: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  buttonContainer: {
+  ratingContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
+    marginBottom: 10,
   },
-  button: {
-    backgroundColor: "#00796B",
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 5,
-    flex: 1,
-    marginHorizontal: 2,
+  ratingText: {
+    fontSize: 16,
+    color: "#333",
+    marginLeft: 5,
   },
-  buttonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    textAlign: "center",
-    fontSize: 12,
+  favoriteIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
   },
   noBusinessesText: {
     fontSize: 16,
@@ -212,5 +251,53 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#00796B",
     textAlign: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalButton: {
+    backgroundColor: "#00796B",
+    borderRadius: 10,
+    padding: 10,
+    marginVertical: 5,
+    width: 150,
+    alignItems: "center",
+  },
+  modalButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    backgroundColor: "#FF6347", // Red color for the cancel button
+  },
+  cancelButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

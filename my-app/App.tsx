@@ -29,6 +29,7 @@ import ProfileSettings from "./screens/ProfileSettings";
 import Notification from "./screens/Notification";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
+import OneServices from "./screens/OneServices";
 
 const Stack = createNativeStackNavigator();
 
@@ -98,6 +99,7 @@ export default function App() {
           <Stack.Screen name="UsernameSettings" component={UsernameSettings} />
           <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
           <Stack.Screen name="Notification" component={Notification} />
+          <Stack.Screen name="OneServices" component={OneServices} />
 
           <Stack.Screen
             name="EditProfileScreen"
