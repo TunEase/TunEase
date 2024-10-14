@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -46,33 +45,31 @@ const AllServices: React.FC<{ route: any; navigation: any }> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.header}>Services Offered</Text>
-        {services.length === 0 ? (
-          <Text style={styles.noServicesText}>No services found.</Text>
-        ) : (
-          <FlatList
-            data={services}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.serviceCard}
-                onPress={() =>
-                  navigation.navigate("ServiceDetails", {
-                    name: item.name,
-                    description: item.description,
-                  })
-                }
-              >
-                <Text style={styles.serviceName}>{item.name}</Text>
-                <Text style={styles.serviceDescription}>
-                  {item.description}
-                </Text>
-              </TouchableOpacity>
-            )}
-            keyExtractor={(item) => item.id.toString()}
-          />
+      <FlatList
+        contentContainerStyle={styles.contentContainer}
+        ListHeaderComponent={
+          <Text style={styles.header}>Services Offered</Text>
+        }
+        data={services}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.serviceCard}
+            onPress={() =>
+              navigation.navigate("ServiceDetails", {
+                name: item.name,
+                description: item.description,
+              })
+            }
+          >
+            <Text style={styles.serviceName}>{item.name}</Text>
+            <Text style={styles.serviceDescription}>{item.description}</Text>
+          </TouchableOpacity>
         )}
-      </ScrollView>
+        keyExtractor={(item) => item.id.toString()}
+        ListEmptyComponent={
+          <Text style={styles.noServicesText}>No services found.</Text>
+        }
+      />
     </SafeAreaView>
   );
 };

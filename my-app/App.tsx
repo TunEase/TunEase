@@ -18,10 +18,13 @@ import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
 import AllServices from "./screens/AllService";
 import Review from "./screens/Review";
+import ProfileScreen from "./screens/ProfileScreen";
+import UsernameSettings from "./screens/UsernameSettings";
+import ProfileSettings from "./screens/ProfileSettings";
+import Notification from "./screens/Notification";
 import ServiceDetails from "./screens/ServiceDetails";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
-import UserProfile from "./screens/UserProfile";
 
 const Stack = createNativeStackNavigator();
 
@@ -54,8 +57,12 @@ export default function App() {
       <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
            <Stack.Screen name="Feedback" component={Feedback} />
         <Stack.Screen name="FAQs" component={FAQs} />
-   <Stack.Screen name="Review" component={Review} />
-        <Stack.Screen name="UserProfile" component={UserProfile} />
+        <Stack.Screen name="Review" component={Review} />
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+        <Stack.Screen name="UsernameSettings" component={UsernameSettings} />
+        <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
+        <Stack.Screen name="Notification" component={Notification} />
+
         <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
         <Stack.Screen name="BusinessProfile" component={BusinessProfile} />
         <Stack.Screen name="UpdateQA" component={UpdateQA} />

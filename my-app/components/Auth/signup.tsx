@@ -81,7 +81,11 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
         />
       </TouchableOpacity>
       <Text style={styles.title}>Signup</Text>
+      <Text style={styles.subtitle}>
+        Please create your account to continue associated with us.
+      </Text>
       {error && <Text style={styles.errorText}>{error}</Text>}
+
       <TextInput
         placeholder="Username"
         style={styles.input}
@@ -131,6 +135,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
     color: "#333",
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#666",
   },
   image: {
     width: 100,
