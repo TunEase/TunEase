@@ -16,7 +16,7 @@ import BusinessProfile from "./screens/BusinessProfile";
 import EditProfileScreen from "./screens/EditProfileScreen";
 import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
-import AllServices from "./screens/OneServices";
+import AllServices from "./screens/AllService";
 import Review from "./screens/Review";
 import ProfileScreen from "./screens/ProfileScreen";
 import UsernameSettings from "./screens/UsernameSettings";
@@ -31,18 +31,18 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   const { user } = useAuth();
 
-  useEffect(() => {
-    const insertData = async () => {
-      try {
-        await insertSampleData();
-        console.log("Sample data inserted successfully.");
-      } catch (error) {
-        console.error("Error inserting sample data:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const insertData = async () => {
+  //     try {
+  //       await insertSampleData();
+  //       console.log("Sample data inserted successfully.");
+  //     } catch (error) {
+  //       console.error("Error inserting sample data:", error);
+  //     }
+  //   };
 
-    insertData();
-  }, []);
+  //   insertData();
+  // }, []);
 
   return (
     <NavigationContainer>
@@ -52,10 +52,10 @@ export default function App() {
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Categories" component={Categories} />
         <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
-        <Stack.Screen name="AllBusinesses" component={AllBusinesses} />
+       <Stack.Screen name="AllBusinesses" component={AllBusinesses} />
         <Stack.Screen name="AllServices" component={AllServices} />
-        <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
-        <Stack.Screen name="Feedback" component={Feedback} />
+      <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
+           <Stack.Screen name="Feedback" component={Feedback} />
         <Stack.Screen name="FAQs" component={FAQs} />
         <Stack.Screen name="Review" component={Review} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
@@ -66,11 +66,11 @@ export default function App() {
         <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
         <Stack.Screen name="BusinessProfile" component={BusinessProfile} />
         <Stack.Screen name="UpdateQA" component={UpdateQA} />
-        <Stack.Screen
+         <Stack.Screen
           name="AppointmentSettings"
           component={AppointmentSettings}
         />
-        <Stack.Screen name="Statistics" component={Statistics} />
+            <Stack.Screen name="Statistics" component={Statistics} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
