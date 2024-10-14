@@ -1,15 +1,17 @@
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
 import {
+  FlatList,
+  Image,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  Image,
-  FlatList,
+  View,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 interface AllBusinessesProps {
   navigation: NativeStackNavigationProp<any>;
@@ -18,90 +20,80 @@ interface AllBusinessesProps {
 const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-
-  const fetchBusinesses = async (page: number) => {
-    const { data, error } = await supabase
-      .from("business")
-      .select("*")
-      .range(page * 6, (page + 1) * 6 - 1);
-
-    if (error) {
-      console.error("Error fetching businesses:", error);
-    } else {
-      console.log("Fetched businesses:", data);
-      if (data.length > 0) {
-        setBusinesses((prev) => [...prev, ...data]);
-      } else {
-        setHasMore(false);
-      }
-    }
-    setLoading(false);
-  };
 
   useEffect(() => {
-    fetchBusinesses(page);
-  }, [page]);
+    const fetchBusinesses = async () => {
+      const { data, error } = await supabase.from("business").select("*");
+      if (error) {
+        console.error("Error fetching businesses:", error);
+      } else {
+        console.log("Fetched businesses:", data);
+        setBusinesses(data);
+      }
+      setLoading(false);
+    };
 
-  if (loading && page === 0) {
+    fetchBusinesses();
+  }, []);
+
+  if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.loadingText}>Loading...</Text>
       </SafeAreaView>
     );
   }
+  const Stack = createStackNavigator();
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={businesses}
-        renderItem={({ item }) => (
-          <View style={styles.businessCard}>
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={styles.businessImage}
-            />
-            <Text style={styles.businessName}>{item.name}</Text>
-            <Text style={styles.businessDescription}>{item.description}</Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
-                  navigation.navigate("AllServices", {
-                    businessId: item.id,
-                  })
-                }
-              >
-                <Text style={styles.buttonText}>Services</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => {
-                  console.log("Profile button pressed for:", item.name);
-                }}
-              >
-                <Text style={styles.buttonText}>Profile</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        ListHeaderComponent={<Text style={styles.header}>All Businesses</Text>}
-        ListEmptyComponent={
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        <Text style={styles.header}>All Businesses</Text>
+        {businesses.length === 0 ? (
           <Text style={styles.noBusinessesText}>No businesses found.</Text>
-        }
-        onEndReached={() => {
-          if (hasMore) {
-            setLoading(true);
-            setPage((prev) => prev + 1);
-          }
-        }}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={loading ? <Text>Loading more...</Text> : null}
-      />
+        ) : (
+          <FlatList
+            data={businesses}
+            renderItem={({ item }) => (
+              <View style={styles.businessCard}>
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={styles.businessImage}
+                />
+                <Text style={styles.businessName}>{item.name}</Text>
+                <Text style={styles.businessDescription}>
+                  {item.description}
+                </Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() =>
+                      navigation.navigate("AllServices", {
+                        businessId: item.id,
+                      })
+                    }
+                  >
+                    <Text style={styles.buttonText}>Services</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() =>
+                      navigation.navigate("BusinessProfile", {
+                        businessId: item.id,
+                      })
+                    }
+                  >
+                    <Text style={styles.buttonText}>Profile</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+          />
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -112,6 +104,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
+  },
+  contentContainer: {
+    padding: 20,
   },
   header: {
     fontSize: 28,
