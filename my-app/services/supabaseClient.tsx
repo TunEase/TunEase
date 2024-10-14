@@ -13,75 +13,57 @@ export const supabase = createClient(
   process.env.SUPABASE_API_KEY
 );
 
-const loginUser = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    console.error("Error logging in:", error.message);
-    return null;
-  }
-
-  console.log("User logged in:", data.user);
-  return data.user;
-};
-
-const signUp = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) {
-    console.log("error.message", error);
-    return;
-  }
-  console.log("sinup  rigth", data);
-  return data;
-};
-// signUp("jdididaoud404@gmail.com", "majid@");
-
+// Function to insert fake data
 export const insertFakeData = async () => {
   const userId = "3cea4008-5684-4d68-820a-abb0af05d024"; // Example user ID
 
+  // Generate businesses with realistic data
   const businesses = Array.from({ length: 5 }).map(() => ({
     name: faker.company.name(),
-    description: faker.company.buzzAdjective(),
-    address: faker.location.streetAddress(),
-    business_type: "PUBLIC",
+    description: faker.company.catchPhrase(),
+    address: faker.address.street(),
+    business_type: faker.helpers.arrayElement(['PUBLIC', 'PRIVATE']),
     manager_id: userId,
     phone: faker.phone.number(),
     email: faker.internet.email(),
+    website: faker.internet.url(),
+    established_year: faker.date.past({years: 20}).getFullYear(), // Year established
   }));
 
+  // Generate services with realistic data
   const services = Array.from({ length: 10 }).map(() => ({
     name: faker.commerce.productName(),
-    description: faker.lorem.sentence(),
-    price: parseFloat(faker.commerce.price()),
-    duration: faker.number.int({ min: 10, max: 60 }),
-    reordering: "CUSTOM",
+    description: faker.lorem.sentence(10),
+    price: parseFloat(faker.commerce.price()), // Price between $10 and $500
+    duration: faker.number.int({ min: 30, max: 120 }), // Duration in minutes
+    reordering: faker.helpers.arrayElement(['CUSTOM', 'STANDARD']),
     business_id: null, // To be assigned later
-    service_type: "PUBLIC",
+    service_type: faker.helpers.arrayElement(['PUBLIC', 'PRIVATE']),
   }));
 
+  // Generate appointments with realistic data
   const appointments = Array.from({ length: 10 }).map(() => ({
     service_id: null, // To be assigned later
     client_id: userId,
     date: faker.date.future().toISOString().split("T")[0],
     start_time: faker.date.future().toTimeString().split(" ")[0],
     end_time: faker.date.future().toTimeString().split(" ")[0],
-    status: "SCHEDULED",
+    status: faker.helpers.arrayElement(['SCHEDULED', 'COMPLETED', 'CANCELLED']),
   }));
 
+  // Generate complaints with realistic data
   const complaints = Array.from({ length: 5 }).map(() => ({
     complainant_id: userId,
-    description: faker.lorem.sentence(),
-    status: "PENDING",
+    description: faker.lorem.sentence(5),
+    status: faker.helpers.arrayElement(['PENDING', 'RESOLVED']),
   }));
 
+  // Generate reviews with realistic data
   const reviews = Array.from({ length: 5 }).map(() => ({
     client_id: userId,
     business_id: null, // To be assigned later
     rating: faker.number.int({ min: 1, max: 5 }),
-    comment: faker.lorem.sentence(),
+    comment: faker.lorem.sentence(8),
   }));
 
   // Start a transaction
@@ -109,13 +91,6 @@ export const insertFakeData = async () => {
     .insert(services);
   if (serviceError) {
     console.error("Error inserting services:", serviceError);
-    await supabase
-      .from("business")
-      .delete()
-      .in(
-        "id",
-        insertedBusinesses.map((b) => b.id)
-      ); // Clean up businesses
     return; // Exit if there's an error
   }
 
@@ -125,13 +100,6 @@ export const insertFakeData = async () => {
     .select("id");
   if (servicesError) {
     console.error("Error fetching services:", servicesError);
-    await supabase
-      .from("business")
-      .delete()
-      .in(
-        "id",
-        insertedBusinesses.map((b) => b.id)
-      ); // Clean up businesses
     return; // Exit if there's an error
   }
 
@@ -146,20 +114,6 @@ export const insertFakeData = async () => {
     .insert(appointments);
   if (appointmentError) {
     console.error("Error inserting appointments:", appointmentError);
-    await supabase
-      .from("services")
-      .delete()
-      .in(
-        "id",
-        services.map((s: any) => s.id)
-      ); // Clean up services
-    await supabase
-      .from("business")
-      .delete()
-      .in(
-        "id",
-        insertedBusinesses.map((b) => b.id)
-      ); // Clean up businesses
     return; // Exit if there's an error
   }
 
@@ -169,27 +123,6 @@ export const insertFakeData = async () => {
     .insert(complaints);
   if (complaintError) {
     console.error("Error inserting complaints:", complaintError);
-    await supabase
-      .from("appointments")
-      .delete()
-      .in(
-        "id",
-        appointments.map((a: any) => a.id)
-      ); // Clean up appointments
-    await supabase
-      .from("services")
-      .delete()
-      .in(
-        "id",
-        services.map((s: any) => s.id)
-      ); // Clean up services
-    await supabase
-      .from("business")
-      .delete()
-      .in(
-        "id",
-        insertedBusinesses.map((b) => b.id)
-      ); // Clean up businesses
     return; // Exit if there's an error
   }
 
@@ -203,43 +136,11 @@ export const insertFakeData = async () => {
   const { error: reviewError } = await supabase.from("reviews").insert(reviews);
   if (reviewError) {
     console.error("Error inserting reviews:", reviewError);
-    await supabase
-      .from("complaints")
-      .delete()
-      .in(
-        "id",
-        complaints.map((c: any) => c.id)
-      ); // Clean up complaints
-    await supabase
-      .from("appointments")
-      .delete()
-      .in(
-        "id",
-        appointments.map((a: any) => a.id)
-      ); // Clean up appointments
-    await supabase
-      .from("services")
-      .delete()
-      .in(
-        "id",
-        services.map((s: any) => s.id)
-      ); // Clean up services
-    await supabase
-      .from("business")
-      .delete()
-      .in(
-        "id",
-        insertedBusinesses.map((b) => b.id)
-      ); // Clean up businesses
     return; // Exit if there's an error
   }
 
   console.log("Sample data inserted successfully!");
- 
 };
 
 // Example usage
 insertFakeData();
-
-// Example usage
-// insertFakeData();

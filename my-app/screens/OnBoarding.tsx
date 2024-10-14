@@ -8,16 +8,17 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface OnboardingProps {
   navigation: any;
 }
 
-const OnboardingScreens: React.FC<OnboardingProps> = ({ navigation }) => {
+const Onboarding: React.FC<OnboardingProps> = ({ navigation }) => {
   // Sample data for each onboarding screen
   const onboardingData = [
     {
-      title: "Welcome to Local Service Finder!",
+      title: "Welcome to TUNEASE Local Service Finder!",
       description: "Find the best businesses and services in your area with ease.",
       icon: "search",
     },
@@ -47,12 +48,12 @@ const OnboardingScreens: React.FC<OnboardingProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.mainContainer}>
-      <View style={styles.screenContainer}>
+    <LinearGradient colors={['#004D40', '#00796B']} style={styles.mainContainer}>
+      <SafeAreaView style={styles.screenContainer}>
         <Icon
           name={onboardingData[currentIndex].icon}
           size={100}
-          color="#00796B"
+          color="#FFFFFF"
           style={styles.icon}
         />
         <Text style={styles.title}>{onboardingData[currentIndex].title}</Text>
@@ -64,19 +65,18 @@ const OnboardingScreens: React.FC<OnboardingProps> = ({ navigation }) => {
             {currentIndex < onboardingData.length - 1 ? "Next" : "Get Started"}
           </Text>
         </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
-export default OnboardingScreens;
+export default Onboarding;
 
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F2F2F2",
   },
   screenContainer: {
     justifyContent: "center",
@@ -88,31 +88,32 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#00796B",
+    color: "#FFFFFF",
     marginBottom: 20,
     textAlign: "center",
   },
   description: {
-    fontSize: 16,
-    color: "#555",
+    fontSize: 18,
+    color: "#E0F7FA",
     textAlign: "center",
     marginBottom: 40,
   },
   nextButton: {
     backgroundColor: "#00796B",
-    paddingHorizontal: 30,
+    paddingHorizontal: 40,
     paddingVertical: 15,
-    borderRadius: 8,
+    borderRadius: 10,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+    marginTop: 30,
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });

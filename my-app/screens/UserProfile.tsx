@@ -18,6 +18,7 @@ import { fetchUserProfile, updateUserProfile } from '../services/userProfileServ
 import { useAuth } from '../hooks/useAuth'; 
 import * as ImagePicker from 'expo-image-picker';
 
+
 interface UserProfile {
   id: string;
   name: string;
@@ -66,6 +67,7 @@ const UserProfile: React.FC = () => {
       setProfile({ ...profile, [field]: value });
     }
   };
+ 
 
   const handleImagePicker = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -96,6 +98,10 @@ const UserProfile: React.FC = () => {
   const removeImage = () => {
     setImage(null);
     setIsModalVisible(false);
+  };
+
+  const handleNavigateToOnboarding = () => {
+    navigation.navigate('OnBoarding1' as never);
   };
 
   const handleUpdateProfile = async () => {
@@ -182,6 +188,7 @@ const UserProfile: React.FC = () => {
           placeholder="Phone"
         />
         <Button title="Update Profile" onPress={handleUpdateProfile} />
+        <Button title="Convert to Business Profile" onPress={handleNavigateToOnboarding} />
       </ScrollView>
     </SafeAreaView>
   );

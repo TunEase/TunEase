@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
+import { AuthProvider } from "./components/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Home from "../my-app/screens/HomeScreen";
 import Login from "./screens/Auth/login";
@@ -15,13 +16,16 @@ import ServiceDetails from "./screens/ServiceDetails";
 import Feedback from "./screens/Feedback";
 import FAQs from "./screens/FAQs";
 import Review from "./screens/Review";
-import OnboardingScreens from "./screens/OnBoarding";
+import Onboarding from "./screens/OnBoarding";
 import { useAuth } from "./hooks/useAuth";
 import { insertFakeData } from "./services/supabaseClient";
+import { OnBoardingScreen1,OnBoardingScreen2 } from "./screens/OnBoarding2" ;
 
 const Stack = createNativeStackNavigator();
 
+
 export default function App() {
+
   const { user } = useAuth();
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<boolean | null>(null);
 
@@ -53,17 +57,14 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName={
-          isOnboardingCompleted ? (user ? "Home" : "Login") : "Onboarding"
-        }
-      >
-        {/* Onboarding */}
-        <Stack.Screen
-          name="Onboarding"
-          component={OnboardingScreens}
-          options={{ headerShown: false }}
-        />
+      <AuthProvider>
+     <Stack.Navigator initialRouteName="Onboarding">
+      {/* Onboarding */}
+      <Stack.Screen
+        name="Onboarding"
+        component={Onboarding}
+        options={{ headerShown: false }}
+      />
 
         {/* Authentication Screens */}
         <Stack.Screen name="Login" component={Login} />
@@ -77,11 +78,14 @@ export default function App() {
         <Stack.Screen name="AllServices" component={AllServices} />
         <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
         <Stack.Screen name="UserProfile" component={UserProfile} />
+        <Stack.Screen name="OnBoarding1" component={OnBoardingScreen1} />
+        <Stack.Screen name="OnBoarding2" component={OnBoardingScreen2} />
         <Stack.Screen name="Feedback" component={Feedback} />
         <Stack.Screen name="FAQs" component={FAQs} />
         <Stack.Screen name="Review" component={Review} />
       </Stack.Navigator>
       <StatusBar style="auto" />
+      </AuthProvider>
     </NavigationContainer>
   );
 }
