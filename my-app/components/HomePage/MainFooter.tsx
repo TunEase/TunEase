@@ -1,8 +1,7 @@
 import { FontAwesome5 } from "@expo/vector-icons";
+import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { StackNavigationProp } from '@react-navigation/stack';
-
 
 type RootStackParamList = {
   UserProfile: undefined; // Define your route here
@@ -16,28 +15,24 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ navigation }) => {
   return (
-   
     <View style={styles.footerContainer}>
-    
-       <TouchableOpacity >
-         <FontAwesome5 name="home"  size={24} color="" />
-         <Text style={styles.footerText}>Home</Text>
-       </TouchableOpacity>
-       <TouchableOpacity>
-         <FontAwesome5 name="heart" size={24} color="#007bff" />
-         <Text style={styles.footerText}>Favorites</Text>
-       </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('UserProfile')}>
-         <FontAwesome5 name="user" size={24} color="#007bff" />   
-         <Text style={styles.footerText}>Profile</Text>
-       </TouchableOpacity>
-       <TouchableOpacity onPress={() => navigation.navigate('Login')}>  
-         <FontAwesome5 name="sign-out-alt" size={24} color="#007bff" />
-         <Text style={styles.footerText}>Logout</Text>
-       </TouchableOpacity>
+      <TouchableOpacity>
+        <FontAwesome5 name="home" size={24} color="00796B" />
+        <Text style={styles.footerText}>Home</Text>
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <FontAwesome5 name="bell" size={24} color="#00796B" />
+        <Text style={styles.footerText}>Notification</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("UserProfile")}>
+        <FontAwesome5 name="user" size={24} color="#00796B" />
+        <Text style={styles.footerText}>Profile</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <FontAwesome5 name="sign-out-alt" size={24} color="#00796B" />
+        <Text style={styles.footerText}>Logout</Text>
+      </TouchableOpacity>
     </View>
-    
-  
   );
 };
 
