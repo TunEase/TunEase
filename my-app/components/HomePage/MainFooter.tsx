@@ -4,9 +4,9 @@ import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type RootStackParamList = {
-  UserProfile: undefined; // Define your route here
-  // ... other routes ...
-  Login: undefined;
+  UserProfile: undefined; // Existing route
+  ProfileScreen: undefined; // Add this line
+  Login: undefined; // Existing route
 };
 
 interface FooterProps {
@@ -47,9 +47,6 @@ const styles = StyleSheet.create({
     borderTopColor: "#B0BEC5",
     paddingVertical: 12,
     elevation: 4,
-  },
-  footerItem: {
-    alignItems: "center",
   },
   footerText: {
     fontSize: 12,

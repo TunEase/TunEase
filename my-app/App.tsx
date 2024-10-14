@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { useEffect } from "react";
-import Home from "../my-app/screens/HomePage";
+import Home from "./screens/HomePage";
 import { insertSampleData } from "../my-app/services/supabaseClient";
 import Login from "./components/Auth/login";
 import Signup from "./components/Auth/signup";
@@ -18,10 +18,13 @@ import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
 import AllServices from "./screens/OneServices";
 import Review from "./screens/Review";
+import ProfileScreen from "./screens/ProfileScreen";
+import UsernameSettings from "./screens/UsernameSettings";
+import ProfileSettings from "./screens/ProfileSettings";
+import Notification from "./screens/Notification";
 import ServiceDetails from "./screens/ServiceDetails";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
-import UserProfile from "./screens/UserProfile";
 
 const Stack = createNativeStackNavigator();
 
@@ -55,7 +58,11 @@ export default function App() {
         <Stack.Screen name="Feedback" component={Feedback} />
         <Stack.Screen name="FAQs" component={FAQs} />
         <Stack.Screen name="Review" component={Review} />
-        <Stack.Screen name="UserProfile" component={UserProfile} />
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+        <Stack.Screen name="UsernameSettings" component={UsernameSettings} />
+        <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
+        <Stack.Screen name="Notification" component={Notification} />
+
         <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
         <Stack.Screen name="BusinessProfile" component={BusinessProfile} />
         <Stack.Screen name="UpdateQA" component={UpdateQA} />
