@@ -20,18 +20,6 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const businessProfileData = {
-    name: "Chayma",
-    description:
-      "This Bank is a leading financial institution offering a wide range of personal and business banking services designed to help individuals and businesses achieve their financial goals.",
-    imageUrl:
-      "https://th.bing.com/th/id/OIP.Wwx0rF6dzvMPZSXome45_wHaHa?rs=1&pid=ImgDetMain",
-    phoneNumber: "92202106",
-    email: "chayma@gmail.com",
-    address: "le Kef",
-    businessType: "Bank:",
-  };
-
   return (
     <SafeAreaView style={styles.mainContainer}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
@@ -42,9 +30,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         <TouchableOpacity style={styles.CTA}>
           <View style={styles.ctaContent}>
             <Text style={styles.ctaText}>Book a New Appointment</Text>
-            <View style={styles.ctaButton}>
+            <TouchableOpacity style={styles.ctaButton}> 
               <Icon name="add" size={25} color="#FFFFFF" />
-            </View>
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
 
@@ -54,21 +42,18 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         >
           <View style={styles.ctaContent}>
             <Text style={styles.ctaText}>View All Businesses</Text>
-            <View style={styles.ctaButton}>
+            <TouchableOpacity style={styles.ctaButton}>
               <Icon name="business" size={25} color="#FFFFFF" />
-            </View>
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.CTA}
-          onPress={() => navigation.navigate("AllService")}
-        >
+        <TouchableOpacity  onPress={() => navigation.navigate("AllServices")} style={styles.CTA}>
           <View style={styles.ctaContent}>
             <Text style={styles.ctaText}>All Services</Text>
-            <View style={styles.ctaButton}>
+            {/* <TouchableOpacity style={styles.ctaButton}>
               <Icon name="tablet" size={25} color="#FFFFFF" />
-            </View>
+            </TouchableOpacity> */}
           </View>
         </TouchableOpacity>
 
@@ -110,8 +95,8 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     backgroundColor: "#00796B",
-    paddingHorizontal: 15,
-    paddingVertical: 9,
+    paddingHorizontal: 13,
+    paddingVertical: 5,
     borderRadius: 40,
     shadowColor: "#000",
     shadowOpacity: 0.1,

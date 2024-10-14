@@ -5,12 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="24d74845-655a-4b3b-95cd-0cff15056fe4" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/my-app/screens/AppointmentSettings.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my-app/screens/BusinessProfile.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my-app/screens/EditProfileScreen.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my-app/screens/Statistics.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my-app/screens/UpdateQ&amp;A.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/my-app/services/BusinessProfileService.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my-app/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/AppNavigation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/AppNavigation.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/components/Allbusiness/BusinessProfile.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/components/HomePage/MainFooter.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/components/HomePage/MainFooter.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my-app/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my-app/screens/AllBusinesses.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/screens/AllBusinesses.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my-app/screens/AllService.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/screens/AllService.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/my-app/screens/HomePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/screens/HomePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/screens/UserProfile.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/screens/UserProfile.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-app/services/userProfileService.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/my-app/services/userProfileService.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +51,8 @@
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "dali",
+    "git-widget-placeholder": "Merging dali",
+    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/dghar/OneDrive/Bureau/projet44/TunEase"
   }

@@ -1,16 +1,17 @@
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
 import {
+  FlatList,
+  Image,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  Image,
-  FlatList,
+  View,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 interface AllBusinessesProps {
   navigation: NativeStackNavigationProp<any>;
@@ -42,6 +43,7 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
       </SafeAreaView>
     );
   }
+  const Stack = createStackNavigator();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -75,9 +77,11 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.button}
-                    onPress={() => {
-                      console.log("Profile button pressed for:", item.name);
-                    }}
+                    onPress={() =>
+                      navigation.navigate("BusinessProfile", {
+                        businessId: item.id,
+                      })
+                    }
                   >
                     <Text style={styles.buttonText}>Profile</Text>
                   </TouchableOpacity>
