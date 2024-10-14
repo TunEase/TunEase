@@ -24,7 +24,7 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
         <FontAwesome5 name="bell" size={24} color="#00796B" />
         <Text style={styles.footerText}>Notification</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("UserProfile")}>
+      <TouchableOpacity onPress={() => navigation.navigate("ProfileScreen")}>
         <FontAwesome5 name="user" size={24} color="#00796B" />
         <Text style={styles.footerText}>Profile</Text>
       </TouchableOpacity>
