@@ -1,3 +1,5 @@
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -11,7 +13,11 @@ import {
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
 
-const AllBusinesses: React.FC<{ navigation: any }> = ({ navigation }) => {
+interface AllBusinessesProps {
+  navigation: NativeStackNavigationProp<any>;
+}
+
+const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,6 +43,7 @@ const AllBusinesses: React.FC<{ navigation: any }> = ({ navigation }) => {
       </SafeAreaView>
     );
   }
+  const Stack = createStackNavigator();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -71,7 +78,7 @@ const AllBusinesses: React.FC<{ navigation: any }> = ({ navigation }) => {
                   <TouchableOpacity
                     style={styles.button}
                     onPress={() =>
-                      navigation.navigate("", {
+                      navigation.navigate("BusinessProfile", {
                         businessId: item.id,
                       })
                     }

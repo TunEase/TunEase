@@ -1,22 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  Button, 
-  TextInput, 
-  Image, 
-  StyleSheet, 
-  ScrollView, 
-  SafeAreaView, 
+import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
+import React, { useEffect, useState } from "react";
+import {
   ActivityIndicator,
-  Alert, 
+  Alert,
+  Button,
+  Image,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
   TouchableOpacity,
-  Modal // Add Modal
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { fetchUserProfile, updateUserProfile } from '../services/userProfileService';
-import { useAuth } from '../hooks/useAuth'; 
-import * as ImagePicker from 'expo-image-picker';
+  View,
+} from "react-native";
+import { useAuth } from "../hooks/useAuth";
+import {
+  fetchUserProfile,
+  updateUserProfile,
+} from "../services/userProfileService";
 
 interface UserProfile {
   id: string;
@@ -29,18 +32,18 @@ interface UserProfile {
 
 const UserProfile: React.FC = () => {
   const navigation = useNavigation();
-  const { user, loading } = useAuth(); 
+  const { user, loading } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [image, setImage] = useState<string | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState(false); // Add state for modal
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const userId = user?.id; 
+  const userId = user?.id;
 
   useEffect(() => {
     const loadProfile = async () => {
       if (!userId) {
-        Alert.alert('Error', 'User ID is not available.');
+        Alert.alert("Error", "User ID is not available.");
         return;
       }
       try {
@@ -50,7 +53,7 @@ const UserProfile: React.FC = () => {
           setImage(userProfile.avatarUrl);
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error("Error fetching profile:", error);
       } finally {
         setIsLoading(false);
       }
@@ -100,23 +103,39 @@ const UserProfile: React.FC = () => {
 
   const handleUpdateProfile = async () => {
     if (profile) {
-      const updates: UserProfile = { ...profile }; // Use the entire profile object
+      const updates: UserProfile = { ...profile };
       try {
         const success = await updateUserProfile(userId, updates);
-        Alert.alert(success ? 'Profile updated successfully!' : 'Failed to update profile. Please try again.');
+        Alert.alert(
+          success
+            ? "Profile updated successfully!"
+            : "Failed to update profile. Please try again."
+        );
       } catch (error) {
-        Alert.alert('Error', 'An error occurred while updating the profile: ' + error.message);
+        Alert.alert(
+          "Error",
+          "An error occurred while updating the profile: " + error.message
+        );
       }
-      if (!profile.name || !profile.email || !validateEmail(profile.email) || (profile.phone && profile.phone.length < 8)) {
-        Alert.alert('Validation Error', 'Please ensure all fields are filled correctly.');
+      if (
+        !profile.name ||
+        !profile.email ||
+        !validateEmail(profile.email) ||
+        (profile.phone && profile.phone.length < 8)
+      ) {
+        Alert.alert(
+          "Validation Error",
+          "Please ensure all fields are filled correctly."
+        );
         return;
       }
     } else {
-      Alert.alert('Error', 'Profile data is missing.');
+      Alert.alert("Error", "Profile data is missing.");
     }
   };
 
-  const validateEmail = (email: string) => email.includes('@') && email.includes('.');
+  const validateEmail = (email: string) =>
+    email.includes("@") && email.includes(".");
 
   if (isLoading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -125,12 +144,21 @@ const UserProfile: React.FC = () => {
   return (
     <SafeAreaView style={styles.mainContainer}>
       <ScrollView contentContainerStyle={styles.container}>
-        <TouchableOpacity onPress={() => setIsModalVisible(true)} style={{alignSelf: 'center', marginBottom: 20, borderRadius: 8, borderWidth: 1, borderColor: '#ddd'}}>
-          <Image 
-            source={{ uri: image || "../../assets/camera2.jpg" }} 
-            style={styles.avatar} 
-          /> 
-        </TouchableOpacity> 
+        <TouchableOpacity
+          onPress={() => setIsModalVisible(true)}
+          style={{
+            alignSelf: "center",
+            marginBottom: 20,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: "#ddd",
+          }}
+        >
+          <Image
+            source={{ uri: image || "../../assets/camera2.jpg" }}
+            style={styles.avatar}
+          />
+        </TouchableOpacity>
 
         {/* Modal for choosing the image picker options */}
         <Modal
@@ -160,25 +188,25 @@ const UserProfile: React.FC = () => {
         <TextInput
           style={styles.input}
           value={profile?.name}
-          onChangeText={(text) => handleInputChange('name', text)}
+          onChangeText={(text) => handleInputChange("name", text)}
           placeholder="Name"
         />
-        <TextInput 
+        <TextInput
           style={styles.input}
           value={profile?.email}
-          onChangeText={(text) => handleInputChange('email', text)}
+          onChangeText={(text) => handleInputChange("email", text)}
           placeholder="Email"
         />
-        <TextInput 
+        <TextInput
           style={styles.input}
           value={profile?.role}
-          onChangeText={(text) => handleInputChange('role', text)}
+          onChangeText={(text) => handleInputChange("role", text)}
           placeholder="Role"
         />
-        <TextInput 
+        <TextInput
           style={styles.input}
           value={profile?.phone}
-          onChangeText={(text) => handleInputChange('phone', text)} 
+          onChangeText={(text) => handleInputChange("phone", text)}
           placeholder="Phone"
         />
         <Button title="Update Profile" onPress={handleUpdateProfile} />
@@ -191,7 +219,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   container: {
     alignItems: "center",
@@ -203,47 +231,47 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 20,
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     padding: 10,
-    width: '80%',
+    width: "80%",
     marginBottom: 20,
     borderRadius: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Darker background for better contrast
-},
-modalContent: {
-    width: '85%', // Slightly wider for a more spacious look
-    backgroundColor: '#ffffff',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)", // Darker background for better contrast
+  },
+  modalContent: {
+    width: "85%", // Slightly wider for a more spacious look
+    backgroundColor: "#ffffff",
     borderRadius: 15, // More rounded corners
     padding: 30, // Increased padding for better spacing
-    alignItems: 'center',
-    shadowColor: '#000', // Added shadow for depth
+    alignItems: "center",
+    shadowColor: "#000", // Added shadow for depth
     shadowOffset: {
-        width: 0,
-        height: 2,
+      width: 0,
+      height: 2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5, // For Android shadow
-},
-modalOption: {
+  },
+  modalOption: {
     padding: 15,
     fontSize: 18,
-    color: '#007BFF',
-    textAlign: 'center', // Centered text for better alignment
+    color: "#007BFF",
+    textAlign: "center", // Centered text for better alignment
     borderBottomWidth: 1, // Added bottom border for separation
-    borderBottomColor: '#ccc', // Light border color
-    width: '100%', // Full width for better touch targets
-},
+    borderBottomColor: "#ccc", // Light border color
+    width: "100%", // Full width for better touch targets
+  },
 });
 
 export default UserProfile;
