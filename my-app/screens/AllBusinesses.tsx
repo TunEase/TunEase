@@ -10,9 +10,6 @@ import {
   FlatList,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
-<<<<<<< HEAD
-const AllBusinesses: React.FC= ({ navigation }) => {
-=======
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 interface AllBusinessesProps {
@@ -20,7 +17,6 @@ interface AllBusinessesProps {
 }
 
 const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
->>>>>>> 3367f641be28694b480e4f1fa7b07671d6dec4f7
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
