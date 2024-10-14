@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import {
-  View,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
+  View,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
 
@@ -23,6 +23,7 @@ const ProfileSettings: React.FC<{ navigation: any }> = ({ navigation }) => {
     const updates: any = {};
     if (email) updates.email = email;
     if (password) updates.password = password;
+    // @ts-ignore
 
     const userId = supabase.auth.user()?.id;
 
