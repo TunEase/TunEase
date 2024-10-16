@@ -132,7 +132,13 @@ create table
     media_url text not null,
     created_at timestamp default now()
   );
-
+CREATE TABLE favorites (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+   user_profile_id uuid NOT NULL REFERENCES user_profile(id) ON DELETE CASCADE,
+    service_id uuid NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT now(),
+    UNIQUE (user_id, service_id) -- Ensure that a user can only favorite a service once
+);
 
 
 

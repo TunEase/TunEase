@@ -52,6 +52,7 @@ const ProfileScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       setImage(result.assets[0].uri);
     }
   };
+  
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
