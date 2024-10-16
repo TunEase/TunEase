@@ -14,11 +14,13 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ navigation }) => {
+  
   return (
     <View style={styles.footerContainer}>
       <TouchableOpacity>
         <FontAwesome5 name="home" size={24} color="00796B" />
         <Text style={styles.footerText}>Home</Text>
+
       </TouchableOpacity>
       <TouchableOpacity>
         <FontAwesome5 name="bell" size={24} color="#00796B" />
