@@ -29,8 +29,13 @@ import ProfileSettings from "./screens/ProfileSettings";
 import Notification from "./screens/Notification";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
+// import "./faker/index";
+
+
+
 
 const Stack = createNativeStackNavigator();
+
 
 
 export default function App() {
@@ -38,6 +43,8 @@ export default function App() {
   const { user } = useAuth();
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<boolean | null>(null);
 
+
+  
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       const value = await AsyncStorage.getItem("onboardingCompleted");
@@ -85,13 +92,13 @@ export default function App() {
         <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
        <Stack.Screen name="AllBusinesses" component={AllBusinesses} />
         <Stack.Screen name="AllServices" component={AllServices} />
-      
+        <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
         <Stack.Screen name="UserProfile" component={UserProfile} />
         <Stack.Screen name="OnBoarding1" component={OnBoardingScreen1} />
         <Stack.Screen name="OnBoarding2" component={OnBoardingScreen2} />
-  
-      <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
-           <Stack.Screen name="Feedback" component={Feedback} />
+        <Stack.Screen name="Feedback" component={Feedback} />
+      {/* <Stack.Screen name="ServiceDetails" component={ServiceDetails} /> */}
+           {/* <Stack.Screen name="Feedback" component={Feedback} /> */}
         <Stack.Screen name="FAQs" component={FAQs} />
         <Stack.Screen name="Review" component={Review} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />

@@ -43,7 +43,7 @@ const OnBoardingScreen2: React.FC = () => {
           Next, you can fill in details like your business name, address, and contact information.
         </Text>
       </View>
-      <Button title="Next" onPress={() => navigation.navigate('UserProfile' as never)} color="#c2bebe" />
+      <Button title="Next" onPress={() => navigation.navigate('BusinessProfile' as never)} color="#c2bebe" />
     </LinearGradient>
   );
 };
@@ -57,9 +57,9 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 250,
+    height: 150,
     borderRadius: 15,
-    marginBottom: 20,
+    marginBottom: 10,
     resizeMode: 'cover',
   },
   title: {
