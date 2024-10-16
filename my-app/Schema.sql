@@ -115,7 +115,18 @@ create table
     created_at timestamp default now()
   );
 
-
+create table
+  media (
+    id uuid primary key default uuid_generate_v4 (),
+    user_profile_id uuid references user_profile (id) on delete cascade,
+    business_id uuid references business (id) on delete cascade,
+    service_id uuid references services (id) on delete cascade,
+    complaint_id uuid references complaints (id) on delete cascade,
+    review_id uuid references reviews (id) on delete cascade,
+    media_type varchar(50) not null default 'image', -- Default to 'image'
+    media_url text not null,
+    created_at timestamp default now()
+  );
 
 
 

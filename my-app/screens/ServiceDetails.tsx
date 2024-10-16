@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -10,24 +10,56 @@ import {
   Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { supabase } from "../services/supabaseClient";
 import Feedback from "./Feedback";
 import Review from "./Review";
 import FAQs from "./FAQs";
+import { Service, Media, Review as ReviewType } from "../types/business";
 
 const { width } = Dimensions.get("window");
 
-const ServiceDetails: React.FC = () => {
+const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
+  const navigation = useNavigation();
+  const { serviceId } = route.params;
+  const [service, setService] = useState<Service | null>(null);
   const [activeTab, setActiveTab] = React.useState("About Me");
+
+  useEffect(() => {
+    const fetchServiceDetails = async () => {
+      console.log("Service ID:", serviceId); // Debugging line
+      if (!serviceId) {
+        console.error("Service ID is undefined");
+        return;
+      }
+      const { data, error } = await supabase
+        .from("services")
+        .select(
+          `
+          *,
+          media:media(*),
+          reviews:reviews(*, media:media(*), user_profile:user_profile(*))
+        `
+        )
+        .eq("id", serviceId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching service details:", error);
+      } else {
+        setService(data);
+      }
+    };
+
+    fetchServiceDetails();
+  }, [serviceId]);
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "About Me":
         return (
           <Text style={styles.tabContent}>
-            Contrary to popular belief, lorem ipsum is not simply random text.
-            It has roots in a piece of classical Latin literature from 45 BC,
-            making it over 2000 years old. Richard McClintock, a Latin professor
-            at Hampden-Sydney College in Virginia.
+            {service?.description || "No description available."}
           </Text>
         );
       case "Feedback":
@@ -41,22 +73,32 @@ const ServiceDetails: React.FC = () => {
     }
   };
 
+  if (!service) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Ionicons name="arrow-back" size={24} color="black" />
       </View>
       <Image
-        source={require("../assets/wzara.jpg")}
+        source={{
+          uri: service.media[Math.floor(Math.random() * service.media.length)]
+            .media_url,
+        }}
         style={styles.coverImage}
       />
       <View style={styles.profileContainer}>
-        <Text style={styles.serviceName}>Plumbing Services</Text>
-        <Text style={styles.serviceLocation}>
-          2464 Royal Ln. Mesa, New Jersey 45463
+        <Text style={styles.serviceName}>{service.name}</Text>
+        <Text style={styles.servicePrice}>{`$${service.price}/hr`}</Text>
+        <Text style={styles.serviceRating}>
+          {`⭐ ${service.reviews[0].rating} (${service.reviews.length} Reviews)`}
         </Text>
-        <Text style={styles.servicePrice}>$20/hr</Text>
-        <Text style={styles.serviceRating}>⭐ 4.9 (120 Reviews)</Text>
       </View>
       <View style={styles.tabContainer}>
         {["About Me", "Feedback", "Reviews", "FAQs"].map((tab) => (
@@ -80,7 +122,10 @@ const ServiceDetails: React.FC = () => {
         {renderTabContent()}
       </ScrollView>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.complaintButton}>
+        <TouchableOpacity
+          style={styles.complaintButton}
+          onPress={() => navigation.navigate("ComplaintsScreen")}
+        >
           <Text style={styles.buttonText}>Raise a Complaint</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bookButton}>
@@ -112,10 +157,6 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 24,
     fontWeight: "bold",
-  },
-  serviceLocation: {
-    fontSize: 14,
-    color: "#666",
   },
   servicePrice: {
     fontSize: 16,
