@@ -22,7 +22,15 @@ const EditProfileScreen: React.FC<{ route: any; navigation: any }> = ({
   const [establishedYear, setEstablishedYear] = useState<string>("");
 
   const handleSubmit = () => {
-    if (!businessName || !email || !phone || !address) {
+    if (
+      !businessName ||
+      !email ||
+      !phone ||
+      !address ||
+      !type ||
+      !website ||
+      !establishedYear
+    ) {
       Alert.alert("Please fill in all fields");
       return;
     }

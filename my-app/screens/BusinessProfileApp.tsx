@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Linking,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useAuthContext } from "../components/AuthContext";
@@ -23,12 +27,13 @@ type Business = {
 };
 
 const BusinessProfileApp: React.FC = () => {
+  const navigation = useNavigation();
   const { user } = useAuthContext();
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const animation = useRef(new Animated.Value(0)).current;
 
-  // Fetch the business data by ID
   useEffect(() => {
     const fetchBusinessData = async () => {
       try {
@@ -36,7 +41,6 @@ const BusinessProfileApp: React.FC = () => {
           setError("User is not logged in");
           return;
         }
-        console.log("user ", user);
         const { data, error } = await supabase
           .from("business")
           .select(
@@ -51,11 +55,16 @@ const BusinessProfileApp: React.FC = () => {
           )
           .eq("manager_id", user.id)
           .single();
-        console.log("data business ", data);
         if (error) {
           setError(error.message);
         } else {
           setBusiness(data);
+          // Start the animation when the business data is fetched
+          Animated.timing(animation, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }).start();
         }
       } catch (err) {
         setError(err.message);
@@ -65,10 +74,10 @@ const BusinessProfileApp: React.FC = () => {
     };
 
     fetchBusinessData();
-  }, []);
+  }, [user]);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#00796B" />;
+    return <ActivityIndicator size="large" color="#00796B" />; // Loading indicator color set to teal
   }
 
   if (error) {
@@ -90,35 +99,76 @@ const BusinessProfileApp: React.FC = () => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Business Profile</Text>
-      <View style={styles.card}>
+
+      <Animated.View style={[styles.card, { opacity: animation }]}>
         <Text style={styles.title}>{business.name}</Text>
+        <Text style={styles.description}>{business.description}</Text>
 
-        <Text style={styles.label}>Description</Text>
-        <Text style={styles.info}>{business.description}</Text>
+        <View style={styles.detailContainer}>
+          <Feather name="map-pin" size={24} color="#00796B" />
+          {/* Icon color set to teal */}
+          <View style={styles.detailTextContainer}>
+            <Text style={styles.label}>Address</Text>
+            <Text style={styles.info}>{business.address}</Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>Address</Text>
-        <Text style={styles.info}>{business.address}</Text>
+        <View style={styles.detailContainer}>
+          <Feather name="briefcase" size={24} color="#00796B" />
+          {/* Icon color set to teal */}
+          <View style={styles.detailTextContainer}>
+            <Text style={styles.label}>Type</Text>
+            <Text style={styles.info}>{business.business_type}</Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>Type</Text>
-        <Text style={styles.info}>{business.business_type}</Text>
+        <View style={styles.detailContainer}>
+          <Feather name="phone" size={24} color="#00796B" />
+          {/* Icon color set to teal */}
+          <View style={styles.detailTextContainer}>
+            <Text style={styles.label}>Phone</Text>
+            <Text style={styles.info}>{business.phone}</Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>Phone</Text>
-        <Text style={styles.info}>{business.phone}</Text>
+        <View style={styles.detailContainer}>
+          <Feather name="mail" size={24} color="#00796B" />
+          {/* Icon color set to teal */}
+          <View style={styles.detailTextContainer}>
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.info}>{business.email}</Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.info}>{business.email}</Text>
+        <View style={styles.detailContainer}>
+          <Feather name="globe" size={24} color="#00796B" />
+          {/* Icon color set to teal */}
+          <View style={styles.detailTextContainer}>
+            <Text style={styles.label}>Website</Text>
+            <Text
+              style={[styles.info, styles.link]}
+              onPress={() => Linking.openURL(business.website)}
+            >
+              {business.website}
+            </Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>Website</Text>
-        <Text
-          style={[styles.info, styles.link]}
-          onPress={() => Linking.openURL(business.website)}
+        <View style={styles.detailContainer}>
+          <Feather name="calendar" size={24} color="#00796B" />
+          {/* Icon color set to teal */}
+          <View style={styles.detailTextContainer}>
+            <Text style={styles.label}>Established Year</Text>
+            <Text style={styles.info}>{business.established_year}</Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={styles.settingsButton}
+          onPress={() => navigation.navigate("BusinessProfile" as never)}
         >
-          {business.website}
-        </Text>
-
-        <Text style={styles.label}>Established Year</Text>
-        <Text style={styles.info}>{business.established_year}</Text>
-      </View>
+          <Feather name="settings" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </Animated.View>
     </ScrollView>
   );
 };
@@ -129,46 +179,78 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#F2F2F2", // Light gray background
+    backgroundColor: "#F2F2F2", // Background color set to light gray
   },
   card: {
-    backgroundColor: "#FFF",
-    borderRadius: 10,
+    backgroundColor: "#FFFFFF", // White background for the card
+    borderRadius: 20,
     padding: 20,
-    marginVertical: 10,
+    marginVertical: 15,
+    borderWidth: 1,
+    borderColor: "#D1D1D1", // Changed to a lighter gray border for the card
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
   },
   header: {
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: "bold",
-    color: "#00796B", // Deep teal color for the header
+    color: "#00796B", // Header color set to teal
     textAlign: "center",
     marginBottom: 20,
   },
   title: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "bold",
-    color: "#00796B", // Deep teal for business name
+    color: "#00796B", // Title color set to teal
     marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    color: "#444444", // Dark gray for description
+    marginBottom: 15,
   },
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#00796B", // Teal color for labels
-    marginTop: 10,
+    color: "#222222", // Dark gray
+    marginTop: 5,
   },
   info: {
-    fontSize: 16,
-    color: "#333", // Darker color for text information
-    marginBottom: 10,
+    fontSize: 14,
+    color: "#444444", // Medium gray for info
   },
   link: {
-    color: "#00796B",
+    color: "#00796B", // Link color set to teal
     textDecorationLine: "underline",
+  },
+  detailContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+    padding: 15,
+    borderRadius: 15,
+    backgroundColor: "#E3F2FD", // Light blue background for detail containers
+    borderWidth: 1,
+    borderColor: "#BBDEFB", // Light blue border for details
+  },
+  detailTextContainer: {
+    marginLeft: 10,
+    flex: 1,
+  },
+  settingsButton: {
+    backgroundColor: "#00796B", // Button background set to teal
+    borderRadius: 50,
+    padding: 15,
+    alignSelf: "flex-end",
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   errorContainer: {
     flex: 1,
@@ -176,7 +258,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   errorText: {
-    color: "#D32F2F",
-    fontSize: 18,
+    color: "#D32F2F", // Red for error messages
+    fontSize: 20,
   },
 });
