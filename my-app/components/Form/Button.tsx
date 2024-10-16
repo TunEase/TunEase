@@ -1,23 +1,43 @@
-import { StyleSheet } from "react-native";
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet, GestureResponderEvent } from 'react-native';
 
-const ButtonStyles = StyleSheet.create({
-  primaryButton: {
-    backgroundColor: "#42A5F5", // Added background color for better visibility
-    borderRadius: 25,
-    paddingVertical: 10, // Added vertical padding for a better touch target
-    paddingHorizontal: 20, // Added horizontal padding for better text spacing
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 }, // Slight adjustment for shadow effect
-    shadowOpacity: 0.1, // Added shadow opacity for a softer look
-    shadowRadius: 3, // Added shadow radius for a subtle shadow
-    elevation: 2, // Added elevation for Android devices
+type ButtonProps = {
+  title: string;
+  onPress: (event: GestureResponderEvent) => void;
+  style?: object;
+  textStyle?: object;
+  disabled?: boolean;
+};
+
+const Button: React.FC<ButtonProps> = ({ title, onPress, style, textStyle, disabled = false }) => {
+  return (
+    <TouchableOpacity
+      style={[styles.button, style, disabled && styles.disabledButton]}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disabledButton: {
+    backgroundColor: '#A9A9A9',
   },
   buttonText: {
-    fontSize: 16, // Increased font size for better readability
-    color: "#FFFFFF",
-    fontWeight: "600", // Increased font weight for emphasis
-    textAlign: "center",
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
-export default ButtonStyles;
+export default Button;

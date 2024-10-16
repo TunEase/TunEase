@@ -75,14 +75,7 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
                   >
                     <Text style={styles.buttonText}>Services</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.button}
-                    onPress={() =>
-                      navigation.navigate("BusinessProfile", {
-                        businessId: item.id,
-                      })
-                    }
-                  >
+                  <TouchableOpacity style={styles.button}>
                     <Text style={styles.buttonText}>Profile</Text>
                   </TouchableOpacity>
                 </View>

@@ -1,4 +1,3 @@
-
 -- Rest of the tables remain the same
 -- ... (omitted for brevity)
 
