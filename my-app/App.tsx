@@ -31,7 +31,7 @@ import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import OneServices from "./screens/OneServices";
 import ComplaintsScreen from "./screens/ComplaintsScreen";
-import CompanyPage from "./screens/CompanyPage";
+import staticBusinessProfile from "./screens/staticBusinessProfile";
 
 const Stack = createNativeStackNavigator();
 
@@ -88,7 +88,10 @@ export default function App() {
           <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
           <Stack.Screen name="AllBusinesses" component={AllBusinesses} />
           <Stack.Screen name="AllServices" component={AllServices} />
-          <Stack.Screen name="CompanyPage" component={CompanyPage} />
+          <Stack.Screen
+            name="staticBusinessProfile"
+            component={staticBusinessProfile}
+          />
 
           <Stack.Screen name="UserProfile" component={UserProfile} />
           <Stack.Screen name="OnBoarding1" component={OnBoardingScreen1} />

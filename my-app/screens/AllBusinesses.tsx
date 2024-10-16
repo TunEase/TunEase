@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../services/supabaseClient";
-
 import { Business } from "../types/business";
 
 interface AllBusinessesProps {
@@ -77,19 +76,15 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
   );
 
   const renderItem: ListRenderItem<Business> = ({ item }) => {
-    // console.log("item", item.media);
+    const randomImageUrl =
+      item.media[Math.floor(Math.random() * item.media.length)].media_url;
+
     return (
       <TouchableOpacity
         style={styles.businessCard}
         onPress={() => toggleModal(item.id)}
       >
-        <Image
-          source={{
-            uri: item.media[Math.floor(Math.random() * item.media.length)]
-              .media_url,
-          }}
-          style={styles.businessImage}
-        />
+        <Image source={{ uri: randomImageUrl }} style={styles.businessImage} />
         <Text style={styles.businessName}>{item.name}</Text>
         {renderStars(item.reviews[0].rating || 0)}
         <TouchableOpacity style={styles.favoriteIcon}>
@@ -146,7 +141,29 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
                     style={styles.modalButton}
                     onPress={() => {
                       closeModal();
-                      navigation.navigate("CompanyPage");
+                      if (selectedBusinessId !== null) {
+                        const selectedBusiness = businesses.find(
+                          (b) => b.id === selectedBusinessId
+                        );
+                        const coverImageUrl =
+                          selectedBusiness?.media[
+                            Math.floor(
+                              Math.random() * selectedBusiness.media.length
+                            )
+                          ].media_url;
+                        const profileImageUrl =
+                          selectedBusiness?.media[
+                            Math.floor(
+                              Math.random() * selectedBusiness.media.length
+                            )
+                          ].media_url;
+                        const services = selectedBusiness?.services || [];
+                        navigation.navigate("staticBusinessProfile", {
+                          coverImageUrl,
+                          profileImageUrl,
+                          services,
+                        });
+                      }
                     }}
                   >
                     <Text style={styles.modalButtonText}>Profile</Text>
@@ -173,8 +190,6 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-export default AllBusinesses;
 
 const styles = StyleSheet.create({
   container: {
@@ -306,3 +321,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
+export default AllBusinesses;

@@ -27,7 +27,7 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
-      console.log("Service ID:", serviceId); // Debugging line
+      console.log("Service ID:", serviceId);
       if (!serviceId) {
         console.error("Service ID is undefined");
         return;

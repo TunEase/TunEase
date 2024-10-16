@@ -44,3 +44,20 @@ export interface Review {
   media: Media[];
   user_profile: User_profile;
 }
+
+export type RootStackParamList = {
+  staticBusinessProfile: {
+    coverImageUrl: string;
+    profileImageUrl: string;
+    services: {
+      id: string;
+      name: string;
+      description: string;
+      media: { media_url: string }[];
+    }[];
+    location?: { latitude: number; longitude: number };
+  };
+  ServiceDetails: {
+    serviceId: string;
+  };
+};
