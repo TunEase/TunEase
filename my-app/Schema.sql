@@ -4,19 +4,22 @@ CREATE TABLE user_profile (
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL DEFAULT 'CLIENT' CHECK (role IN ('ADMIN', 'CLIENT', 'BUSINESS_MANAGER')),
-    phone VARCHAR(20),
+    phone VARCHAR(255),
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
 );
+
 create table
   business (
     id uuid primary key default uuid_generate_v4 (),
     name varchar(255) not null,
     description text,
     address varchar(255) not null,
+    longitude double precision,
+    latitude double precision,
     business_type varchar(20) check (business_type in ('PUBLIC', 'PRIVATE')) not null,
     manager_id uuid references user_profile (id) on delete set null,
-    phone varchar(20),
+    phone varchar(255),
     email varchar(255),
     created_at timestamp default now(),
     updated_at timestamp default now()
@@ -115,7 +118,20 @@ create table
     created_at timestamp default now()
   );
 
+CREATE TYPE media_type_enum AS ENUM ('image', 'video', 'audio', 'document');
 
+create table
+  media (
+    id uuid primary key default uuid_generate_v4 (),
+    user_profile_id uuid references user_profile (id) on delete cascade,
+    business_id uuid references business (id) on delete cascade,
+    service_id uuid references services (id) on delete cascade,
+    complaint_id uuid references complaints (id) on delete cascade,
+    review_id uuid references reviews (id) on delete cascade,
+    media_type varchar(50) not null default 'image', -- Default to 'image'
+    media_url text not null,
+    created_at timestamp default now()
+  );
 
 
 
