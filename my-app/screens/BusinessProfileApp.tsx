@@ -58,6 +58,8 @@ const BusinessProfileApp: React.FC = () => {
         if (error) {
           setError(error.message);
         } else {
+          console.log("Business data:", data);
+
           setBusiness(data);
           // Start the animation when the business data is fetched
           Animated.timing(animation, {
