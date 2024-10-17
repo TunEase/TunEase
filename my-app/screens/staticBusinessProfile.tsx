@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -15,27 +15,19 @@ import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
 import { RootStackParamList } from "../types/business";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
 const { width, height } = Dimensions.get("window");
 
-type ProfileScreenRouteProp = RouteProp<
-  RootStackParamList,
-  "staticBusinessProfile"
->;
+type ProfileScreenRouteProp = RouteProp<RootStackParamList, "selectedBusiness">;
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
-  "staticBusinessProfile"
+  "selectedBusiness"
 >;
 
 const Profile = () => {
   const route = useRoute<ProfileScreenRouteProp>();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const {
-    coverImageUrl,
-    profileImageUrl,
-    services = [],
-    location,
-  } = route.params;
+  const { selectedBusiness } = route.params;
+  const { services, media } = selectedBusiness;
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -52,33 +44,46 @@ const Profile = () => {
           scrollValue = 0;
         }
       }
-    }, 3000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [services]);
+
+  if (!selectedBusiness) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
           <Image
-            source={{ uri: coverImageUrl }}
+            source={{
+              uri: media[
+                Math.floor(Math.random() * selectedBusiness.media.length)
+              ].media_url,
+            }}
             style={styles.backgroundImage}
           />
           <View style={styles.profileImageContainer}>
             <Image
-              source={{ uri: profileImageUrl }}
+              source={{
+                uri: media[
+                  Math.floor(Math.random() * selectedBusiness.media.length)
+                ].media_url,
+              }}
               style={styles.profileImage}
             />
           </View>
         </View>
 
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>Melissa Peters</Text>
-          <Text style={styles.userTitle}>Interior Designer</Text>
+          <Text style={styles.userName}>{selectedBusiness.name}</Text>
+          <Text style={styles.userTitle}>{selectedBusiness.description}</Text>
           <View style={styles.locationContainer}>
             <Feather name="map-pin" size={16} color="#00796B" />
-            <Text style={styles.locationText}>Lagos, Nigeria</Text>
+            <Text style={styles.locationText}>{selectedBusiness.phone}</Text>
+            <Text style={styles.locationText}>{selectedBusiness.email}</Text>
           </View>
         </View>
 
@@ -117,7 +122,13 @@ const Profile = () => {
                 >
                   {service.media.length > 0 && (
                     <Image
-                      source={{ uri: service.media[0].media_url }}
+                      source={{
+                        uri: service.media[
+                          Math.floor(
+                            Math.random() * selectedBusiness.media.length
+                          )
+                        ].media_url,
+                      }}
                       style={styles.serviceImage}
                     />
                   )}
@@ -133,32 +144,37 @@ const Profile = () => {
           )}
         </View>
 
-        {location && location.latitude && location.longitude ? (
+        {/* {selectedBusiness.latitude && selectedBusiness.longitude ? (
           <MapView
             style={styles.map}
             initialRegion={{
-              latitude: location.latitude,
-              longitude: location.longitude,
+              latitude: selectedBusiness.latitude,
+              longitude: selectedBusiness.longitude,
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             }}
           >
-            <Marker coordinate={location} />
+            <Marker
+              coordinate={{
+                latitude: selectedBusiness.latitude,
+                longitude: selectedBusiness.longitude,
+              }}
+            />
           </MapView>
         ) : (
-          <View
-            style={[
-              styles.map,
-              {
-                backgroundColor: "#eee",
-                justifyContent: "center",
-                alignItems: "center",
-              },
-            ]}
-          >
-            <Text>Map not available</Text>
-          </View>
-        )}
+        )} */}
+        <View
+          style={[
+            styles.map,
+            {
+              backgroundColor: "#eee",
+              justifyContent: "center",
+              alignItems: "center",
+            },
+          ]}
+        >
+          <Text>Map not available</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -83,9 +83,6 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="arrow-back" size={24} color="black" />
-      </View>
       <Image
         source={{
           uri: service.media[Math.floor(Math.random() * service.media.length)]

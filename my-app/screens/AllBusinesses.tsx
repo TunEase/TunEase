@@ -159,9 +159,7 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
                           ].media_url;
                         const services = selectedBusiness?.services || [];
                         navigation.navigate("staticBusinessProfile", {
-                          coverImageUrl,
-                          profileImageUrl,
-                          services,
+                          selectedBusiness: selectedBusiness,
                         });
                       }
                     }}

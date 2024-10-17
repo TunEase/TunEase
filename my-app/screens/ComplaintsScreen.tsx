@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
 
 const ComplaintsScreen: React.FC = () => {
@@ -44,47 +45,55 @@ const ComplaintsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Report an Issue</Text>
-      <View style={styles.complaintsContainer}>
-        {Object.keys(categories).map((category, index) => (
-          <View key={index} style={styles.categoryContainer}>
-            <TouchableOpacity
-              onPress={() => toggleCategory(category)}
-              style={styles.categoryButton}
-            >
-              <Text style={styles.categoryText}>
-                {category} {selectedCategory === category ? "▲" : "▼"}
-              </Text>
-            </TouchableOpacity>
-            {selectedCategory === category &&
-              categories[category].map((sub, subIndex) => (
-                <TouchableOpacity
-                  key={subIndex}
-                  onPress={() => setSelectedSubCategory(sub)}
-                  style={styles.subCategoryButton}
-                >
-                  <Text style={styles.subCategoryText}>{sub}</Text>
-                </TouchableOpacity>
-              ))}
-          </View>
-        ))}
-      </View>
-      {selectedSubCategory && (
-        <Text style={styles.selectedText}>
-          Selected: {selectedCategory} - {selectedSubCategory}
-        </Text>
-      )}
-      <TouchableOpacity
-        style={[
-          styles.submitButton,
-          !(selectedCategory && selectedSubCategory) &&
-            styles.submitButtonDisabled,
-        ]}
-        onPress={handleSubmit}
-        disabled={!(selectedCategory && selectedSubCategory)}
-      >
-        <Text style={styles.submitButtonText}>Submit</Text>
-      </TouchableOpacity>
+      <ScrollView>
+        <Text style={styles.header}>Report an Issue</Text>
+        <View style={styles.complaintsContainer}>
+          {Object.keys(categories).map((category, index) => (
+            <View key={index} style={styles.categoryContainer}>
+              <TouchableOpacity
+                onPress={() => toggleCategory(category)}
+                style={styles.categoryButton}
+              >
+                <View style={styles.categoryTextContainer}>
+                  <Text style={styles.categoryText}>{category}</Text>
+                  <Text style={styles.arrow}>
+                    {selectedCategory === category ? "▲" : "▼"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              {selectedCategory === category &&
+                categories[category].map((sub, subIndex) => (
+                  <TouchableOpacity
+                    key={subIndex}
+                    onPress={() => setSelectedSubCategory(sub)}
+                    style={[
+                      styles.subCategoryButton,
+                      selectedSubCategory === sub && styles.subCategorySelected,
+                    ]}
+                  >
+                    <Text style={styles.subCategoryText}>{sub}</Text>
+                  </TouchableOpacity>
+                ))}
+            </View>
+          ))}
+        </View>
+        {selectedSubCategory && (
+          <Text style={styles.selectedText}>
+            Selected: {selectedCategory} - {selectedSubCategory}
+          </Text>
+        )}
+        <TouchableOpacity
+          style={[
+            styles.submitButton,
+            !(selectedCategory && selectedSubCategory) &&
+              styles.submitButtonDisabled,
+          ]}
+          onPress={handleSubmit}
+          disabled={!(selectedCategory && selectedSubCategory)}
+        >
+          <Text style={styles.submitButtonText}>Submit</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -93,11 +102,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f4f4f8",
+    backgroundColor: "#F9FAFB",
   },
   header: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#333",
     marginBottom: 20,
     textAlign: "center",
@@ -106,10 +115,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   categoryContainer: {
-    marginBottom: 10,
+    marginBottom: 15,
     borderRadius: 8,
     overflow: "hidden",
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -117,45 +126,57 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   categoryButton: {
-    paddingVertical: 15,
+    paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: "#007bff",
+    backgroundColor: "#00796B",
+  },
+  categoryTextContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   categoryText: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  arrow: {
+    fontSize: 18,
+    color: "#FFFFFF",
   },
   subCategoryButton: {
     paddingVertical: 10,
-    paddingHorizontal: 30,
-    backgroundColor: "#e9ecef",
+    paddingHorizontal: 25,
+    backgroundColor: "#F0F4F8",
+  },
+  subCategorySelected: {
+    backgroundColor: "#C8E6C9",
   },
   subCategoryText: {
     fontSize: 16,
-    color: "#333",
+    color: "#555",
   },
   selectedText: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#007bff",
+    fontWeight: "600",
+    color: "#00796B",
     marginTop: 20,
     textAlign: "center",
   },
   submitButton: {
     marginTop: 20,
-    paddingVertical: 15,
-    backgroundColor: "#28a745",
+    paddingVertical: 12,
+    backgroundColor: "#00796B",
     borderRadius: 8,
     alignItems: "center",
   },
   submitButtonDisabled: {
-    backgroundColor: "#c3e6cb",
+    backgroundColor: "#B0BEC5",
   },
   submitButtonText: {
     fontSize: 18,
-    color: "#fff",
-    fontWeight: "bold",
+    color: "#FFFFFF",
+    fontWeight: "600",
   },
 });
 

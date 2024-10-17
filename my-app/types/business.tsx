@@ -1,8 +1,13 @@
 export interface Business {
   id: string;
   name: string;
-  imageUrl: string;
+  phone: string;
+  email: string;
+  description: string;
+  address: string;
   rating: number;
+  latitude?: number;
+  longitude?: number;
   media: Media[];
   services: Service[];
   reviews: Review[];
@@ -46,18 +51,7 @@ export interface Review {
 }
 
 export type RootStackParamList = {
-  staticBusinessProfile: {
-    coverImageUrl: string;
-    profileImageUrl: string;
-    services: {
-      id: string;
-      name: string;
-      description: string;
-      media: { media_url: string }[];
-    }[];
-    location?: { latitude: number; longitude: number };
-  };
-  ServiceDetails: {
-    serviceId: string;
+  selectedBusiness: {
+    selectedBusiness: Business;
   };
 };
