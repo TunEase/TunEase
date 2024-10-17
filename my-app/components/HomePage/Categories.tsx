@@ -23,7 +23,6 @@ const Categories: React.FC<CategoriesProps> = ({ navigation }) => {
           { title: "Bousta", icon: "envelope", color: "#6A5ACD" },
           { title: "Markez", icon: "building", color: "#20B2AA" },
           { title: "kbadha", icon: "landmark", color: "#AF6F65" },
-          { title: "See All", icon: "plus", color: "#FF6F61" },
         ].map(({ icon, title, color }, idx) => (
           <TouchableOpacity
             key={idx}

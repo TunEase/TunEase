@@ -1,37 +1,43 @@
-import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
-import { AuthProvider } from "./components/AuthContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import Home from "../my-app/screens/HomeScreen";
-import Login from "./screens/Auth/login";
-import Signup from "./screens/Auth/signup";
+import { AuthProvider } from "./components/AuthContext";
 import Categories from "./components/HomePage/Categories";
 import CategoryDetails from "./components/HomePage/CategoryDetails";
+import { useAuth } from "./hooks/useAuth";
 import AllBusinesses from "./screens/AllBusinesses";
-import UserProfile from "./screens/UserProfile";
-import ServiceDetails from "./screens/ServiceDetails";
+import AllServices from "./screens/AllService";
 import AppointmentSettings from "./screens/AppointmentSettings";
+import Login from "./screens/Auth/login";
+import Signup from "./screens/Auth/signup";
 import BusinessProfile from "./screens/BusinessProfile";
+import BusinessProfileApp from "./screens/BusinessProfileApp";
 import EditProfileScreen from "./screens/EditProfileScreen";
 import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
-import AllServices from "./screens/AllService";
+
 import Review from "./screens/Review";
 import Onboarding from "./screens/OnBoarding";
-import { useAuth } from "./hooks/useAuth";
+
 // import { insertFakeData } from "./services/supabaseClient";
 import { OnBoardingScreen1, OnBoardingScreen2 } from "./screens/OnBoarding2";
 import ProfileScreen from "./screens/ProfileScreen";
 import UsernameSettings from "./screens/UsernameSettings";
 import ProfileSettings from "./screens/ProfileSettings";
 import Notification from "./screens/Notification";
+
+import ServiceDetails from "./screens/ServiceDetails";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import OneServices from "./screens/OneServices";
 import ComplaintsScreen from "./screens/ComplaintsScreen";
 import staticBusinessProfile from "./screens/staticBusinessProfile";
+// import "./faker/index";
+import AddService from "./screens/AddService";
+import UserProfile from "./screens/UserProfile";
 
 const Stack = createNativeStackNavigator();
 
@@ -108,14 +114,23 @@ export default function App() {
           <Stack.Screen name="ComplaintsScreen" component={ComplaintsScreen} />
           <Stack.Screen name="BusinessProfile" component={BusinessProfile} />
           <Stack.Screen name="UpdateQA" component={UpdateQA} />
+          <Stack.Screen name="AddService" component={AddService} />
+          <Stack.Screen
+            name="BusinessProfileApp"
+            component={BusinessProfileApp}
+          />
+          <Stack.Screen
+            name="EditProfileScreen"
+            component={EditProfileScreen}
+          />
           <Stack.Screen
             name="AppointmentSettings"
             component={AppointmentSettings}
           />
           <Stack.Screen name="Statistics" component={Statistics} />
         </Stack.Navigator>
-        <StatusBar style="auto" />
       </AuthProvider>
+      <StatusBar style="auto" />
     </NavigationContainer>
   );
 }

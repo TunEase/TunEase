@@ -20,6 +20,8 @@ type RootStackParamList = {
   AppointmentSettings: { businessId: string };
   EditProfileScreen: { businessId: number };
   Statistics: { businessId: string };
+  AddService: { businessId: number }; // Add this line
+
 };
 
 const BusinessProfile: React.FC<BusinessProfileProps> = ({ businessId }) => {
@@ -55,7 +57,7 @@ const BusinessProfile: React.FC<BusinessProfileProps> = ({ businessId }) => {
   const toggleServices = async () => {
     setServicesEnabled((prev) => !prev);
     await supabase
-      .from("BUSINESS_MANAGER")
+      .from("business")
       .update({ services_enabled: !servicesEnabled })
       .eq("id", businessId);
   };
@@ -71,34 +73,7 @@ const BusinessProfile: React.FC<BusinessProfileProps> = ({ businessId }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.header}>Business Profile</Text>
-
-        {/* Business Details */}
-        <View style={styles.section}>
-          <Text style={styles.sectionHeader}>Business Name:</Text>
-          <Text style={styles.text}>
-            {business?.businessName || "Baladia" || "Bousta"}
-          </Text>
-
-          <Text style={styles.sectionHeader}>Email:</Text>
-          <Text style={styles.text}>
-            {business?.email || "Baladia@gmail.com" || "Bousta@gmail.com"}
-          </Text>
-
-          <Text style={styles.sectionHeader}>Phone:</Text>
-          <Text style={styles.text}>
-            {business?.phone || 21453785 || "78965421"}
-          </Text>
-
-          <Text style={styles.sectionHeader}>Address:</Text>
-          <Text style={styles.text}>{business?.address || "Ariana"}</Text>
-
-          <Text style={styles.sectionHeader}>Description:</Text>
-          <Text style={styles.text}>
-            {business?.description ||
-              "The role of municipalities in Tunisia has expanded since the 2014 constitution, which emphasizes decentralization and local governance."}
-          </Text>
-        </View>
+        <Text style={styles.header}>Setting Profile</Text>
 
         {/* Services Toggle */}
         <View style={styles.section}>
@@ -135,9 +110,16 @@ const BusinessProfile: React.FC<BusinessProfileProps> = ({ businessId }) => {
         {/* View Services */}
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Services</Text>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>View Services</Text>
-          </TouchableOpacity>
+          <TouchableOpacity
+           style={styles.button}
+           onPress={() =>
+           navigation.navigate("AddService", {
+           businessId: businessId,
+    })
+  }
+>
+  <Text style={styles.buttonText}>View Services</Text>
+</TouchableOpacity>
         </View>
 
         {/* Statistics */}

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import {
-  View,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
+  View,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
 
@@ -18,7 +18,7 @@ const UsernameSettings: React.FC<{ navigation: any }> = ({ navigation }) => {
       setError("Username cannot be empty");
       return;
     }
-
+    // @ts-ignore
     const userId = supabase.auth.user()?.id;
 
     const { error: updateError } = await supabase
