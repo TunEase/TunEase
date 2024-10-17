@@ -20,6 +20,8 @@ type RootStackParamList = {
   AppointmentSettings: { businessId: string };
   EditProfileScreen: { businessId: number };
   Statistics: { businessId: string };
+  AddService: { businessId: number }; // Add this line
+
 };
 
 const BusinessProfile: React.FC<BusinessProfileProps> = ({ businessId }) => {
@@ -55,7 +57,7 @@ const BusinessProfile: React.FC<BusinessProfileProps> = ({ businessId }) => {
   const toggleServices = async () => {
     setServicesEnabled((prev) => !prev);
     await supabase
-      .from("BUSINESS_MANAGER")
+      .from("business")
       .update({ services_enabled: !servicesEnabled })
       .eq("id", businessId);
   };
@@ -108,9 +110,16 @@ const BusinessProfile: React.FC<BusinessProfileProps> = ({ businessId }) => {
         {/* View Services */}
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Services</Text>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>View Services</Text>
-          </TouchableOpacity>
+          <TouchableOpacity
+           style={styles.button}
+           onPress={() =>
+           navigation.navigate("AddService", {
+           businessId: businessId,
+    })
+  }
+>
+  <Text style={styles.buttonText}>View Services</Text>
+</TouchableOpacity>
         </View>
 
         {/* Statistics */}

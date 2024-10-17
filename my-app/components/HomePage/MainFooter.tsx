@@ -22,6 +22,7 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
       <TouchableOpacity>
         <FontAwesome5 name="home" size={24} color="#00796B" />
         <Text style={styles.footerText}>Home</Text>
+
       </TouchableOpacity>
       <TouchableOpacity>
         <FontAwesome5 name="bell" size={26} color="#00796B" />

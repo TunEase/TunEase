@@ -10,7 +10,7 @@ CREATE TABLE user_profile (
 );
 
 create table
-  business (
+   business (
     id uuid primary key default uuid_generate_v4 (),
     name varchar(255) not null,
     description text,
@@ -24,6 +24,7 @@ create table
     created_at timestamp default now(),
     updated_at timestamp default now()
   );
+
 
 create table
   services (
