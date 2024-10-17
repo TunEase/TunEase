@@ -3,7 +3,11 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, FlatList
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Ensure this package is installed
 import { supabase } from "../services/supabaseClient";
 
-const AddService: React.FC = () => {
+const AddService: React.FC<{ route: any; navigation: any }> = ({
+  route,
+  navigation,
+}) => {
+  const { id } = route.params;
   const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [newService, setNewService] = useState({ name: '', description: '', imageUrl: '', price: '' });
@@ -14,14 +18,14 @@ const AddService: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [currentServiceId, setCurrentServiceId] = useState<string | null>(null);
 
-  const fetchServices = async (id: string) => {
+  const fetchServices = async () => {
     const { data, error } = await supabase
       .from("services")
       .select(`
         *,
         media:media(service_id, media_url)
       `)
-      .eq("id", id);
+      .eq("business_id", id);
 
     if (error) {
       console.error("Error fetching services:", error.message);
@@ -46,9 +50,10 @@ const AddService: React.FC = () => {
       }
       setShowForm(false);
       setNewService({ name: '', description: '', imageUrl: '', price: '' });
-      fetchServices('your-service-id'); // Replace with the actual service ID
+      fetchServices(); // Use the last added service ID
     }
   };
+
 
   const toggleInputs = (id: string) => {
     setCurrentServiceId(id);
@@ -67,10 +72,9 @@ const AddService: React.FC = () => {
   };
 
   useEffect(() => {
-    if (services.length > 0) {
-      const serviceId = services[0].id; // Use the first service's ID or adjust as needed
-      fetchServices(serviceId);
-    }
+
+      fetchServices();
+    
   }, []);
 
   return (
