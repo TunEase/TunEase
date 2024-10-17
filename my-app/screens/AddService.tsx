@@ -1,59 +1,41 @@
 import React, { useEffect, useState } from "react";
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  FlatList,
-  Image,
-  ActivityIndicator,
-  TextInput,
-  Button,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, FlatList, TextInput, Button, Alert, Modal } from "react-native";
+import Icon from 'react-native-vector-icons/MaterialIcons'; // Ensure this package is installed
 import { supabase } from "../services/supabaseClient";
 
-const AddService: React.FC<{ route: any }> = ({ route }) => {
-  const { businessId } = route.params;
+const AddService: React.FC = () => {
+  const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
-  const [visibleCount, setVisibleCount] = useState(6);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState<boolean>(false);
   const [newService, setNewService] = useState({ name: '', description: '', imageUrl: '', price: '' });
-
-  useEffect(() => {
-    fetchServices();
-  }, [businessId]);
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [showServices, setShowServices] = useState<boolean>(false);
+  const [newServices, setNewServices] = useState<Record<string, { name: string; description: string; price: number; duration: string; reordering: string; service_type: string }>>({});
+  const [showInputs, setShowInputs] = useState<Record<string, boolean>>({});
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [currentServiceId, setCurrentServiceId] = useState<string | null>(null);
 
   const fetchServices = async () => {
-
-    
     const { data, error } = await supabase
       .from("services")
-      .select("*")
+      .select(`
+        *,
+        media:media(id, media_url)
+      `)
       .eq("business_id", "083fa7f5-3cfb-4896-98d8-8bf4a8365f68");
 
     if (error) {
       console.error("Error fetching services:", error.message);
-      setError("Failed to load services. Please try again later.");
     } else {
-      setServices(data || []);
+      console.log("services", data);
+      setServices(data);
     }
-    setLoading(false);
   };
 
   const addService = async () => {
-    if (!businessId) {
-      Alert.alert("Error", "Invalid business ID");
-      return;
-    }
-
     const { data, error } = await supabase
       .from("services")
-      .insert([{ ...newService, business_id: businessId }]);
+      .insert([...selectedServices, { ...newService, business_id: "083fa7f5-3cfb-4896-98d8-8bf4a8365f68" }]);
+    setSelectedServices([...selectedServices, data]);
 
     if (error) {
       Alert.alert("Error adding service:", error.message);
@@ -64,104 +46,158 @@ const AddService: React.FC<{ route: any }> = ({ route }) => {
       }
       setShowForm(false);
       setNewService({ name: '', description: '', imageUrl: '', price: '' });
+      fetchServices();
     }
   };
 
-  const loadMoreServices = async () => {
-    if (visibleCount < services.length) {
-      setLoadingMore(true);
-      setVisibleCount((prevCount) => prevCount + 6);
-      setLoadingMore(false);
-    }
+  const toggleInputs = (id: string) => {
+    setCurrentServiceId(id);
+    setModalVisible(true);
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color="#00796B" />
-      </SafeAreaView>
-    );
-  }
+  const handleDelete = (id: string) => {
+    // Implement the logic to delete a service
+    console.log("Deleting service with id:", id);
+  };
 
-  if (error) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
-      </SafeAreaView>
-    );
-  }
+  const handleModalSubmit = () => {
+    // Implement the logic to handle form submission
+    console.log("Submitting form for service id:", currentServiceId);
+    setModalVisible(false);
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Services</Text>
-      {services.length === 0 ? (
-        <Text style={styles.noServicesText}>No services found.</Text>
-      ) : (
-        <FlatList
-          data={services.slice(0, visibleCount)}
-          renderItem={({ item }) => (
-            <View style={styles.serviceCard}>
-              <Image
-                source={{ uri: item.imageUrl }}
-                style={styles.serviceImage}
-              />
-              <Text style={styles.serviceName}>{item.name}</Text>
-              <Text style={styles.serviceDescription}>
-                {item.description}
-              </Text>
-              <Text style={styles.servicePrice}>Price: ${item.price}</Text>
+      <FlatList
+        data={services}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Image source={{ uri: item.media[0].media_url }} style={styles.coverImage} />
+            <View style={styles.cardContent}>
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.description}>{item.description}</Text>
+              <Text style={styles.price}>Rp.{item.price}k</Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => toggleInputs(item.id)}
+                >
+                  <Text style={styles.addButtonText}>+</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.trashButton}
+                  onPress={() => handleDelete(item.id)}
+                >
+                  <Icon name="delete" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
             </View>
-          )}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-        />
-      )}
-      {visibleCount < services.length && (
-        <TouchableOpacity style={styles.loadMoreButton} onPress={loadMoreServices}>
-          {loadingMore ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.loadMoreText}>Load More</Text>
-          )}
-        </TouchableOpacity>
-      )}
-      {showForm ? (
-        <View style={styles.form}>
+          </View>
+        )}
+        keyExtractor={(item) => item.id.toString()}
+      />
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Edit Service</Text>
           <TextInput
+            style={styles.input}
             placeholder="Name"
-            value={newService.name}
-            onChangeText={(text) => setNewService({ ...newService, name: text })}
-            style={styles.input}
+            value={currentServiceId ? newServices[currentServiceId]?.name || '' : ''}
+            onChangeText={(text) => {
+              if (currentServiceId) {
+                setNewServices(prev => ({
+                  ...prev,
+                  [currentServiceId]: { ...prev[currentServiceId], name: text }
+                }));
+              }
+            }}
           />
           <TextInput
+            style={styles.input}
             placeholder="Description"
-            value={newService.description}
-            onChangeText={(text) => setNewService({ ...newService, description: text })}
-            style={styles.input}
+            value={currentServiceId ? newServices[currentServiceId]?.description || '' : ''}
+            onChangeText={(text) => {
+              if (currentServiceId) {
+                setNewServices(prev => ({
+                  ...prev,
+                  [currentServiceId]: { ...prev[currentServiceId], description: text }
+                }));
+              }
+            }}
           />
           <TextInput
-            placeholder="Image URL"
-            value={newService.imageUrl}
-            onChangeText={(text) => setNewService({ ...newService, imageUrl: text })}
             style={styles.input}
-          />
-          <TextInput
             placeholder="Price"
-            value={newService.price}
-            onChangeText={(text) => setNewService({ ...newService, price: text })}
-            style={styles.input}
+            value={currentServiceId ? String(newServices[currentServiceId]?.price || '') : ''}
+            onChangeText={(text) => {
+              if (currentServiceId) {
+                setNewServices(prev => ({
+                  ...prev,
+                  [currentServiceId]: { 
+                    ...prev[currentServiceId], 
+                    price: parseFloat(text) // Convert string to number
+                  }
+                }));
+              }
+            }}
             keyboardType="numeric"
           />
-          <Button title="Add Service" onPress={addService} />
-          <Button title="Cancel" onPress={() => setShowForm(false)} color="red" />
+          <TextInput
+            style={styles.input}
+            placeholder="Duration"
+            value={currentServiceId ? newServices[currentServiceId]?.duration || '' : ''}
+            onChangeText={(text) => {
+              if (currentServiceId) {
+                setNewServices(prev => ({
+                  ...prev,
+                  [currentServiceId]: { ...prev[currentServiceId], duration: text }
+                }));
+              }
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Reordering"
+            value={currentServiceId ? newServices[currentServiceId]?.reordering || '' : ''}
+            onChangeText={(text) => {
+              if (currentServiceId) {
+                setNewServices(prev => ({
+                  ...prev,
+                  [currentServiceId]: { ...prev[currentServiceId], reordering: text }
+                }));
+              }
+            }}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Service Type"
+            value={currentServiceId ? newServices[currentServiceId]?.service_type || '' : ''}
+            onChangeText={(text) => {
+              if (currentServiceId) {
+                setNewServices(prev => ({
+                  ...prev,
+                  [currentServiceId]: { ...prev[currentServiceId], service_type: text }
+                }));
+              }
+            }}
+          />
+          <Button title="Submit" onPress={handleModalSubmit} />
+          <Button title="Cancel" onPress={() => setModalVisible(false)} />
         </View>
-      ) : (
-        <Button title="Add New Service" onPress={() => setShowForm(true)} />
-      )}
+      </Modal>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -169,138 +205,93 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F2F2",
     padding: 10,
   },
-  header: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#00796B",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  noServicesText: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    marginTop: 20,
-  },
-  serviceCard: {
+  card: {
     backgroundColor: "#FFFFFF",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    marginHorizontal: 5,
+    borderRadius: 20,
+    marginVertical: 10,
+    overflow: 'hidden',
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
-    flex: 1,
-    maxWidth: "45%",
   },
-  serviceImage: {
-    width: "100%",
-    height: 120,
-    borderRadius: 10,
-    marginBottom: 10,
+  coverImage: {
+    width: '100%',
+    height: 150,
+    resizeMode: 'cover',
   },
-  serviceName: {
+  cardContent: {
+    padding: 20,
+  },
+  name: {
     fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: "bold",
     marginBottom: 5,
   },
-  serviceDescription: {
-    fontSize: 12,
+  description: {
+    fontSize: 14,
     color: "#666",
     marginBottom: 10,
   },
-  servicePrice: {
-    fontSize: 14,
+  price: {
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#00796B",
-  },
-  row: {
-    justifyContent: "space-between",
-  },
-  loadMoreButton: {
-    backgroundColor: "#00796B",
-    padding: 10,
-    borderRadius: 5,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  loadMoreText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-  form: {
-    marginTop: 20,
-  },
-  input: {
-    backgroundColor: "white",
-    padding: 10,
-    borderRadius: 5,
     marginBottom: 10,
   },
-  addButton: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: '#00796B',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-  formOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  form: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-  },
-  formButtons: {
+  buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 10,
   },
-  submitButton: {
-    backgroundColor: '#00796B',
+  addButton: {
+    backgroundColor: "#00796B",
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addButtonText: {
+    color: "#FFFFFF",
+    fontSize: 24,
+  },
+  trashButton: {
+    backgroundColor: "#D32F2F",
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  input: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: "#ccc",
     padding: 10,
+    marginBottom: 10,
     borderRadius: 5,
-    flex: 1,
-    marginRight: 5,
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  cancelButton: {
-    backgroundColor: '#FF5252',
-    padding: 10,
-    borderRadius: 5,
-    flex: 1,
-    marginLeft: 5,
-  },
-  cancelButtonText: {
-    color: '#FFFFFF',
-    textAlign: 'center',
-    fontWeight: 'bold',
   },
 });
 

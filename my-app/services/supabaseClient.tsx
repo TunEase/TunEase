@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import Constants from "expo-constants";
 import { faker } from "@faker-js/faker";
 
+
 const expoConfig = Constants.expoConfig;
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_API_KEY) {
@@ -143,4 +144,4 @@ export const insertFakeData = async () => {
 };
 
 // Example usage
-insertFakeData();
+// insertFakeData();
