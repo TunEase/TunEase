@@ -14,14 +14,14 @@ const AddService: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [currentServiceId, setCurrentServiceId] = useState<string | null>(null);
 
-  const fetchServices = async () => {
+  const fetchServices = async (id: string) => {
     const { data, error } = await supabase
       .from("services")
       .select(`
         *,
-        media:media(id, media_url)
+        media:media(service_id, media_url)
       `)
-      .eq("business_id", "083fa7f5-3cfb-4896-98d8-8bf4a8365f68");
+      .eq("id", id);
 
     if (error) {
       console.error("Error fetching services:", error.message);
@@ -34,7 +34,7 @@ const AddService: React.FC = () => {
   const addService = async () => {
     const { data, error } = await supabase
       .from("services")
-      .insert([...selectedServices, { ...newService, business_id: "083fa7f5-3cfb-4896-98d8-8bf4a8365f68" }]);
+      .insert([...selectedServices, { ...newService, id:"id" }]);
     setSelectedServices([...selectedServices, data]);
 
     if (error) {
@@ -46,7 +46,7 @@ const AddService: React.FC = () => {
       }
       setShowForm(false);
       setNewService({ name: '', description: '', imageUrl: '', price: '' });
-      fetchServices();
+      fetchServices('your-service-id'); // Replace with the actual service ID
     }
   };
 
@@ -67,7 +67,10 @@ const AddService: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchServices();
+    if (services.length > 0) {
+      const serviceId = services[0].id; // Use the first service's ID or adjust as needed
+      fetchServices(serviceId);
+    }
   }, []);
 
   return (

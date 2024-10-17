@@ -1,22 +1,30 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface ProfileSettingsProps {
   route: any;
   navigation: any;
 }
 
-const ProfileSettings: React.FC<ProfileSettingsProps> = ({ route, navigation }) => {
+const ProfileSettings: React.FC<ProfileSettingsProps> = ({
+  route,
+  navigation,
+}) => {
   const { userInfo } = route.params;
 
   const [name, setName] = useState(userInfo.name);
   const [email, setEmail] = useState(userInfo.email);
   const [phone, setPhone] = useState(userInfo.phone);
-  
 
   const handleSave = () => {
     // Call API to save updated profile information
-    console.log("Updated user info:", { name, email, phone});
+    console.log("Updated user info:", { name, email, phone });
 
     // Navigate back after saving
     navigation.goBack();
@@ -49,8 +57,6 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ route, navigation }) 
         placeholder="Phone"
         keyboardType="phone-pad"
       />
-
- 
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>Save Changes</Text>

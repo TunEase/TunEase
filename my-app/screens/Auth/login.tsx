@@ -1,13 +1,13 @@
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useState } from "react";
 import {
-  View,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Image,
+  View,
 } from "react-native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { supabase } from "../../services/supabaseClient";
 
 type LoginProps = {
@@ -30,6 +30,15 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
     } else {
       console.log("User logged in:", data.user);
       navigation.navigate("Home");
+    }
+    if (data.user) {
+      const { data: businessData, error: businessError } = await supabase
+        .from("businesses")
+        .select("*")
+        .eq("manager_id", data.user.id)
+        .single();
+    } else {
+      setError("User not found");
     }
   };
 

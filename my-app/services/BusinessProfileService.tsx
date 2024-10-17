@@ -1,49 +1,58 @@
-import { supabase } from "./supabaseClient";
+import React, { useEffect, useState } from "react";
+import { Text } from "react-native";
+import BusinessProfileApp from "../screens/BusinessProfileApp";
+import { supabase } from "../services/supabaseClient";
 
-export interface BusinessProfile {
-  id?: string;
-  name: string;
-  email: string;
-  password: string;
-  role?: string;
-  phone?: string;
-  avatarUrl?: string;
+interface BusinessProfileContainerProps {
+  navigation: any;
 }
+const BusinessProfileContainer: React.FC<BusinessProfileContainerProps> = ({
+  navigation,
+}) => {
+  const [businessProfile, setBusinessProfile] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-export const fetchBusinessProfile = async (
-  businessId: string
-): Promise<BusinessProfile | null> => {
-  const { data, error } = await supabase
-    .from("business_profile")
-    .select("*")
-    .eq("id", businessId)
-    .single();
+  useEffect(() => {
+    const fetchBusinessProfile = async () => {
+      const { data, error } = await supabase
+        .from("business")
+        .select("*")
+        .eq("id", "business_id")
+        .single();
 
-  if (error) {
-    console.error("Error fetching business profile:", error);
-    return null;
+      if (error) {
+        console.error("Error fetching business profile:", error);
+      } else {
+        setBusinessProfile(data);
+      }
+      setLoading(false);
+    };
+
+    fetchBusinessProfile();
+  }, []);
+
+  if (loading) {
+    return <Text>Loading...</Text>;
   }
-  if (!data) {
-    console.warn("No business profile found for businessId:", businessId);
-    return null;
+
+  if (!businessProfile) {
+    return <Text>No business profile found.</Text>;
   }
 
-  return data as BusinessProfile;
+  return (
+    <BusinessProfileApp
+      name={businessProfile.name}
+      description={businessProfile.description}
+      navigation={navigation}
+      contact={{
+        id: businessProfile.id,
+        email: businessProfile.email,
+        phone: businessProfile.phone,
+        address: businessProfile.address,
+      }}
+      imageUrl={businessProfile.imageUrl}
+    />
+  );
 };
 
-export const updateBusinessProfile = async (
-  businessId: string,
-  updates: Partial<BusinessProfile>
-): Promise<boolean> => {
-  const { error } = await supabase
-    .from("business_profile")
-    .update(updates)
-    .eq("id", businessId);
-
-  if (error) {
-    console.error("Error updating business profile:", error);
-    return false;
-  }
-
-  return true;
-};
+export default BusinessProfileContainer;

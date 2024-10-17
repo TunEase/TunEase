@@ -17,9 +17,20 @@ const EditProfileScreen: React.FC<{ route: any; navigation: any }> = ({
   const [phone, setPhone] = useState<string>("");
   const [address, setAddress] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [type, setType] = useState<string>("");
+  const [website, setWebsite] = useState<string>("");
+  const [establishedYear, setEstablishedYear] = useState<string>("");
 
   const handleSubmit = () => {
-    if (!businessName || !email || !phone || !address) {
+    if (
+      !businessName ||
+      !email ||
+      !phone ||
+      !address ||
+      !type ||
+      !website ||
+      !establishedYear
+    ) {
       Alert.alert("Please fill in all fields");
       return;
     }
@@ -48,20 +59,12 @@ const EditProfileScreen: React.FC<{ route: any; navigation: any }> = ({
         onChangeText={setBusinessName}
       />
       <TextInput
-        style={styles.input}
-        placeholder="Email"
+        style={[styles.input, styles.textArea]}
+        placeholder="Description"
         placeholderTextColor="#666"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Phone Number"
-        placeholderTextColor="#666"
-        keyboardType="phone-pad"
-        value={phone}
-        onChangeText={setPhone}
+        multiline
+        value={description}
+        onChangeText={setDescription}
       />
       <TextInput
         style={styles.input}
@@ -71,12 +74,43 @@ const EditProfileScreen: React.FC<{ route: any; navigation: any }> = ({
         onChangeText={setAddress}
       />
       <TextInput
-        style={[styles.input, styles.textArea]}
-        placeholder="Description"
+        style={styles.input}
+        placeholder="Type"
         placeholderTextColor="#666"
-        multiline
-        value={description}
-        onChangeText={setDescription}
+        value={type}
+        onChangeText={setType}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Phone"
+        placeholderTextColor="#666"
+        keyboardType="phone-pad"
+        value={phone}
+        onChangeText={setPhone}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        placeholderTextColor="#666"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Website"
+        placeholderTextColor="#666"
+        keyboardType="phone-pad"
+        value={website}
+        onChangeText={setWebsite}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Established Year"
+        placeholderTextColor="#666"
+        keyboardType="phone-pad"
+        value={establishedYear}
+        onChangeText={setEstablishedYear}
       />
 
       <TouchableOpacity style={styles.ctaButton} onPress={handleSubmit}>
