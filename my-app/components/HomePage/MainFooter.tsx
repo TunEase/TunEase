@@ -5,8 +5,9 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 
 type RootStackParamList = {
-  UserProfile: undefined; // Existing route
-  Login: undefined; // Existing route
+  UserProfile: undefined;
+  BusinessProfileApp: undefined;
+  Login: undefined;
 };
 
 interface FooterProps {
@@ -14,8 +15,20 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ navigation }) => {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
+
+  const handleProfilePress = () => {
+    if (!user) {
+      setModalVisible(true);
+    } else {
+      if (role === "user") {
+        navigation.navigate("UserProfile");
+      } else if (role === "business") {
+        navigation.navigate("BusinessProfileApp");
+      }
+    }
+  };
 
   return (
     <View style={styles.footerContainer}>
@@ -27,15 +40,7 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
         <FontAwesome5 name="bell" size={26} color="#00796B" />
         <Text style={styles.footerText}>Notification</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => {
-          if (!user) {
-            setModalVisible(true); // Show modal if user is not logged in
-          } else {
-            navigation.navigate("UserProfile");
-          }
-        }}
-      >
+      <TouchableOpacity onPress={handleProfilePress}>
         <FontAwesome5 name="user" size={24} color="#00796B" />
         <Text style={styles.footerText}>Profile</Text>
       </TouchableOpacity>
@@ -86,15 +91,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    backgroundColor: "#FAFAFA", // Lighter background for modern feel
+    backgroundColor: "#FAFAFA",
     borderTopWidth: 1,
     borderTopColor: "#B0BEC5",
     paddingVertical: 15,
-    elevation: 5, // Subtle elevation to lift the footer off the screen slightly
+    elevation: 5,
   },
   footerText: {
-    fontSize: 14, // Slightly larger font for readability
-    color: "#004D40", // Softer dark color to match the icon color
+    fontSize: 14,
+    color: "#004D40",
     marginTop: 5,
   },
   modalOverlay: {
