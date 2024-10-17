@@ -24,14 +24,14 @@ const OptionItem: React.FC<OptionItemProps> = ({
   </TouchableOpacity>
 );
 
-const ProfileOptions: React.FC<{ navigation: any }> = ({ navigation }) => {
+const ProfileOptions: React.FC<{ navigation: any; userInfo: any }> = ({ navigation, userInfo }) => {
   return (
     <View style={styles.container}>
       <OptionItem
         icon={<User color="#8A2BE2" size={24} />}
-        title="Username"
-        subtitle="@cooper_bessie"
-        onPress={() => navigation.navigate("UsernameSettings")}
+        title={userInfo.name || "User"}
+        subtitle={`@${userInfo.email} | ${userInfo.phone}`}
+        onPress={() => navigation.navigate("ProfileSettings", { userInfo })}
       />
       <OptionItem
         icon={<Bell color="#00CED1" size={24} />}

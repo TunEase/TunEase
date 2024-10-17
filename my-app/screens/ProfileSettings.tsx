@@ -6,65 +6,60 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { supabase } from "../services/supabaseClient";
 
-const ProfileSettings: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+interface ProfileSettingsProps {
+  route: any;
+  navigation: any;
+}
 
-  const handleUpdateProfile = async () => {
-    if (!email && !password) {
-      setError("Please provide at least one field to update.");
-      return;
-    }
+const ProfileSettings: React.FC<ProfileSettingsProps> = ({
+  route,
+  navigation,
+}) => {
+  const { userInfo } = route.params;
 
-    const updates: any = {};
-    if (email) updates.email = email;
-    if (password) updates.password = password;
-    // @ts-ignore
+  const [name, setName] = useState(userInfo.name);
+  const [email, setEmail] = useState(userInfo.email);
+  const [phone, setPhone] = useState(userInfo.phone);
 
-    const userId = supabase.auth.user()?.id;
+  const handleSave = () => {
+    // Call API to save updated profile information
+    console.log("Updated user info:", { name, email, phone });
 
-    const { error: updateError } = await supabase
-      .from("user_profile")
-      .update(updates)
-      .eq("id", userId);
-
-    if (updateError) {
-      setError(updateError.message);
-    } else {
-      setSuccessMessage("Profile updated successfully!");
-      setError(null);
-    }
+    // Navigate back after saving
+    navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile Settings</Text>
-      {error && <Text style={styles.errorText}>{error}</Text>}
-      {successMessage && (
-        <Text style={styles.successText}>{successMessage}</Text>
-      )}
+      <Text style={styles.label}>Full Name</Text>
       <TextInput
-        placeholder="New Email"
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+        placeholder="Full Name"
+      />
+
+      <Text style={styles.label}>Email</Text>
+      <TextInput
         style={styles.input}
         value={email}
         onChangeText={setEmail}
+        placeholder="Email"
+        keyboardType="email-address"
       />
+
+      <Text style={styles.label}>Phone</Text>
       <TextInput
-        placeholder="New Password"
-        secureTextEntry
         style={styles.input}
-        value={password}
-        onChangeText={setPassword}
+        value={phone}
+        onChangeText={setPhone}
+        placeholder="Phone"
+        keyboardType="phone-pad"
       />
-      <TouchableOpacity onPress={handleUpdateProfile} style={styles.button}>
-        <Text style={styles.buttonText}>Update</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Text style={styles.linkText}>Back</Text>
+
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+        <Text style={styles.saveButtonText}>Save Changes</Text>
       </TouchableOpacity>
     </View>
   );
@@ -73,40 +68,34 @@ const ProfileSettings: React.FC<{ navigation: any }> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    padding: 16,
+    padding: 20,
   },
-  title: {
-    fontSize: 24,
+  label: {
+    fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 8,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 16,
+    borderRadius: 5,
   },
-  button: {
-    backgroundColor: "#007bff",
-    padding: 10,
-    borderRadius: 5,
+  // roleText: {
+  //   fontSize: 16,
+  //   color: "#555",
+  //   marginBottom: 16,
+  // },
+  saveButton: {
+    backgroundColor: "#32CD32",
+    paddingVertical: 12,
     alignItems: "center",
+    borderRadius: 5,
   },
-  buttonText: {
+  saveButtonText: {
     color: "#fff",
-    fontWeight: "bold",
-  },
-  errorText: {
-    color: "red",
-  },
-  successText: {
-    color: "green",
-  },
-  linkText: {
-    marginTop: 10,
-    color: "#007bff",
+    fontSize: 18,
   },
 });
 

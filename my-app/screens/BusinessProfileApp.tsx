@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
+  Image,
   Linking,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 import { useAuthContext } from "../components/AuthContext";
 import { supabase } from "../services/supabaseClient";
 
@@ -24,6 +26,7 @@ type Business = {
   email: string;
   website: string;
   established_year: number;
+  media: { id: string; media_url: string }[];
 };
 
 const BusinessProfileApp: React.FC = () => {
@@ -41,27 +44,25 @@ const BusinessProfileApp: React.FC = () => {
           setError("User is not logged in");
           return;
         }
-        const { data, error } = await supabase
+        const { data, error } = (await supabase
           .from("business")
           .select(
             `*,
           services(*),
-          media(*),
+          media(*), 
           reviews(
             *,
             user_profile(*)
-          )
-        `
+          )`
           )
           .eq("manager_id", user.id)
-          .single();
+          .single()) as { data: Business | null; error: any };
+
         if (error) {
           setError(error.message);
         } else {
           console.log("Business data:", data);
-
           setBusiness(data);
-          // Start the animation when the business data is fetched
           Animated.timing(animation, {
             toValue: 1,
             duration: 500,
@@ -79,7 +80,7 @@ const BusinessProfileApp: React.FC = () => {
   }, [user]);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#00796B" />; // Loading indicator color set to teal
+    return <ActivityIndicator size="large" color="#00796B" />;
   }
 
   if (error) {
@@ -100,15 +101,25 @@ const BusinessProfileApp: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Business Profile</Text>
+      <View style={styles.profileHeader}>
+        <Image
+          source={{ uri: business.media[0]?.media_url || "default-image-url" }}
+          style={styles.profileImage}
+        />
+        <Text style={styles.header}>{business.name}</Text>
+        <Text style={styles.subheader}>{business.business_type}</Text>
+      </View>
+      <TouchableOpacity style={styles.availableButton}>
+        <Icon name="mail" size={20} color="#FFFFFF" style={styles.buttonIcon} />
+        <Text style={styles.availableText}>See All Services</Text>
+      </TouchableOpacity>
 
       <Animated.View style={[styles.card, { opacity: animation }]}>
-        <Text style={styles.title}>{business.name}</Text>
+        <Text style={styles.title}>Business Profile</Text>
         <Text style={styles.description}>{business.description}</Text>
 
         <View style={styles.detailContainer}>
-          <Feather name="map-pin" size={24} color="#00796B" />
-          {/* Icon color set to teal */}
+          <Feather name="map-pin" size={24} color="#FFF" />
           <View style={styles.detailTextContainer}>
             <Text style={styles.label}>Address</Text>
             <Text style={styles.info}>{business.address}</Text>
@@ -116,17 +127,7 @@ const BusinessProfileApp: React.FC = () => {
         </View>
 
         <View style={styles.detailContainer}>
-          <Feather name="briefcase" size={24} color="#00796B" />
-          {/* Icon color set to teal */}
-          <View style={styles.detailTextContainer}>
-            <Text style={styles.label}>Type</Text>
-            <Text style={styles.info}>{business.business_type}</Text>
-          </View>
-        </View>
-
-        <View style={styles.detailContainer}>
-          <Feather name="phone" size={24} color="#00796B" />
-          {/* Icon color set to teal */}
+          <Feather name="phone" size={24} color="#FFF" />
           <View style={styles.detailTextContainer}>
             <Text style={styles.label}>Phone</Text>
             <Text style={styles.info}>{business.phone}</Text>
@@ -134,8 +135,7 @@ const BusinessProfileApp: React.FC = () => {
         </View>
 
         <View style={styles.detailContainer}>
-          <Feather name="mail" size={24} color="#00796B" />
-          {/* Icon color set to teal */}
+          <Feather name="mail" size={24} color="#FFF" />
           <View style={styles.detailTextContainer}>
             <Text style={styles.label}>Email</Text>
             <Text style={styles.info}>{business.email}</Text>
@@ -143,8 +143,7 @@ const BusinessProfileApp: React.FC = () => {
         </View>
 
         <View style={styles.detailContainer}>
-          <Feather name="globe" size={24} color="#00796B" />
-          {/* Icon color set to teal */}
+          <Feather name="globe" size={24} color="#FFF" />
           <View style={styles.detailTextContainer}>
             <Text style={styles.label}>Website</Text>
             <Text
@@ -157,13 +156,26 @@ const BusinessProfileApp: React.FC = () => {
         </View>
 
         <View style={styles.detailContainer}>
-          <Feather name="calendar" size={24} color="#00796B" />
-          {/* Icon color set to teal */}
+          <Feather name="calendar" size={24} color="#FFF" />
           <View style={styles.detailTextContainer}>
             <Text style={styles.label}>Established Year</Text>
             <Text style={styles.info}>{business.established_year}</Text>
           </View>
         </View>
+
+        <View>
+          <Text style={styles.label}>Business Media</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {business.media.map((mediaItem) => (
+              <Image
+                key={mediaItem.id}
+                source={{ uri: mediaItem.media_url }}
+                style={styles.mediaImage}
+              />
+            ))}
+          </ScrollView>
+        </View>
+
         <TouchableOpacity
           style={styles.settingsButton}
           onPress={() => navigation.navigate("BusinessProfile" as never)}
@@ -178,55 +190,97 @@ const BusinessProfileApp: React.FC = () => {
 export default BusinessProfileApp;
 
 const styles = StyleSheet.create({
+  buttonIcon: {
+    marginRight: 8,
+  },
+  availableText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  availableButton: {
+    flex: 0.48,
+    backgroundColor: "#00796B",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginHorizontal: 8,
+  },
+  link: {
+    color: "#FFF",
+    textDecorationLine: "underline",
+  },
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#F2F2F2", // Background color set to light gray
+    backgroundColor: "#E0F7FA",
+    // Using a light gradient for the background
   },
-  card: {
-    backgroundColor: "#FFFFFF", // White background for the card
-    borderRadius: 20,
+  profileHeader: {
+    alignItems: "center",
+    marginBottom: 20,
+    backgroundColor: "#00796B", // Darker header
     padding: 20,
-    marginVertical: 15,
-    borderWidth: 1,
-    borderColor: "#D1D1D1", // Changed to a lighter gray border for the card
+    borderRadius: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
     elevation: 5,
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: "#FFF",
+    marginBottom: 10,
   },
   header: {
     fontSize: 32,
     fontWeight: "bold",
-    color: "#00796B", // Header color set to teal
-    textAlign: "center",
-    marginBottom: 20,
+    color: "#FFF",
+  },
+  subheader: {
+    fontSize: 18,
+    color: "#E0F7FA",
+    marginBottom: 10,
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    marginVertical: 15,
+    borderWidth: 1,
+    borderColor: "#B2DFDB",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#00796B", // Title color set to teal
+    color: "#00796B",
     marginBottom: 10,
   },
   description: {
     fontSize: 16,
-    color: "#444444", // Dark gray for description
+    color: "#555555",
     marginBottom: 15,
   },
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#222222", // Dark gray
+    color: "#FFFFFF",
     marginTop: 5,
   },
   info: {
     fontSize: 14,
-    color: "#444444", // Medium gray for info
-  },
-  link: {
-    color: "#00796B", // Link color set to teal
-    textDecorationLine: "underline",
+    color: "#FFFFFF",
   },
   detailContainer: {
     flexDirection: "row",
@@ -234,25 +288,28 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     padding: 15,
     borderRadius: 15,
-    backgroundColor: "#E3F2FD", // Light blue background for detail containers
+    backgroundColor: "#00796B", // Darker background for details
     borderWidth: 1,
-    borderColor: "#BBDEFB", // Light blue border for details
+    borderColor: "#004D40",
   },
   detailTextContainer: {
     marginLeft: 10,
     flex: 1,
   },
+  mediaImage: {
+    width: 120,
+    height: 120,
+    marginRight: 10,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: "#00796B",
+  },
   settingsButton: {
-    backgroundColor: "#00796B", // Button background set to teal
-    borderRadius: 50,
-    padding: 15,
     alignSelf: "flex-end",
+    backgroundColor: "#004D40",
+    padding: 10,
+    borderRadius: 30,
     marginTop: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
   },
   errorContainer: {
     flex: 1,
@@ -260,7 +317,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   errorText: {
-    color: "#D32F2F", // Red for error messages
-    fontSize: 20,
+    fontSize: 16,
+    color: "#D32F2F",
   },
 });

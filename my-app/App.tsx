@@ -32,6 +32,8 @@ import UserProfile from "./screens/UserProfile";
 
 const Stack = createNativeStackNavigator();
 
+// import "./faker/index";
+
 export default function App() {
   const { user } = useAuth();
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<
@@ -83,21 +85,34 @@ export default function App() {
           <Stack.Screen name="Home" component={Home} />
           <Stack.Screen name="Categories" component={Categories} />
           <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
-          <Stack.Screen name="AllService" component={AllServices} />
           <Stack.Screen name="AllBusinesses" component={AllBusinesses} />
-
+          <Stack.Screen name="AllServices" component={AllServices} />
+          <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
           <Stack.Screen name="UserProfile" component={UserProfile} />
           <Stack.Screen name="OnBoarding1" component={OnBoardingScreen1} />
           <Stack.Screen name="OnBoarding2" component={OnBoardingScreen2} />
-
-          <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
           <Stack.Screen name="Feedback" component={Feedback} />
+          {/* <Stack.Screen name="ServiceDetails" component={ServiceDetails} /> */}
+          {/* <Stack.Screen name="Feedback" component={Feedback} /> */}
           <Stack.Screen name="FAQs" component={FAQs} />
           <Stack.Screen name="Review" component={Review} />
           <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
           <Stack.Screen name="UsernameSettings" component={UsernameSettings} />
           <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
           <Stack.Screen name="Notification" component={Notification} />
+
+          {/* <Stack.Screen name="UserProfile" component={UserProfile} />
+          <Stack.Screen name="OnBoarding1" component={OnBoardingScreen1} />
+          <Stack.Screen name="OnBoarding2" component={OnBoardingScreen2} /> */}
+
+          {/* <Stack.Screen name="ServiceDetails" component={ServiceDetails} /> */}
+          {/* <Stack.Screen name="Feedback" component={Feedback} /> */}
+          {/* <Stack.Screen name="FAQs" component={FAQs} /> */}
+          {/* <Stack.Screen name="Review" component={Review} /> */}
+          {/* <Stack.Screen name="ProfileScreen" component={ProfileScreen} /> */}
+          {/* <Stack.Screen name="UsernameSettings" component={UsernameSettings} /> */}
+          {/* <Stack.Screen name="ProfileSettings" component={ProfileSettings} /> */}
+          {/* <Stack.Screen name="Notification" component={Notification} /> */}
 
           <Stack.Screen
             name="EditProfileScreen"
