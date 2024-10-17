@@ -35,6 +35,8 @@ import staticBusinessProfile from "./screens/staticBusinessProfile";
 
 const Stack = createNativeStackNavigator();
 
+// import "./faker/index";
+
 export default function App() {
   const { user } = useAuth();
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<
@@ -81,23 +83,20 @@ export default function App() {
           {/* Authentication Screens */}
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Signup" component={Signup} />
-
+          <Stack.Screen
+            name="staticBusinessProfile"
+            component={staticBusinessProfile}
+          />
           {/* Main Screens */}
           <Stack.Screen name="Home" component={Home} />
           <Stack.Screen name="Categories" component={Categories} />
           <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
           <Stack.Screen name="AllBusinesses" component={AllBusinesses} />
           <Stack.Screen name="AllServices" component={AllServices} />
-          <Stack.Screen
-            name="staticBusinessProfile"
-            component={staticBusinessProfile}
-          />
-
+          <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
           <Stack.Screen name="UserProfile" component={UserProfile} />
           <Stack.Screen name="OnBoarding1" component={OnBoardingScreen1} />
           <Stack.Screen name="OnBoarding2" component={OnBoardingScreen2} />
-
-          <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
           <Stack.Screen name="Feedback" component={Feedback} />
           <Stack.Screen name="FAQs" component={FAQs} />
           <Stack.Screen name="Review" component={Review} />
@@ -107,11 +106,6 @@ export default function App() {
           <Stack.Screen name="Notification" component={Notification} />
           <Stack.Screen name="OneServices" component={OneServices} />
           <Stack.Screen name="ComplaintsScreen" component={ComplaintsScreen} />
-
-          <Stack.Screen
-            name="EditProfileScreen"
-            component={EditProfileScreen}
-          />
           <Stack.Screen name="BusinessProfile" component={BusinessProfile} />
           <Stack.Screen name="UpdateQA" component={UpdateQA} />
           <Stack.Screen

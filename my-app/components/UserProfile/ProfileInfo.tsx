@@ -1,20 +1,24 @@
 import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 
 interface ProfileInfoProps {
   name: string;
   email: string;
   avatarUrl: any;
+  onImageChange: () => void;
 }
 
 const ProfileInfo: React.FC<ProfileInfoProps> = ({
   name,
   email,
   avatarUrl,
+  onImageChange
 }) => {
   return (
     <View style={styles.container}>
-      <Image source={avatarUrl} style={styles.avatar} />
+      <TouchableOpacity onPress={onImageChange}>
+        <Image source={avatarUrl} style={styles.avatar} />
+      </TouchableOpacity>
       <Text style={styles.name}>{name}</Text>
       <Text style={styles.email}>{email}</Text>
     </View>
