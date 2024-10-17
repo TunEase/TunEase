@@ -22,9 +22,9 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
     if (!user) {
       setModalVisible(true);
     } else {
-      if (role === "user") {
+      if (role === "CLIENT") {
         navigation.navigate("UserProfile");
-      } else if (role === "business") {
+      } else if (role === "BUSINESS_MANAGER") {
         navigation.navigate("BusinessProfileApp");
       }
     }

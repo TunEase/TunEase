@@ -110,7 +110,19 @@ const BusinessProfileApp: React.FC = () => {
         <Text style={styles.subheader}>{business.business_type}</Text>
       </View>
       <View style={styles.availableButtonContainer}>
-        <TouchableOpacity style={styles.availableButton}>
+        {/* <TouchableOpacity style={styles.availableButton}>
+          <Icon
+            name="mail"
+            size={20}
+            color="#FFFFFF"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.availableText}>See All Services</Text>
+        </TouchableOpacity> */}
+        <TouchableOpacity
+          style={styles.availableButton}
+          onPress={() => navigation.navigate("AddService" as never)}
+        >
           <Icon
             name="mail"
             size={20}
@@ -135,6 +147,7 @@ const BusinessProfileApp: React.FC = () => {
       </View>
       <Animated.View style={[styles.card, { opacity: animation }]}>
         <Text style={styles.title}>Business Profile</Text>
+
         <Text style={styles.description}>{business.description}</Text>
         <View style={styles.mediaContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
