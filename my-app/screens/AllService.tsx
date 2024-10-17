@@ -12,6 +12,7 @@ import {
 import { supabase } from "../services/supabaseClient";
 
 const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
+  
   const [services, setServices] = useState<any[]>([]);
   const [visibleCount, setVisibleCount] = useState(6); 
   const [loading, setLoading] = useState(true);
