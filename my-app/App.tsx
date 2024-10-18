@@ -7,9 +7,7 @@ import Home from "../my-app/screens/HomeScreen";
 import { AuthProvider } from "./components/AuthContext";
 import Categories from "./components/HomePage/Categories";
 import CategoryDetails from "./components/HomePage/CategoryDetails";
-import { useAuth } from "./hooks/useAuth";
 import AllBusinesses from "./screens/AllBusinesses";
-import AllServices from "./screens/AllService";
 import AppointmentSettings from "./screens/AppointmentSettings";
 import Login from "./screens/Auth/login";
 import Signup from "./screens/Auth/signup";
@@ -23,7 +21,7 @@ import Review from "./screens/Review";
 import Onboarding from "./screens/OnBoarding";
 
 // import { insertFakeData } from "./services/supabaseClient";
-import { OnBoardingScreen1, OnBoardingScreen2 } from "./screens/OnBoarding2";
+// import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
 import ProfileScreen from "./screens/ProfileScreen";
 import UsernameSettings from "./screens/UsernameSettings";
 import ProfileSettings from "./screens/ProfileSettings";
@@ -37,11 +35,12 @@ import ComplaintsScreen from "./screens/ComplaintsScreen";
 import staticBusinessProfile from "./screens/staticBusinessProfile";
 // import "./faker/index";
 import AddService from "./screens/AddService";
+import AllService from "./screens/AllService";
 import UserProfile from "./screens/UserProfile";
+import { useAuth } from "./hooks/useAuth";
 
 const Stack = createNativeStackNavigator();
 
-// import "./faker/index";
 
 export default function App() {
   const { user } = useAuth();
@@ -124,8 +123,8 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="AllServices"
-            component={AllServices}
+            name="AllService"
+            component={AllService}
             options={{ headerShown: false }}
           />
           <Stack.Screen
@@ -138,7 +137,7 @@ export default function App() {
             component={UserProfile}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
+          {/* <Stack.Screen
             name="OnBoarding1"
             component={OnBoardingScreen1}
             options={{ headerShown: false }}
@@ -148,6 +147,16 @@ export default function App() {
             component={OnBoardingScreen2}
             options={{ headerShown: false }}
           />
+          <Stack.Screen
+            name="OnBoardingScreen3"
+            component={OnBoardingScreen3}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OnBoardingScreen4"
+            component={OnBoardingScreen4}
+            options={{ headerShown: false }}
+          /> */}
           <Stack.Screen
             name="Feedback"
             component={Feedback}
