@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ImageBackground,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Footer from "../components/HomePage/MainFooter";
@@ -167,7 +168,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.availableButton}
-            onPress={() => navigation.navigate("AllService")}
+            onPress={() => navigation.navigate("AllServices")}
           >
             <Icon
               name="mail"

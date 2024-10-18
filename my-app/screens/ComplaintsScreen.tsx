@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   Text,
   View,
   StyleSheet,
@@ -8,13 +7,12 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 const ComplaintsScreen: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
     null
   );
-
   const categories = {
     "Product Issues": [
       "Defective Item",
@@ -27,6 +25,18 @@ const ComplaintsScreen: React.FC = () => {
       "Unprofessional Staff",
     ],
     "Billing Problems": ["Overcharged", "Incorrect Invoice", "Refund Issues"],
+    "Technical Issues": [
+      "App Crashes",
+      "Feature Not Working",
+      "Slow Performance",
+    ],
+    "Delivery Issues": ["Late Delivery", "Damaged Package", "Missing Items"],
+    "Account Issues": ["Login Problems", "Account Locked", "Password Reset"],
+    "Payment Issues": [
+      "Payment Declined",
+      "Duplicate Charges",
+      "Refund Delays",
+    ],
   };
 
   const toggleCategory = (category: string) => {

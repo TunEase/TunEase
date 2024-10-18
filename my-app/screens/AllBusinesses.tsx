@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Image,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import {
   ListRenderItem,
   Modal,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../services/supabaseClient";
 import { Business } from "../types/business";
@@ -50,6 +50,7 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
           services:services(*, media:media(*), reviews:reviews(*, media:media(*), user_profile:user_profile(*))),
           reviews:reviews(*, media:media(*), user_profile:user_profile(*))
         `);
+
       if (businessError) {
         console.error("Error fetching businesses:", businessError);
       } else {

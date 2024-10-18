@@ -87,47 +87,147 @@ export default function App() {
           />
 
           {/* Authentication Screens */}
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="Signup" component={Signup} />
+          <Stack.Screen
+            name="Login"
+            component={Login}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Signup"
+            component={Signup}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="staticBusinessProfile"
             component={staticBusinessProfile}
+            options={{ headerShown: false }}
           />
           {/* Main Screens */}
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="Categories" component={Categories} />
-          <Stack.Screen name="CategoryDetails" component={CategoryDetails} />
-          <Stack.Screen name="AllBusinesses" component={AllBusinesses} />
-          <Stack.Screen name="AllServices" component={AllServices} />
-          <Stack.Screen name="ServiceDetails" component={ServiceDetails} />
-          <Stack.Screen name="UserProfile" component={UserProfile} />
-          <Stack.Screen name="OnBoarding1" component={OnBoardingScreen1} />
-          <Stack.Screen name="OnBoarding2" component={OnBoardingScreen2} />
-          <Stack.Screen name="Feedback" component={Feedback} />
-          <Stack.Screen name="FAQs" component={FAQs} />
-          <Stack.Screen name="Review" component={Review} />
-          <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-          <Stack.Screen name="UsernameSettings" component={UsernameSettings} />
-          <Stack.Screen name="ProfileSettings" component={ProfileSettings} />
-          <Stack.Screen name="Notification" component={Notification} />
-          <Stack.Screen name="OneServices" component={OneServices} />
-          <Stack.Screen name="ComplaintsScreen" component={ComplaintsScreen} />
-          <Stack.Screen name="BusinessProfile" component={BusinessProfile} />
-          <Stack.Screen name="UpdateQA" component={UpdateQA} />
-          <Stack.Screen name="AddService" component={AddService} />
+          <Stack.Screen
+            name="Home"
+            component={Home}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Categories"
+            component={Categories}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CategoryDetails"
+            component={CategoryDetails}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AllBusinesses"
+            component={AllBusinesses}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AllServices"
+            component={AllServices}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ServiceDetails"
+            component={ServiceDetails}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="UserProfile"
+            component={UserProfile}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OnBoarding1"
+            component={OnBoardingScreen1}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OnBoarding2"
+            component={OnBoardingScreen2}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Feedback"
+            component={Feedback}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="FAQs"
+            component={FAQs}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Review"
+            component={Review}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ProfileScreen"
+            component={ProfileScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="UsernameSettings"
+            component={UsernameSettings}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ProfileSettings"
+            component={ProfileSettings}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Notification"
+            component={Notification}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OneServices"
+            component={OneServices}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ComplaintsScreen"
+            component={ComplaintsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="BusinessProfile"
+            component={BusinessProfile}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="UpdateQA"
+            component={UpdateQA}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddService"
+            component={AddService}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="BusinessProfileApp"
             component={BusinessProfileApp}
+            options={{ headerShown: false }}
           />
           <Stack.Screen
             name="EditProfileScreen"
             component={EditProfileScreen}
+            options={{ headerShown: false }}
           />
           <Stack.Screen
             name="AppointmentSettings"
             component={AppointmentSettings}
+            options={{ headerShown: false }}
           />
-          <Stack.Screen name="Statistics" component={Statistics} />
+          <Stack.Screen
+            name="Statistics"
+            component={Statistics}
+            options={{ headerShown: false }}
+          />
         </Stack.Navigator>
       </AuthProvider>
       <StatusBar style="auto" />
