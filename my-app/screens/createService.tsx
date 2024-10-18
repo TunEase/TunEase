@@ -7,8 +7,6 @@ const CreateService: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [newService, setNewService] = useState({ name: '', description: '', price: '', duration: '', reordering: 'CUSTOM', business_id: '', service_type: 'PUBLIC' });
   const [modalVisible, setModalVisible] = useState(true);
 
-
-
   const handleModalSubmit = async () => {
     try {
       const { data, error } = await supabase
@@ -43,14 +41,12 @@ const CreateService: React.FC<{ navigation: any }> = ({ navigation }) => {
               value={newService.name}
               onChangeText={(text) => setNewService({ ...newService, name: text })}
             />
-            
             <TextInput
               style={styles.input}
               placeholder="Service Description"
               value={newService.description}
               onChangeText={(text) => setNewService({ ...newService, description: text })}
             />
-            
             <TextInput
               style={styles.input}
               placeholder="Service Price"
@@ -58,7 +54,6 @@ const CreateService: React.FC<{ navigation: any }> = ({ navigation }) => {
               value={newService.price}
               onChangeText={(text) => setNewService({ ...newService, price: text })}
             />
-            
             <TextInput
               style={styles.input}
               placeholder="Duration (minutes)"
@@ -66,7 +61,6 @@ const CreateService: React.FC<{ navigation: any }> = ({ navigation }) => {
               value={newService.duration}
               onChangeText={(text) => setNewService({ ...newService, duration: text })}
             />
-            
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.submitButton} onPress={handleModalSubmit}>
                 <Text style={styles.buttonText}>Submit</Text>

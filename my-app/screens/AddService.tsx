@@ -109,10 +109,9 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
         )}
         keyExtractor={(item) => item.id.toString()}
       />
-      
       <TouchableOpacity
         style={styles.addButton} 
-        onPress={() => navigation.navigate('createService')}
+        onLongPress={() => navigation.navigate('createService', {id: id})}
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
