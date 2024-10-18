@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, FlatList, TextInput, Button, Alert, Modal } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, FlatList, Alert } from "react-native";
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Ensure this package is installed
 import { supabase } from "../services/supabaseClient";
 
@@ -13,7 +13,8 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
   const [newService, setNewService] = useState({ name: '', description: '', imageUrl: '', price: '' });
   const [showForm, setShowForm] = useState<boolean>(false);
   const [showServices, setShowServices] = useState<boolean>(false);
-  const [newServices, setNewServices] = useState<Record<string, { name: string; description: string; price: number; duration: string; reordering: string; service_type: string }>>({});
+  const [newServices, setNewServices] = useState<Record<string, {name: string; description: string; price: number; duration: string; reordering: string; service_type: string }>>({});
+  
   const [showInputs, setShowInputs] = useState<Record<string, boolean>>({});
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [currentServiceId, setCurrentServiceId] = useState<string | null>(null);
@@ -54,7 +55,6 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
     }
   };
 
-
   const toggleInputs = (id: string) => {
     setCurrentServiceId(id);
     setModalVisible(true);
@@ -72,9 +72,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
   };
 
   useEffect(() => {
-
-      fetchServices();
-    
+    fetchServices();
   }, []);
 
   return (
@@ -83,18 +81,22 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
         data={services}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Image source={{ uri: item.media[0].media_url }} style={styles.coverImage} />
+            <Image source={{ uri: item.media[0].media_url }} style={styles.coverImage}/>
             <View style={styles.cardContent}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.description}>{item.description}</Text>
               <Text style={styles.price}>Rp.{item.price}k</Text>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => toggleInputs(item.id)}
-                >
-                  <Text style={styles.addButtonText}>+</Text>
+                <TouchableOpacity style={styles.settingsButton}>
+                  <Icon name="settings" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.availabilityButton}>
+                  <Icon name="check-circle" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.updateButton}>
+    <Icon name="update" size={24} color="#FFFFFF" />
+  </TouchableOpacity>
+
                 <TouchableOpacity
                   style={styles.trashButton}
                   onPress={() => handleDelete(item.id)}
@@ -107,101 +109,13 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
         )}
         keyExtractor={(item) => item.id.toString()}
       />
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+      
+      <TouchableOpacity
+        style={styles.addButton} 
+        onPress={() => navigation.navigate('createService')}
       >
-        <View style={styles.modalView}>
-          <Text style={styles.modalText}>Edit Service</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Name"
-            value={currentServiceId ? newServices[currentServiceId]?.name || '' : ''}
-            onChangeText={(text) => {
-              if (currentServiceId) {
-                setNewServices(prev => ({
-                  ...prev,
-                  [currentServiceId]: { ...prev[currentServiceId], name: text }
-                }));
-              }
-            }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Description"
-            value={currentServiceId ? newServices[currentServiceId]?.description || '' : ''}
-            onChangeText={(text) => {
-              if (currentServiceId) {
-                setNewServices(prev => ({
-                  ...prev,
-                  [currentServiceId]: { ...prev[currentServiceId], description: text }
-                }));
-              }
-            }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Price"
-            value={currentServiceId ? String(newServices[currentServiceId]?.price || '') : ''}
-            onChangeText={(text) => {
-              if (currentServiceId) {
-                setNewServices(prev => ({
-                  ...prev,
-                  [currentServiceId]: { 
-                    ...prev[currentServiceId], 
-                    price: parseFloat(text) // Convert string to number
-                  }
-                }));
-              }
-            }}
-            keyboardType="numeric"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Duration"
-            value={currentServiceId ? newServices[currentServiceId]?.duration || '' : ''}
-            onChangeText={(text) => {
-              if (currentServiceId) {
-                setNewServices(prev => ({
-                  ...prev,
-                  [currentServiceId]: { ...prev[currentServiceId], duration: text }
-                }));
-              }
-            }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Reordering"
-            value={currentServiceId ? newServices[currentServiceId]?.reordering || '' : ''}
-            onChangeText={(text) => {
-              if (currentServiceId) {
-                setNewServices(prev => ({
-                  ...prev,
-                  [currentServiceId]: { ...prev[currentServiceId], reordering: text }
-                }));
-              }
-            }}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Service Type"
-            value={currentServiceId ? newServices[currentServiceId]?.service_type || '' : ''}
-            onChangeText={(text) => {
-              if (currentServiceId) {
-                setNewServices(prev => ({
-                  ...prev,
-                  [currentServiceId]: { ...prev[currentServiceId], service_type: text }
-                }));
-              }
-            }}
-          />
-          <Button title="Submit" onPress={handleModalSubmit} />
-          <Button title="Cancel" onPress={() => setModalVisible(false)} />
-        </View>
-      </Modal>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -247,29 +161,26 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', // Distribute space evenly
     alignItems: 'center',
     marginTop: 10,
   },
   addButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
     backgroundColor: "#00796B",
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+    borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
+    elevation: 5,
+    width: 80,
+    height: 80,
   },
   addButtonText: {
     color: "#FFFFFF",
     fontSize: 24,
-  },
-  trashButton: {
-    backgroundColor: "#D32F2F",
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+    fontWeight: "bold",
   },
   modalView: {
     margin: 20,
@@ -299,6 +210,38 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     borderRadius: 5,
+  },
+  settingsButton: {
+    backgroundColor: "#607D8B", // Example color
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  availabilityButton: {
+    backgroundColor: "#1E88E5", // Example color for availability
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  updateButton: {
+    backgroundColor: "#FFB300", // Example color for availability
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  trashButton: {
+    backgroundColor: "#D32F2F", // Strong red for delete
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 

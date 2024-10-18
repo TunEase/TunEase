@@ -31,6 +31,7 @@ import UpdateQA from "./screens/UpdateQ&A";
 import AddService from "./screens/AddService";
 import UserProfile from "./screens/UserProfile";
 import UsernameSettings from "./screens/UsernameSettings";
+import createService from "./screens/createService";
 
 
 
@@ -97,6 +98,7 @@ export default function App() {
         <Stack.Screen name="OnBoarding2" component={OnBoardingScreen2} />
         <Stack.Screen name="Feedback" component={Feedback} />
         <Stack.Screen name="AddService" component={AddService} />
+        <Stack.Screen name="createService" component={createService} />
       {/* <Stack.Screen name="ServiceDetails" component={ServiceDetails} /> */}
            {/* <Stack.Screen name="Feedback" component={Feedback} /> */}
         <Stack.Screen name="FAQs" component={FAQs} />
