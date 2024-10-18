@@ -2,7 +2,6 @@ import { createClient } from "@supabase/supabase-js";
 import Constants from "expo-constants";
 import { faker } from "@faker-js/faker";
 
-
 const expoConfig = Constants.expoConfig;
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_API_KEY) {
@@ -23,12 +22,12 @@ export const insertFakeData = async () => {
     name: faker.company.name(),
     description: faker.company.catchPhrase(),
     address: faker.address.street(),
-    business_type: faker.helpers.arrayElement(['PUBLIC', 'PRIVATE']),
+    business_type: faker.helpers.arrayElement(["PUBLIC", "PRIVATE"]),
     manager_id: userId,
     phone: faker.phone.number(),
     email: faker.internet.email(),
     website: faker.internet.url(),
-    established_year: faker.date.past({years: 20}).getFullYear(), // Year established
+    established_year: faker.date.past({ years: 20 }).getFullYear(), // Year established
   }));
 
   // Generate services with realistic data
@@ -37,9 +36,9 @@ export const insertFakeData = async () => {
     description: faker.lorem.sentence(10),
     price: parseFloat(faker.commerce.price()), // Price between $10 and $500
     duration: faker.number.int({ min: 30, max: 120 }), // Duration in minutes
-    reordering: faker.helpers.arrayElement(['CUSTOM', 'STANDARD']),
+    reordering: faker.helpers.arrayElement(["CUSTOM", "STANDARD"]),
     business_id: null, // To be assigned later
-    service_type: faker.helpers.arrayElement(['PUBLIC', 'PRIVATE']),
+    service_type: faker.helpers.arrayElement(["PUBLIC", "PRIVATE"]),
   }));
 
   // Generate appointments with realistic data
@@ -49,14 +48,14 @@ export const insertFakeData = async () => {
     date: faker.date.future().toISOString().split("T")[0],
     start_time: faker.date.future().toTimeString().split(" ")[0],
     end_time: faker.date.future().toTimeString().split(" ")[0],
-    status: faker.helpers.arrayElement(['SCHEDULED', 'COMPLETED', 'CANCELLED']),
+    status: faker.helpers.arrayElement(["SCHEDULED", "COMPLETED", "CANCELLED"]),
   }));
 
   // Generate complaints with realistic data
   const complaints = Array.from({ length: 5 }).map(() => ({
     complainant_id: userId,
     description: faker.lorem.sentence(5),
-    status: faker.helpers.arrayElement(['PENDING', 'RESOLVED']),
+    status: faker.helpers.arrayElement(["PENDING", "RESOLVED"]),
   }));
 
   // Generate reviews with realistic data
