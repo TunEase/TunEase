@@ -1,27 +1,35 @@
 import React, { useEffect, useState } from "react";
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
   FlatList,
   TouchableOpacity,
+  Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../services/supabaseClient";
+import { Service } from "../types/business";
 
-const AllServices: React.FC<{ route: any; navigation: any }> = ({
+const OneServices: React.FC<{ route: any; navigation: any }> = ({
   route,
   navigation,
 }) => {
   const { businessId } = route.params;
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchServices = async () => {
       const { data, error } = await supabase
         .from("services")
-        .select("*")
+        .select(
+          `
+          *,
+          media:media(service_id, media_url),
+          reviews:reviews(*, media:media(review_id, media_url),user_profile:user_profile(*, media:media(media_url)))
+        `
+        )
         .eq("business_id", businessId);
       if (error) {
         console.error("Error fetching services:", error);
@@ -52,18 +60,27 @@ const AllServices: React.FC<{ route: any; navigation: any }> = ({
         }
         data={services}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.serviceCard}
-            onPress={() =>
-              navigation.navigate("ServiceDetails", {
-                name: item.name,
-                description: item.description,
-              })
-            }
-          >
+          <View style={styles.serviceCard}>
+            <Image
+              source={{
+                uri: item.media[Math.floor(Math.random() * item.media.length)]
+                  .media_url,
+              }}
+              style={styles.serviceImage}
+            />
             <Text style={styles.serviceName}>{item.name}</Text>
             <Text style={styles.serviceDescription}>{item.description}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.viewButton}
+              onPress={() =>
+                navigation.navigate("ServiceDetails", {
+                  serviceId: item.id,
+                })
+              }
+            >
+              <Text style={styles.viewButtonText}>View Service</Text>
+            </TouchableOpacity>
+          </View>
         )}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={
@@ -74,7 +91,7 @@ const AllServices: React.FC<{ route: any; navigation: any }> = ({
   );
 };
 
-export default AllServices;
+export default OneServices;
 
 const styles = StyleSheet.create({
   container: {
@@ -113,6 +130,12 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
+  serviceImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
   serviceName: {
     fontSize: 18,
     fontWeight: "600",
@@ -121,5 +144,17 @@ const styles = StyleSheet.create({
   serviceDescription: {
     fontSize: 14,
     color: "#666",
+    marginBottom: 10,
+  },
+  viewButton: {
+    backgroundColor: "#00796B",
+    paddingVertical: 10,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  viewButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

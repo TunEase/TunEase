@@ -177,7 +177,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.availableButton}
-            onPress={() => navigation.navigate("ServiceSettings")}
+            onPress={() => navigation.navigate("AllServices")}
           >
             <Icon
               name="mail"

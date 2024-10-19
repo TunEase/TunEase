@@ -1,131 +1,233 @@
-import React, { useState } from "react";
-import { StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { createClient } from "@supabase/supabase-js";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  Button,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-interface ServiceSettingsProps {}
+const supabaseUrl =
+  "https://supabase.com/dashboard/project/vjdfhinnbrgaxitnukmw/editor/51336?schema=public";
+const supabaseAnonKey = "your-supabase-anon-key";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const ServiceSettings: React.FC<ServiceSettingsProps> = () => {
-  const [isServiceDisabled, setIsServiceDisabled] = useState<boolean>(false);
-  const [availability, setAvailability] = useState<string>("9:00 AM - 5:00 PM");
-  const [acceptComplaints, setAcceptComplaints] = useState<boolean>(true);
-  const [acceptAppointments, setAcceptAppointments] = useState<boolean>(true);
-  const [showReviews, setShowReviews] = useState<boolean>(true);
-  const [price, setPrice] = useState<number>(100);
-  const [maxAppointments, setMaxAppointments] = useState<number>(10);
-  const [autoConfirm, setAutoConfirm] = useState<boolean>(false);
-  const [staffAssigned, setStaffAssigned] = useState<string>("John Doe");
+// Define the service data types
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  reordering: "CUSTOM" | "AUTOMATED";
+  service_type: "PUBLIC" | "PRIVATE";
+  disabled: boolean;
+  accept_complaints: boolean;
+  accept_appointments: boolean;
+  show_reviews: boolean;
+}
+
+// Settings Component
+const ServiceSettings = ({ services }: { services: string }) => {
+  const [service, setService] = useState<Service | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchService();
+  }, [services]);
+
+  // Fetch service details from Supabase
+  const fetchService = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("services")
+      .select("*")
+      .eq("id", services)
+      .single();
+
+    if (error) {
+      Alert.alert("Error", "Could not fetch service data.");
+    } else {
+      setService(data);
+    }
+    setLoading(false);
+  };
+
+  // Handle updates and saving the settings
+  const updateService = async () => {
+    if (!service) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("services")
+      .update({
+        disabled: service.disabled,
+        accept_complaints: service.accept_complaints,
+        accept_appointments: service.accept_appointments,
+        show_reviews: service.show_reviews,
+        price: service.price,
+        duration: service.duration,
+        reordering: service.reordering,
+        service_type: service.service_type,
+      })
+      .eq("id", service.id);
+
+    if (error) {
+      Alert.alert("Error", "Failed to update service.");
+    } else {
+      Alert.alert("Success", "Service updated successfully!");
+    }
+    setLoading(false);
+  };
+
+  if (loading || !service) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Service Settings</Text>
+      <Text style={styles.title}>Service Settings: {service.name}</Text>
 
       {/* Disable Service */}
       <View style={styles.settingRow}>
-        <Text style={styles.label}>Disable Service:</Text>
+        <Text>Disable Service</Text>
         <Switch
-          value={isServiceDisabled}
-          onValueChange={setIsServiceDisabled}
-        />
-      </View>
-
-      {/* Availability */}
-      <View style={styles.settingRow}>
-        <Text style={styles.label}>Availability:</Text>
-        <TextInput
-          style={styles.input}
-          value={availability}
-          onChangeText={setAvailability}
+          value={service.disabled}
+          onValueChange={(value) => setService({ ...service, disabled: value })}
         />
       </View>
 
       {/* Accept Complaints */}
       <View style={styles.settingRow}>
-        <Text style={styles.label}>Accept Complaints:</Text>
-        <Switch value={acceptComplaints} onValueChange={setAcceptComplaints} />
+        <Text>Accept Complaints</Text>
+        <Switch
+          value={service.accept_complaints}
+          onValueChange={(value) =>
+            setService({ ...service, accept_complaints: value })
+          }
+        />
       </View>
 
       {/* Accept Appointments */}
       <View style={styles.settingRow}>
-        <Text style={styles.label}>Accept Appointments:</Text>
+        <Text>Accept Appointments</Text>
         <Switch
-          value={acceptAppointments}
-          onValueChange={setAcceptAppointments}
+          value={service.accept_appointments}
+          onValueChange={(value) =>
+            setService({ ...service, accept_appointments: value })
+          }
         />
       </View>
 
       {/* Show Reviews */}
       <View style={styles.settingRow}>
-        <Text style={styles.label}>Show Reviews:</Text>
-        <Switch value={showReviews} onValueChange={setShowReviews} />
+        <Text>Show Reviews</Text>
+        <Switch
+          value={service.show_reviews}
+          onValueChange={(value) =>
+            setService({ ...service, show_reviews: value })
+          }
+        />
       </View>
 
-      {/* Price */}
-      <View style={styles.settingRow}>
-        <Text style={styles.label}>Price ($):</Text>
+      {/* Service Price */}
+      <View style={styles.inputRow}>
+        <Text>Service Price</Text>
         <TextInput
           style={styles.input}
+          value={service.price.toString()}
+          onChangeText={(value) =>
+            setService({ ...service, price: parseFloat(value) })
+          }
           keyboardType="numeric"
-          value={price.toString()}
-          onChangeText={(text) => setPrice(Number(text))}
         />
       </View>
 
-      {/* Max Number of Appointments */}
-      <View style={styles.settingRow}>
-        <Text style={styles.label}>Max Appointments:</Text>
+      {/* Service Duration */}
+      <View style={styles.inputRow}>
+        <Text>Duration (minutes)</Text>
         <TextInput
           style={styles.input}
+          value={service.duration.toString()}
+          onChangeText={(value) =>
+            setService({ ...service, duration: parseInt(value, 10) })
+          }
           keyboardType="numeric"
-          value={maxAppointments.toString()}
-          onChangeText={(text) => setMaxAppointments(Number(text))}
         />
       </View>
 
-      {/* Auto-Confirmation */}
-      <View style={styles.settingRow}>
-        <Text style={styles.label}>Auto-Confirmation:</Text>
-        <Switch value={autoConfirm} onValueChange={setAutoConfirm} />
+      {/* Reordering */}
+      <View style={styles.inputRow}>
+        <Text>Reordering</Text>
+        <Picker
+          selectedValue={service.reordering}
+          onValueChange={(value) =>
+            setService({
+              ...service,
+              reordering: value as "CUSTOM" | "AUTOMATED",
+            })
+          }
+        >
+          <Picker.Item label="Custom" value="CUSTOM" />
+          <Picker.Item label="Automated" value="AUTOMATED" />
+        </Picker>
       </View>
 
-      {/* Staff Assignment */}
-      <View style={styles.settingRow}>
-        <Text style={styles.label}>Staff Assigned:</Text>
-        <TextInput
-          style={styles.input}
-          value={staffAssigned}
-          onChangeText={setStaffAssigned}
-        />
+      {/* Service Type */}
+      <View style={styles.inputRow}>
+        <Text>Service Type</Text>
+        <Picker
+          selectedValue={service.service_type}
+          onValueChange={(value) =>
+            setService({
+              ...service,
+              service_type: value as "PUBLIC" | "PRIVATE",
+            })
+          }
+        >
+          <Picker.Item label="Public" value="PUBLIC" />
+          <Picker.Item label="Private" value="PRIVATE" />
+        </Picker>
       </View>
+
+      {/* Save Button */}
+      <Button
+        title="Save Settings"
+        onPress={updateService}
+        disabled={loading}
+      />
     </View>
   );
 };
 
-// Styles for the component
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 16,
+    backgroundColor: "#fff",
   },
-  heading: {
-    fontSize: 24,
+  title: {
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   settingRow: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 15,
+    alignItems: "center",
+    marginVertical: 8,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: "500",
+  inputRow: {
+    marginVertical: 8,
   },
   input: {
-    width: "50%",
-    padding: 10,
-    borderColor: "#ccc",
     borderWidth: 1,
-    borderRadius: 5,
-    backgroundColor: "#f9f9f9",
+    borderColor: "#ccc",
+    padding: 8,
+    borderRadius: 4,
   },
 });
 

@@ -1,59 +1,133 @@
-import React from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import {
+  Dimensions,
+  Image,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  ScrollView,
+  View,
 } from "react-native";
-import { RouteProp } from "@react-navigation/native";
+import { supabase } from "../services/supabaseClient";
+import { Service } from "../types/business";
+import FAQs from "./FAQs";
+import Feedback from "./Feedback";
+import Review from "./Review";
 
-interface ServiceDetailsProps {
-  route: RouteProp<
-    {
-      params: {
-        name: string;
-        description: string;
-      };
-    },
-    "params"
-  >;
-  navigation: any;
-}
+const { width } = Dimensions.get("window");
 
-const ServiceDetails: React.FC<ServiceDetailsProps> = ({
-  route,
-  navigation,
-}) => {
-  const { name, description } = route.params;
+const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
+  const navigation = useNavigation();
+  const { serviceId } = route.params;
+  const [service, setService] = useState<Service | null>(null);
+  const [activeTab, setActiveTab] = React.useState("About Me");
+
+  useEffect(() => {
+    const fetchServiceDetails = async () => {
+      console.log("Service ID:", serviceId);
+      if (!serviceId) {
+        console.error("Service ID is undefined");
+        return;
+      }
+      const { data, error } = await supabase
+        .from("services")
+        .select(
+          `
+          *,
+          media:media(*),
+          reviews:reviews(*, media:media(*), user_profile:user_profile(*))
+        `
+        )
+        .eq("id", serviceId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching service details:", error);
+      } else {
+        setService(data);
+      }
+    };
+
+    fetchServiceDetails();
+  }, [serviceId]);
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "About Me":
+        return (
+          <Text style={styles.tabContent}>
+            {service?.description || "No description available."}
+          </Text>
+        );
+      case "Feedback":
+        return <Feedback />;
+      case "Reviews":
+        return <Review />;
+      case "FAQs":
+        return <FAQs />;
+      default:
+        return null;
+    }
+  };
+
+  if (!service) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.headerButton}
-          onPress={() => navigation.navigate("Feedback")}
-        >
-          <Text style={styles.headerText}>Feedback</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.headerButton}
-          onPress={() => navigation.navigate("FAQs")}
-        >
-          <Text style={styles.headerText}>FAQs</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.headerButton}
-          onPress={() => navigation.navigate("Review")}
-        >
-          <Text style={styles.headerText}>Review</Text>
-        </TouchableOpacity>
+      <Image
+        source={{
+          uri: service.media[Math.floor(Math.random() * service.media.length)]
+            .media_url,
+        }}
+        style={styles.coverImage}
+      />
+      <View style={styles.profileContainer}>
+        <Text style={styles.serviceName}>{service.name}</Text>
+        <Text style={styles.servicePrice}>{`$${service.price}/hr`}</Text>
+        <Text style={styles.serviceRating}>
+          {`⭐ ${service.reviews[0].rating} (${service.reviews.length} Reviews)`}
+        </Text>
+      </View>
+      <View style={styles.tabContainer}>
+        {["About Me", "Feedback", "Reviews", "FAQs"].map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.tab, activeTab === tab && styles.activeTab]}
+            onPress={() => setActiveTab(tab)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === tab && styles.activeTabText,
+              ]}
+            >
+              {tab}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.serviceName}>{name}</Text>
-        <Text style={styles.serviceDescription}>{description}</Text>
+        {renderTabContent()}
       </ScrollView>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.complaintButton}
+          onPress={() => navigation.navigate("ComplaintsScreen")}
+        >
+          <Text style={styles.buttonText}>Raise a Complaint</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bookButton}>
+          <Text style={styles.buttonText}>Book Now</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -61,35 +135,81 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#F2F2F2",
+    backgroundColor: "#FFFFFF",
   },
   header: {
+    padding: 10,
     flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    alignItems: "center",
   },
-  headerButton: {
-    paddingVertical: 10,
+  coverImage: {
+    width: width,
+    height: 200,
   },
-  headerText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#00796B",
-  },
-  contentContainer: {
-    paddingTop: 20,
+  profileContainer: {
+    alignItems: "center",
+    padding: 20,
   },
   serviceName: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 10,
   },
-  serviceDescription: {
+  servicePrice: {
+    fontSize: 16,
+    color: "#00796B",
+  },
+  serviceRating: {
+    fontSize: 14,
+    color: "#666",
+  },
+  tabContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+    paddingVertical: 10,
+  },
+  tab: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  activeTab: {
+    borderBottomWidth: 2,
+    borderBottomColor: "#007AFF",
+  },
+  tabText: {
+    color: "#666",
+  },
+  activeTabText: {
+    color: "#007AFF",
+    fontWeight: "bold",
+  },
+  contentContainer: {
+    padding: 20,
+  },
+  tabContent: {
     fontSize: 16,
     color: "#666",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: 20,
+  },
+  complaintButton: {
+    backgroundColor: "#FF5722",
+    padding: 15,
+    borderRadius: 5,
+  },
+  bookButton: {
+    backgroundColor: "#00796B",
+    padding: 15,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 
