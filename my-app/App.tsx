@@ -38,6 +38,7 @@ import AddService from "./screens/AddService";
 import AllService from "./screens/AllService";
 import UserProfile from "./screens/UserProfile";
 import { useAuth } from "./hooks/useAuth";
+import AvailabilityScreen from "./screens/AvailabilityScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -215,6 +216,11 @@ export default function App() {
           <Stack.Screen
             name="AddService"
             component={AddService}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AvailabilityScreen"
+            component={AvailabilityScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen
