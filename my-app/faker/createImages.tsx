@@ -6,7 +6,7 @@ import { getAllUsers } from "./Helpers/getAllUsers";
 import { getAllServices } from "./Helpers/getAllServices";
 import { getAllBusineses } from "./Helpers/getAllBusinesses"; // Assuming you have a function to get all businesses
 import { getAllReviews } from "./Helpers/getAllReviews"; // Assuming you have a function to get all reviews
-
+import { getAllFees } from "./Helpers/getAllFees"; // Assuming you have a function to get all fees
 // Define the type for a media entry
 interface MediaEntry {
   user_profile_id: string; // Assuming UUIDs are strings
@@ -15,17 +15,19 @@ interface MediaEntry {
   review_id?: string; // Optional for media not related to reviews
   media_type: string;
   media_url: string;
+  fee_id?: string; // Optional for media not related to fees
   created_at: string; // ISO string
 }
 
 // Function to inject fake media and insert into Supabase
 export const injectMedia = async (): Promise<void> => {
   // Fetch data concurrently
-  const [users, businesses, services, reviews] = await Promise.all([
+  const [users, businesses, services, reviews, fees] = await Promise.all([
     getAllUsers(),
     getAllBusineses(),
     getAllServices(),
     getAllReviews(),
+    getAllFees(),
   ]);
 
   const mediaEntries: MediaEntry[] = []; // Array to hold media entries

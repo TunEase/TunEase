@@ -65,19 +65,11 @@ create table
 
 create table
   availability (
-    id uuid primary key default uuid_generate_v4 (),
+   id uuid primary key default uuid_generate_v4 (),
     service_id uuid references services (id) on delete cascade,
-    day_of_week varchar(20) check (
-      day_of_week in (
-        'MONDAY',
-        'TUESDAY',
-        'WEDNESDAY',
-        'THURSDAY',
-        'FRIDAY',
-        'SATURDAY',
-        'SUNDAY'
-      )
-    ) not null,
+    date date not null,
+    start_datetime timestamp not null,
+    end_datetime timestamp not null
     start_time time not null,
     end_time time not null
   );
