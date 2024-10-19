@@ -21,7 +21,9 @@ export const useAuth = () => {
 
     fetchSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user || null);
       setRole(session?.user?.user_metadata?.role || null); // Set role on auth state change
     });
@@ -36,22 +38,22 @@ export const useAuth = () => {
     setUser(null);
     setRole(null); // Clear role on logout
   };
-  const updatePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+  const updatePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<boolean> => {
     const { error } = await supabase.auth.updateUser({
       password: newPassword,
       // If you need to validate the current password, you may need additional logic here.
     });
-  
+
     if (error) {
-      console.error('Error updating password:', error);
-      throw new Error('Failed to update password');
+      console.error("Error updating password:", error);
+      throw new Error("Failed to update password");
     }
-  
+
     return true;
   };
 
-  
-
   return { user, role, loading, logout, updatePassword }; // Expose role in return
-  
 };

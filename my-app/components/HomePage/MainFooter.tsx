@@ -6,7 +6,6 @@ import { useAuth } from "../../hooks/useAuth";
 
 type RootStackParamList = {
   UserProfile: undefined;
-  BusinessProfileApp: undefined;
   Login: undefined;
 };
 
@@ -15,20 +14,8 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ navigation }) => {
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
-
-  const handleProfilePress = () => {
-    if (!user) {
-      setModalVisible(true);
-    } else {
-      if (role === "CLIENT") {
-        navigation.navigate("UserProfile");
-      } else if (role === "BUSINESS_MANAGER") {
-        navigation.navigate("BusinessProfileApp");
-      }
-    }
-  };
 
   return (
     <View style={styles.footerContainer}>
@@ -40,7 +27,15 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
         <FontAwesome5 name="bell" size={26} color="#00796B" />
         <Text style={styles.footerText}>Notification</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={handleProfilePress}>
+      <TouchableOpacity
+        onPress={() => {
+          if (!user) {
+            setModalVisible(true); // Show modal if user is not logged in
+          } else {
+            navigation.navigate("UserProfile");
+          }
+        }}
+      >
         <FontAwesome5 name="user" size={24} color="#00796B" />
         <Text style={styles.footerText}>Profile</Text>
       </TouchableOpacity>
@@ -91,15 +86,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    backgroundColor: "#FAFAFA",
+    backgroundColor: "#FAFAFA", // Lighter background for modern feel
     borderTopWidth: 1,
     borderTopColor: "#B0BEC5",
     paddingVertical: 15,
-    elevation: 5,
+    elevation: 5, // Subtle elevation to lift the footer off the screen slightly
   },
   footerText: {
-    fontSize: 14,
-    color: "#004D40",
+    fontSize: 14, // Slightly larger font for readability
+    color: "#004D40", // Softer dark color to match the icon color
     marginTop: 5,
   },
   modalOverlay: {

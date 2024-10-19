@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -28,9 +28,12 @@ type Business = {
   established_year: number;
   media: { id: string; media_url: string }[];
 };
-
+type RootStackParamList = {
+  AddService: { id: string };
+  // other routes...
+};
 const BusinessProfileApp: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user } = useAuthContext();
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
@@ -110,18 +113,9 @@ const BusinessProfileApp: React.FC = () => {
         <Text style={styles.subheader}>{business.business_type}</Text>
       </View>
       <View style={styles.availableButtonContainer}>
-        {/* <TouchableOpacity style={styles.availableButton}>
-          <Icon
-            name="mail"
-            size={20}
-            color="#FFFFFF"
-            style={styles.buttonIcon}
-          />
-          <Text style={styles.availableText}>See All Services</Text>
-        </TouchableOpacity> */}
         <TouchableOpacity
           style={styles.availableButton}
-          onPress={() => navigation.navigate("AddService" as never)}
+          onPress={() => navigation.navigate("AddService", { id: business.id })}
         >
           <Icon
             name="mail"
