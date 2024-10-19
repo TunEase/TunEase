@@ -4,6 +4,8 @@ import { createAvailabilityData } from "./addAvailabilty";
 import { createComplaintsData } from "./createComplaints";
 import { injectMedia } from "./createImages";
 import { createReviewData } from "./createReviews";
+import { createEligibility } from "./createEligibility";
+import { createFees } from "./createFees";
 import { supabase } from "../services/supabaseClient";
 
 const dropTablesExceptUsers = async () => {
@@ -14,6 +16,8 @@ const dropTablesExceptUsers = async () => {
     "availability",
     "services",
     "business",
+    "eligibility",
+    "fees",
     // Add other tables you want to drop here
   ];
 
@@ -27,27 +31,27 @@ const dropTablesExceptUsers = async () => {
           table_name: table,
         });
         if (dropError) {
-          console.error(`Error dropping table ${table}:`, dropError);
+          console.error(`Error dropping table ${table}: ${dropError}`);
         } else {
           console.log(`Dropped table ${table}`);
         }
       });
 
     if (error) {
-      console.error(`Error dropping data from ${table}:`, error);
+      console.error(`Error dropping data from ${table}: ${error}`);
     }
   }
 };
-
 // Main function to run all operations in order
 const runAllFunctions = async () => {
-  // await createBusiness(); // Create businesses
-  // await createService(); // Create services
-  // await createAvailabilityData(); // Create availability data
-  // await createComplaintsData(); // Create complaints data
-  // await createReviewData();   // Create review data
+  await createBusiness(); // Create businesses
+  await createService(); // Create services
+  await createAvailabilityData(); // Create availability data
+  await createComplaintsData(); // Create complaints data
+  await createReviewData();   // Create review data
+  await createEligibility(); // Create eligibility
+  await createFees(); // Create fees
   await injectMedia(); // Inject media
-
 };
 
 // Execute the main function
@@ -56,5 +60,5 @@ runAllFunctions()
     console.log("All functions executed successfully.");
   })
   .catch((error) => {
-    console.error("Error executing functions:", error);
+    console.error(`Error executing functions: ${error}`);
   });
