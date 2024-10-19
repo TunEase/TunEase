@@ -1,0 +1,375 @@
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Switch,
+  Image,
+  Modal,
+} from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import { supabase } from "../services/supabaseClient";
+import * as Animatable from "react-native-animatable";
+
+const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
+  const { serviceId } = route.params;
+  const [serviceName, setServiceName] = useState("");
+  const [serviceDescription, setServiceDescription] = useState("");
+  const [serviceFeatures, setServiceFeatures] = useState("");
+  const [operatingHours, setOperatingHours] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [price, setPrice] = useState("");
+  const [isServiceActive, setIsServiceActive] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [serviceImage, setServiceImage] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const fetchServiceDetails = async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select(
+          `
+          *,
+          media:media(service_id, media_url)
+        `
+        )
+        .eq("id", serviceId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching service details:", error);
+      } else {
+        setServiceName(data.name);
+        setServiceDescription(data.description);
+        setPrice(data.price.toString());
+        if (data.media && data.media.length > 0) {
+          setServiceImage(data.media[0].media_url); // Assuming you want the first media item
+        }
+        // Set other fields as needed
+      }
+    };
+
+    fetchServiceDetails();
+  }, [serviceId]);
+
+  const toggleCard = (cardName: string) => {
+    setExpandedCard((prevCard) => (prevCard === cardName ? null : cardName));
+  };
+
+  const handleSave = async () => {
+    const updates = {
+      name: serviceName,
+      description: serviceDescription,
+      price: parseFloat(price),
+    };
+
+    const { error } = await supabase
+      .from("services")
+      .update(updates)
+      .eq("id", serviceId);
+
+    if (error) {
+      console.error("Error updating service:", error);
+    } else {
+      console.log("Service updated successfully");
+      setShowModal(true);
+      setTimeout(() => setShowModal(false), 2000); // Hide modal after 2 seconds
+    }
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      {serviceImage && (
+        <Image source={{ uri: serviceImage }} style={styles.serviceImage} />
+      )}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Edit Service</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => toggleCard("editService")}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Edit Service Details</Text>
+          <FontAwesome name="edit" size={20} color="#007AFF" />
+        </View>
+        {expandedCard === "editService" && (
+          <View style={styles.cardContent}>
+            <TextInput
+              style={styles.input}
+              placeholder="Service Name"
+              value={serviceName}
+              onChangeText={setServiceName}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Service Description"
+              value={serviceDescription}
+              onChangeText={setServiceDescription}
+              multiline
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Service Features"
+              value={serviceFeatures}
+              onChangeText={setServiceFeatures}
+              multiline
+            />
+          </View>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => toggleCard("availability")}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Availability Settings</Text>
+          <FontAwesome name="clock-o" size={20} color="#007AFF" />
+        </View>
+        {expandedCard === "availability" && (
+          <View style={styles.cardContent}>
+            <TextInput
+              style={styles.input}
+              placeholder="Operating Hours"
+              value={operatingHours}
+              onChangeText={setOperatingHours}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Set Capacity"
+              value={capacity}
+              onChangeText={setCapacity}
+              keyboardType="numeric"
+            />
+          </View>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => toggleCard("priceUpdates")}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Price Updates</Text>
+          <FontAwesome name="dollar" size={20} color="#007AFF" />
+        </View>
+        {expandedCard === "priceUpdates" && (
+          <View style={styles.cardContent}>
+            <TextInput
+              style={styles.input}
+              placeholder="Update Price"
+              value={price}
+              onChangeText={setPrice}
+              keyboardType="numeric"
+            />
+          </View>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => toggleCard("mediaManagement")}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Media Management</Text>
+          <FontAwesome name="image" size={20} color="#007AFF" />
+        </View>
+        {expandedCard === "mediaManagement" && (
+          <View style={styles.cardContent}>
+            <Text>Upload or update images/videos</Text>
+            {/* Implement media upload logic here */}
+          </View>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => toggleCard("serviceStatus")}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Service Status</Text>
+          <FontAwesome name="toggle-on" size={20} color="#007AFF" />
+        </View>
+        {expandedCard === "serviceStatus" && (
+          <View style={styles.cardContent}>
+            <Text>
+              Service is currently {isServiceActive ? "Active" : "Inactive"}
+            </Text>
+            <Switch
+              value={isServiceActive}
+              onValueChange={setIsServiceActive}
+            />
+          </View>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => toggleCard("notificationSettings")}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Notification Settings</Text>
+          <FontAwesome name="bell" size={20} color="#007AFF" />
+        </View>
+        {expandedCard === "notificationSettings" && (
+          <View style={styles.cardContent}>
+            <Text>Enable Notifications</Text>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+            />
+          </View>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => toggleCard("manageReviews")}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Manage Reviews</Text>
+          <FontAwesome name="comments" size={20} color="#007AFF" />
+        </View>
+        {expandedCard === "manageReviews" && (
+          <View style={styles.cardContent}>
+            <Text>View and respond to reviews</Text>
+            {/* Implement review management logic here */}
+          </View>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => toggleCard("promotions")}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Promotions or Discounts</Text>
+          <FontAwesome name="tags" size={20} color="#007AFF" />
+        </View>
+        {expandedCard === "promotions" && (
+          <View style={styles.cardContent}>
+            <Text>Manage promotions/discounts</Text>
+            {/* Implement promotions management logic here */}
+          </View>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => toggleCard("historyOfChanges")}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>History of Changes</Text>
+          <FontAwesome name="history" size={20} color="#007AFF" />
+        </View>
+        {expandedCard === "historyOfChanges" && (
+          <View style={styles.cardContent}>
+            <Text>View change history</Text>
+            {/* Implement change history logic here */}
+          </View>
+        )}
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+        <Text style={styles.saveButtonText}>Save</Text>
+      </TouchableOpacity>
+
+      <Modal transparent visible={showModal} animationType="fade">
+        <View style={styles.modalBackground}>
+          <Animatable.View
+            animation="bounceIn"
+            duration={1500}
+            style={styles.modalContainer}
+          >
+            <Text style={styles.modalText}>Saved!</Text>
+          </Animatable.View>
+        </View>
+      </Modal>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: "#F9F9F9",
+  },
+  serviceImage: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
+    marginBottom: 20,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#007AFF",
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 15,
+    padding: 20,
+    marginVertical: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  cardContent: {
+    marginTop: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 15,
+    fontSize: 16,
+    backgroundColor: "#F0F0F0",
+  },
+  saveButton: {
+    backgroundColor: "#007AFF",
+    borderRadius: 10,
+    padding: 15,
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  saveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContainer: {
+    backgroundColor: "#FFF",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#007AFF",
+  },
+});
+
+export default EditServiceScreen;

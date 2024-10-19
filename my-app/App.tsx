@@ -16,7 +16,7 @@ import BusinessProfileApp from "./screens/BusinessProfileApp";
 import EditProfileScreen from "./screens/EditProfileScreen";
 import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
-
+import EditServiceScreen from "./screens/EditServiceScreen";
 import Review from "./screens/Review";
 import Onboarding from "./screens/OnBoarding";
 
@@ -40,7 +40,6 @@ import UserProfile from "./screens/UserProfile";
 import { useAuth } from "./hooks/useAuth";
 
 const Stack = createNativeStackNavigator();
-
 
 export default function App() {
   const { user } = useAuth();
@@ -235,6 +234,11 @@ export default function App() {
           <Stack.Screen
             name="Statistics"
             component={Statistics}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="EditServiceScreen"
+            component={EditServiceScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
