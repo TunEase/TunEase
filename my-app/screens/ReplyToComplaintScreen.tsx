@@ -40,8 +40,8 @@ const ReplyToComplaintScreen: React.FC<{ route: any; navigation: any }> = ({
       Alert.alert("Error", "Failed to submit the reply.");
     } else {
       setAnimationVisible(true);
-      setTimeout(() => setAnimationVisible(false), 2000); // Animation visible for 2 seconds
-      // Delay navigation to ensure animation is visible
+      setTimeout(() => setAnimationVisible(false), 2000);
+
       setTimeout(() => navigation.goBack(), 2000);
     }
   };

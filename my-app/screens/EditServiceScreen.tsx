@@ -80,7 +80,7 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
     } else {
       console.log("Service updated successfully");
       setShowModal(true);
-      setTimeout(() => setShowModal(false), 2000); // Hide modal after 2 seconds
+      setTimeout(() => setShowModal(false), 2000);
     }
   };
 
@@ -200,7 +200,6 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
         {expandedCard === "mediaManagement" && (
           <View style={styles.cardContent}>
             <Text>Upload or update images/videos</Text>
-            {/* Implement media upload logic here */}
           </View>
         )}
       </TouchableOpacity>

@@ -14,7 +14,7 @@ type Review = {
   rating: number;
   comment: string;
   created_at: string;
-  isVisible: boolean; // New property to track visibility
+  isVisible: boolean;
 };
 
 const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
@@ -31,7 +31,6 @@ const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
       if (error) {
         console.error("Error fetching reviews:", error);
       } else {
-        // Initialize each review with isVisible set to true
         const initializedData = data.map((review: any) => ({
           ...review,
           isVisible: true,

@@ -76,7 +76,7 @@ const OwnerComplaintsScreen: React.FC<{ route: any; navigation: any }> = ({
       Alert.alert("Error", "Failed to reject the complaint.");
     } else {
       setRejectedAnimationVisible(true);
-      setTimeout(() => setRejectedAnimationVisible(false), 2000); // Animation visible for 2 seconds
+      setTimeout(() => setRejectedAnimationVisible(false), 2000);
       setComplaints((prev) =>
         prev.map((complaint) =>
           complaint.id === complaintId
