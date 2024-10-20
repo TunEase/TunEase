@@ -14,7 +14,10 @@ import { FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../services/supabaseClient";
 import * as Animatable from "react-native-animatable";
 
-const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
+const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
+  route,
+  navigation,
+}) => {
   const { serviceId } = route.params;
   const [serviceName, setServiceName] = useState("");
   const [serviceDescription, setServiceDescription] = useState("");
@@ -48,9 +51,8 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
         setServiceDescription(data.description);
         setPrice(data.price.toString());
         if (data.media && data.media.length > 0) {
-          setServiceImage(data.media[0].media_url); // Assuming you want the first media item
+          setServiceImage(data.media[0].media_url);
         }
-        // Set other fields as needed
       }
     };
 
@@ -87,6 +89,24 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       {serviceImage && (
         <Image source={{ uri: serviceImage }} style={styles.serviceImage} />
       )}
+      <View style={styles.buttonRow}>
+        <TouchableOpacity
+          style={styles.topButton}
+          onPress={() =>
+            navigation.navigate("OwnerReviewsScreen", { serviceId })
+          }
+        >
+          <Text style={styles.buttonText}>See Reviews</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.topButton}
+          onPress={() =>
+            navigation.navigate("OwnerComplaintsScreen", { serviceId })
+          }
+        >
+          <Text style={styles.buttonText}>See Complaints</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Edit Service</Text>
       </View>
@@ -96,7 +116,7 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Edit Service Details</Text>
-          <FontAwesome name="edit" size={20} color="#007AFF" />
+          <FontAwesome name="edit" size={20} color="#00796B" />
         </View>
         {expandedCard === "editService" && (
           <View style={styles.cardContent}>
@@ -129,7 +149,7 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Availability Settings</Text>
-          <FontAwesome name="clock-o" size={20} color="#007AFF" />
+          <FontAwesome name="clock-o" size={20} color="#00796B" />
         </View>
         {expandedCard === "availability" && (
           <View style={styles.cardContent}>
@@ -155,7 +175,7 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Price Updates</Text>
-          <FontAwesome name="dollar" size={20} color="#007AFF" />
+          <FontAwesome name="dollar" size={20} color="#00796B" />
         </View>
         {expandedCard === "priceUpdates" && (
           <View style={styles.cardContent}>
@@ -175,7 +195,7 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Media Management</Text>
-          <FontAwesome name="image" size={20} color="#007AFF" />
+          <FontAwesome name="image" size={20} color="#00796B" />
         </View>
         {expandedCard === "mediaManagement" && (
           <View style={styles.cardContent}>
@@ -190,7 +210,7 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Service Status</Text>
-          <FontAwesome name="toggle-on" size={20} color="#007AFF" />
+          <FontAwesome name="toggle-on" size={20} color="#00796B" />
         </View>
         {expandedCard === "serviceStatus" && (
           <View style={styles.cardContent}>
@@ -210,7 +230,7 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Notification Settings</Text>
-          <FontAwesome name="bell" size={20} color="#007AFF" />
+          <FontAwesome name="bell" size={20} color="#00796B" />
         </View>
         {expandedCard === "notificationSettings" && (
           <View style={styles.cardContent}>
@@ -228,7 +248,7 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Manage Reviews</Text>
-          <FontAwesome name="comments" size={20} color="#007AFF" />
+          <FontAwesome name="comments" size={20} color="#00796B" />
         </View>
         {expandedCard === "manageReviews" && (
           <View style={styles.cardContent}>
@@ -243,7 +263,7 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Promotions or Discounts</Text>
-          <FontAwesome name="tags" size={20} color="#007AFF" />
+          <FontAwesome name="tags" size={20} color="#00796B" />
         </View>
         {expandedCard === "promotions" && (
           <View style={styles.cardContent}>
@@ -258,7 +278,7 @@ const EditServiceScreen: React.FC<{ route: any }> = ({ route }) => {
       >
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>History of Changes</Text>
-          <FontAwesome name="history" size={20} color="#007AFF" />
+          <FontAwesome name="history" size={20} color="#00796B" />
         </View>
         {expandedCard === "historyOfChanges" && (
           <View style={styles.cardContent}>
@@ -290,13 +310,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 15,
-    backgroundColor: "#F9F9F9",
+    backgroundColor: "#F2F2F2",
   },
   serviceImage: {
     width: "100%",
     height: 200,
     resizeMode: "cover",
     marginBottom: 20,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginVertical: 10,
+  },
+  topButton: {
+    backgroundColor: "#00796B",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   header: {
     flexDirection: "row",
@@ -307,7 +344,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#007AFF",
+    color: "#333",
   },
   card: {
     backgroundColor: "#FFFFFF",
@@ -342,7 +379,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F0F0",
   },
   saveButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#00796B",
     borderRadius: 10,
     padding: 15,
     alignItems: "center",
@@ -368,7 +405,7 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#007AFF",
+    color: "#00796B",
   },
 });
 

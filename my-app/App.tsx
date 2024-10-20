@@ -38,6 +38,9 @@ import AddService from "./screens/AddService";
 import AllService from "./screens/AllService";
 import UserProfile from "./screens/UserProfile";
 import { useAuth } from "./hooks/useAuth";
+import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
+import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
+import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -239,6 +242,21 @@ export default function App() {
           <Stack.Screen
             name="EditServiceScreen"
             component={EditServiceScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OwnerComplaintsScreen"
+            component={OwnerComplaintsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OwnerReviewsScreen"
+            component={OwnerReviewsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ReplyToComplaintScreen"
+            component={ReplyToComplaintScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
