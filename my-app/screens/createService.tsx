@@ -1,104 +1,152 @@
 import React, { useState } from "react";
-import { View, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Modal, Text } from "react-native";
-import { supabase } from "../services/supabaseClient";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { supabase } from "../services/supabaseClient"; // Ensure supabaseClient is properly configured
+// import { useAuth } from "../hooks/useAuth";
 
 
-const CreateService: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const [newService, setNewService] = useState({ name: '', description: '', price: '', duration: '', reordering: 'CUSTOM', business_id: '', service_type: 'PUBLIC' });
-  const [modalVisible, setModalVisible] = useState(true);
+const CreateService: React.FC<{ route: any; navigation: any }> = ({ route, navigation }) => {
+  const { businessId } = route.params;  // Retrieve business ID passed from AddService
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [duration, setDuration] = useState("");
+  const [serviceType, setServiceType] = useState("PUBLIC");
+  const [reordering, setReordering] = useState("CUSTOM");
 
-  const handleModalSubmit = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('services')
-        .insert([newService]);
+  const addNewService = async () => {
+    if (!name || !price || !duration) {
+      Alert.alert("All fields are required!");
+      return;
+    }
 
-      if (error) throw error;
-      console.log("Service added:", data);
-      setModalVisible(false);
-    } catch (error) {
-      console.error("Error adding service:", error.message);
+    const { data, error } = await supabase
+      .from("services")
+      .insert({
+        name,
+        description,
+        price: parseFloat(price),
+        duration: parseInt(duration, 10),
+        reordering,
+        service_type: serviceType,
+        business_id: businessId,
+      });
+
+    if (error) {
+      Alert.alert("Error adding service:", error.message);
+    } else {
+      Alert.alert("Service added successfully!");
+      navigation.goBack();  // Go back to the AddService screen
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            setModalVisible(!modalVisible);
-          }}
-        >
-          <View style={styles.card}>
-            <Text style={styles.title}>Create Your Service</Text>
-            
-            <TextInput
-              style={styles.input}
-              placeholder="Service Name"
-              value={newService.name}
-              onChangeText={(text) => setNewService({ ...newService, name: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Service Description"
-              value={newService.description}
-              onChangeText={(text) => setNewService({ ...newService, description: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Service Price"
-              keyboardType="numeric"
-              value={newService.price}
-              onChangeText={(text) => setNewService({ ...newService, price: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Duration (minutes)"
-              keyboardType="numeric"
-              value={newService.duration}
-              onChangeText={(text) => setNewService({ ...newService, duration: text })}
-            />
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.submitButton} onPress={handleModalSubmit}>
-                <Text style={styles.buttonText}>Submit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-      </View>
-    </SafeAreaView>
+    <View style={styles.container}>
+      <Text style={styles.cardContent}>Create a New Service</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Service Name"
+        value={name}
+        onChangeText={setName}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Description"
+        value={description}
+        onChangeText={setDescription}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Price"
+        keyboardType="numeric"
+        value={price}
+        onChangeText={setPrice}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Duration (minutes)"
+        keyboardType="numeric"
+        value={duration}
+        onChangeText={setDuration}
+      />
+
+      {/* Add the serviceType and reordering input options if necessary */}
+      
+      <TouchableOpacity style={styles.addButton} onPress={addNewService}>
+        <Text style={styles.addButtonText}>Add Service</Text>
+        <Text style={styles.submitButtonText}>Submit</Text>
+
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#E0F7FA",
+    backgroundColor: "#F2F2F2",
+    padding: 10,
   },
   card: {
-    width: '90%',
-    backgroundColor: "white",
-    borderRadius: 10,
-    padding: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    marginVertical: 10,
+    overflow: 'hidden',
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  centeredView: {
-    flex: 1,
-    justifyContent: "center",
+  coverImage: {
+    width: '100%',
+    height: 150,
+    resizeMode: 'cover',
+  },
+  cardContent: {
+    padding: 20,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  description: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 10,
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between', // Distribute space evenly
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: "#00796B",
+    borderRadius: 50,
     alignItems: "center",
+    justifyContent: "center",
+    elevation: 5,
+    width: 80,
+    height: 80,
+  },
+  addButtonText: {
+    color: "#FFFFFF",
+    fontSize: 24,
+    fontWeight: "bold",
   },
   modalView: {
-    width: '80%', // Adjust width as needed
     margin: 20,
     backgroundColor: "white",
     borderRadius: 20,
@@ -111,65 +159,62 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5,
-    },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: "#00796B",
-    marginBottom: 20,
-    textAlign: 'center', // Center the input text
-    marginTop: 20,
+    elevation: 5
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   input: {
     width: '100%',
-    padding: 16,
     borderWidth: 1,
-    borderColor: "#B2DFDB",
-    borderRadius: 10,
-    marginBottom: 20,
-    backgroundColor: "#F1F8E9",
-    fontSize: 16,
-    color: "#004D40",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-    textAlign: 'center', // Center the input text
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  settingsButton: {
+    backgroundColor: "#607D8B", // Example color
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  availabilityButton: {
+    backgroundColor: "#1E88E5", // Example color for availability
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  updateButton: {
+    backgroundColor: "#FFB300", // Example color for availability
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  trashButton: {
+    backgroundColor: "#D32F2F", // Strong red for delete
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  submitButton: {
-    backgroundColor: "#00796B",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    alignItems: "center",
-    flex: 1,
-    marginRight: 5,
-  },
-  cancelButton: {
-    backgroundColor: "#D32F2F",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    alignItems: "center",
-    flex: 1,
-    marginLeft: 5,
-  },
-  buttonText: {
+  submitButtonText: { // Add this style
     color: "#FFFFFF",
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: "bold",
-    textAlign: 'center',
-    
-    // Center the input text
   },
+
 });
 
 export default CreateService;
+

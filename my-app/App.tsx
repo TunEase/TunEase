@@ -38,6 +38,7 @@ import AddService from "./screens/AddService";
 import AllService from "./screens/AllService";
 import UserProfile from "./screens/UserProfile";
 import { useAuth } from "./hooks/useAuth";
+import CreateService from "./screens/createService";
 
 const Stack = createNativeStackNavigator();
 
@@ -237,6 +238,11 @@ export default function App() {
             component={Statistics}
             options={{ headerShown: false }}
           />
+            <Stack.Screen
+          name="createService"
+          component={CreateService} // Assurez-vous que ce composant est correctement importé
+          options={{ headerShown: false }}
+        />
         </Stack.Navigator>
       </AuthProvider>
       <StatusBar style="auto" />
