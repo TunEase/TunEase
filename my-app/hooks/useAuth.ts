@@ -41,17 +41,23 @@ export const useAuth = () => {
       password: newPassword,
       // If you need to validate the current password, you may need additional logic here.
     });
-  
+
     if (error) {
       console.error('Error updating password:', error);
       throw new Error('Failed to update password');
     }
-  
+
     return true;
   };
+const updateUserRole = async (newRole: string) => {
+    if (user) {
+      const updatedUser = { ...user, role: newRole };
+      setUser(updatedUser);
+      // You might want to update this in your local storage as well
+      // await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  };
 
-  
+  return { user, role, loading, logout, updatePassword ,updateUserRole}; // Expose role in return
 
-  return { user, role, loading, logout, updatePassword }; // Expose role in return
-  
 };
