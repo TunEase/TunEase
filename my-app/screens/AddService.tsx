@@ -121,7 +121,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
                 <TouchableOpacity style={styles.settingsButton}>
                   <Icon name="settings" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.availabilityButton}>
+                <TouchableOpacity style={styles.availabilityButton} onPress={() => navigation.navigate('AvailabilityScreen')}>
                   <Icon name="check-circle" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 <TouchableOpacity

@@ -38,7 +38,7 @@ const UserProfile: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState<string | null>(null);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -60,7 +60,7 @@ const UserProfile: React.FC = () => {
           }
           setName(userProfile.name || '');
           setEmail(userProfile.email || '');
-          setPhone(userProfile.phone || '');
+          setPhone(userProfile.phone || null);
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -116,7 +116,7 @@ const UserProfile: React.FC = () => {
     const updatedProfile = {
       name,
       email,
-      phone,
+      phone: phone || undefined,
       avatarUrl: image || undefined,
     };
 
@@ -195,21 +195,21 @@ const UserProfile: React.FC = () => {
         <TextInput
           style={styles.input}
           placeholder="Enter Name"
-          value={name}
+          value={profile?.name}
           onChangeText={setName}
         />
 
         <TextInput
           style={styles.input}
           placeholder="Enter Email"
-          value={email}
+          value={profile?.email}
           onChangeText={setEmail}
         />
 
         <TextInput
           style={styles.input}
           placeholder="Enter Phone"
-          value={phone}
+          value={profile?.phone}
           onChangeText={setPhone}
         />
 

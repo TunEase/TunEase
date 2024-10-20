@@ -21,7 +21,7 @@ import Review from "./screens/Review";
 import Onboarding from "./screens/OnBoarding";
 
 // import { insertFakeData } from "./services/supabaseClient";
-// import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
+import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
 import ProfileScreen from "./screens/ProfileScreen";
 import UsernameSettings from "./screens/UsernameSettings";
 import ProfileSettings from "./screens/ProfileSettings";
@@ -139,7 +139,7 @@ export default function App() {
             component={UserProfile}
             options={{ headerShown: false }}
           />
-          {/* <Stack.Screen
+          <Stack.Screen
             name="OnBoarding1"
             component={OnBoardingScreen1}
             options={{ headerShown: false }}
@@ -158,7 +158,7 @@ export default function App() {
             name="OnBoardingScreen4"
             component={OnBoardingScreen4}
             options={{ headerShown: false }}
-          /> */}
+          />
           <Stack.Screen
             name="Feedback"
             component={Feedback}
