@@ -89,6 +89,9 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
       {serviceImage && (
         <Image source={{ uri: serviceImage }} style={styles.serviceImage} />
       )}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>{serviceName || "Loading..."}</Text>
+      </View>
       <View style={styles.buttonRow}>
         <TouchableOpacity
           style={styles.topButton}
@@ -96,6 +99,12 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
             navigation.navigate("OwnerReviewsScreen", { serviceId })
           }
         >
+          <FontAwesome
+            name="star"
+            size={16}
+            color="#FFFFFF"
+            style={styles.buttonIcon}
+          />
           <Text style={styles.buttonText}>See Reviews</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -104,11 +113,14 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
             navigation.navigate("OwnerComplaintsScreen", { serviceId })
           }
         >
+          <FontAwesome
+            name="exclamation-circle"
+            size={16}
+            color="#FFFFFF"
+            style={styles.buttonIcon}
+          />
           <Text style={styles.buttonText}>See Complaints</Text>
         </TouchableOpacity>
-      </View>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Edit Service</Text>
       </View>
       <TouchableOpacity
         style={styles.card}
@@ -328,11 +340,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     alignItems: "center",
+    flexDirection: "row",
   },
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  buttonIcon: {
+    marginRight: 8,
   },
   header: {
     flexDirection: "row",

@@ -21,7 +21,12 @@ import Review from "./screens/Review";
 import Onboarding from "./screens/OnBoarding";
 
 // import { insertFakeData } from "./services/supabaseClient";
-import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
+import {
+  OnBoardingScreen1,
+  OnBoardingScreen2,
+  OnBoardingScreen3,
+  OnBoardingScreen4,
+} from "./screens/OnBoarding2";
 import ProfileScreen from "./screens/ProfileScreen";
 import UsernameSettings from "./screens/UsernameSettings";
 import ProfileSettings from "./screens/ProfileSettings";
@@ -41,6 +46,7 @@ import { useAuth } from "./hooks/useAuth";
 import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
 import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
 import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
+import AvailabilityScreen from "./screens/AvailabilityScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -257,6 +263,11 @@ export default function App() {
           <Stack.Screen
             name="ReplyToComplaintScreen"
             component={ReplyToComplaintScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AvailabilityScreen"
+            component={AvailabilityScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
