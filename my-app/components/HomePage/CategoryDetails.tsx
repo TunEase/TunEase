@@ -16,7 +16,7 @@ const CategoryDetails: React.FC<{ route: any; navigation: any }> = ({
     switch (category) {
       case "Baladia":
         return lettresBaladia;
-      case "Bousta":
+      case "la Poste":
         return lettresBousta;
       case "Markez":
         return lettresMarkez;
@@ -41,7 +41,7 @@ const CategoryDetails: React.FC<{ route: any; navigation: any }> = ({
         style={styles.backButton}
         onPress={() => navigation.navigate("Home")}
       >
-        <Text style={styles.backButtonText}>Back to Categories</Text>
+        <Text style={styles.backButtonText}>Back to Home</Text>
       </TouchableOpacity>
     </View>
   );

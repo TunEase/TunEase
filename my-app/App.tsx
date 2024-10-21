@@ -16,34 +16,45 @@ import BusinessProfileApp from "./screens/BusinessProfileApp";
 import EditProfileScreen from "./screens/EditProfileScreen";
 import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
-
+import EditServiceScreen from "./screens/EditServiceScreen";
 import Review from "./screens/Review";
+
 import Onboarding from "./screens/OnBoarding";
 
 // import { insertFakeData } from "./services/supabaseClient";
-import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
+import {
+  OnBoardingScreen1,
+  OnBoardingScreen2,
+  OnBoardingScreen3,
+  OnBoardingScreen4,
+} from "./screens/OnBoarding2";
 import ProfileScreen from "./screens/ProfileScreen";
 import UsernameSettings from "./screens/UsernameSettings";
 import ProfileSettings from "./screens/ProfileSettings";
+// import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
 import Notification from "./screens/Notification";
 
+import ComplaintsScreen from "./screens/ComplaintsScreen";
+import OneServices from "./screens/OneServices";
 import ServiceDetails from "./screens/ServiceDetails";
+import ServiceSettings from "./screens/SeviceSetting";
+import staticBusinessProfile from "./screens/staticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
-import OneServices from "./screens/OneServices";
-import ComplaintsScreen from "./screens/ComplaintsScreen";
-import staticBusinessProfile from "./screens/staticBusinessProfile";
 // import "./faker/index";
+import { useAuth } from "./hooks/useAuth";
 import AddService from "./screens/AddService";
 import CreateServiceScreen from "./screens/CreateServiceScreen";
 import AllService from "./screens/AllService";
+import Book from "./screens/Book";
 import UserProfile from "./screens/UserProfile";
-import { useAuth } from "./hooks/useAuth";
-import AvailabilityScreen from "./screens/AvailabilityScreen";
 import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
+import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
+import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
+import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
+import AvailabilityScreen from "./screens/AvailabilityScreen";
+
 const Stack = createNativeStackNavigator();
-
-
 
 export default function App() {
   const { user } = useAuth();
@@ -253,6 +264,36 @@ export default function App() {
           <Stack.Screen
             name="Statistics"
             component={Statistics}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="EditServiceScreen"
+            component={EditServiceScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OwnerComplaintsScreen"
+            component={OwnerComplaintsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OwnerReviewsScreen"
+            component={OwnerReviewsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ReplyToComplaintScreen"
+            component={ReplyToComplaintScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ServiceSettings"
+            component={ServiceSettings}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Book"
+            component={Book}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

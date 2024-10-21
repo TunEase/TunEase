@@ -13,7 +13,7 @@ create table
    business (
     id uuid primary key default uuid_generate_v4 (),
     name varchar(255) not null,
-    description text,
+    description text,>
     address varchar(255) not null,
     longitude double precision,
     latitude double precision,

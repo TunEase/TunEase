@@ -87,10 +87,12 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
       >
         <Image source={{ uri: randomImageUrl }} style={styles.businessImage} />
         <Text style={styles.businessName}>{item.name}</Text>
-        {renderStars(item.reviews[0].rating || 0)}
-        <TouchableOpacity style={styles.favoriteIcon}>
-          <FontAwesome name="heart-o" size={24} color="#FF6347" />
-        </TouchableOpacity>
+        <View style={styles.ratingAndFavoriteContainer}>
+          {renderStars(item.reviews[0].rating || 0)}
+          <TouchableOpacity style={styles.favoriteIcon}>
+            <FontAwesome name="heart-o" size={24} color="#FF6347" />
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -242,7 +244,14 @@ const styles = StyleSheet.create({
   },
   ratingContainer: {
     flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
+  },
+  ratingAndFavoriteContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
   },
   ratingText: {
     fontSize: 16,
@@ -250,9 +259,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   favoriteIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
+    marginLeft: 10,
   },
   noBusinessesText: {
     fontSize: 16,

@@ -4,7 +4,16 @@ import BusinessProfileApp from "../screens/BusinessProfileApp";
 import { supabase } from "../services/supabaseClient";
 
 interface BusinessProfileContainerProps {
+  name: string;
+  description: string;
   navigation: any;
+  contact: {
+    id: string;
+    email: string;
+    phone: string;
+    address: string;
+  };
+  imageUrl: string;
 }
 const BusinessProfileContainer: React.FC<BusinessProfileContainerProps> = ({
   navigation,
