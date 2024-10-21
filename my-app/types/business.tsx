@@ -11,6 +11,8 @@ export interface Business {
   media: Media[];
   services: Service[];
   reviews: Review[];
+  category: string; // Add this line
+  location: string;
 }
 export interface User_profile {
   id: string;
