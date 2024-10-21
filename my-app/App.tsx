@@ -35,12 +35,14 @@ import ComplaintsScreen from "./screens/ComplaintsScreen";
 import staticBusinessProfile from "./screens/staticBusinessProfile";
 // import "./faker/index";
 import AddService from "./screens/AddService";
+import CreateServiceScreen from "./screens/CreateServiceScreen";
 import AllService from "./screens/AllService";
 import UserProfile from "./screens/UserProfile";
 import { useAuth } from "./hooks/useAuth";
 import AvailabilityScreen from "./screens/AvailabilityScreen";
-
+import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
 const Stack = createNativeStackNavigator();
+
 
 
 export default function App() {
@@ -221,6 +223,16 @@ export default function App() {
           <Stack.Screen
             name="AvailabilityScreen"
             component={AvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+            <Stack.Screen
+            name="AddAvailabilityScreen"
+            component={AddAvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CreateServiceScreen"
+            component={CreateServiceScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen

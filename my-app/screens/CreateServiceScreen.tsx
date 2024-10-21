@@ -3,7 +3,7 @@ import { View, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Modal, Tex
 import { supabase } from "../services/supabaseClient";
 
 
-const CreateService: React.FC<{ navigation: any }> = ({ navigation }) => {
+const CreateServiceScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [newService, setNewService] = useState({ name: '', description: '', price: '', duration: '', reordering: 'CUSTOM', business_id: '', service_type: 'PUBLIC' });
   const [modalVisible, setModalVisible] = useState(true);
 
@@ -75,6 +75,7 @@ const CreateService: React.FC<{ navigation: any }> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
+export default CreateServiceScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -172,4 +173,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateService;
