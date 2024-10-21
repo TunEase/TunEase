@@ -9,7 +9,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ImageBackground,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Footer from "../components/HomePage/MainFooter";
@@ -23,7 +22,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
   const categories = [
     { icon: "mail", name: "Baldia" },
-    { icon: "money", name: "Bousta" },
+    { icon: "money", name: "la Poste" },
     { icon: "local-hospital", name: "Hospital" },
     { icon: "medical-services", name: "Medicine" },
   ];
@@ -88,7 +87,12 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       <Image source={{ uri: item.image }} style={styles.bannerImage} />
       <View style={styles.bannerTextContainer}>
         <Text style={styles.bannerText}>{item.text}</Text>
-        <TouchableOpacity style={styles.bannerButton}>
+        <TouchableOpacity
+          style={styles.bannerButton}
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: "la Poste" })
+          }
+        >
           <Text style={styles.bannerButtonText}>Book Now</Text>
         </TouchableOpacity>
       </View>
@@ -103,7 +107,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           <TouchableOpacity
             onPress={() => navigation.navigate("BusinessProfileApp")}
           >
-            <Icon name="notifications" size={24} color="#333" />
+            <Icon name="person" size={24} color="#333" />
           </TouchableOpacity>
         </View>
         <View style={styles.searchContainer}>
@@ -131,16 +135,21 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           pagingEnabled
           style={styles.bannerList}
         />
-
-        <View style={styles.categoriesContainer}>
-          <FlatList
-            data={categories}
-            renderItem={renderCategoryItem}
-            keyExtractor={(item) => item.name}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-          />
-        </View>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: name })
+          }
+        >
+          <View style={styles.categoriesContainer}>
+            <FlatList
+              data={categories}
+              renderItem={renderCategoryItem}
+              keyExtractor={(item) => item.name}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            />
+          </View>
+        </TouchableOpacity>
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Top Services</Text>
           <FlatList

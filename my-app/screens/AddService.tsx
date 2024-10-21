@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
-  Image,
-  FlatList,
   Alert,
+  FlatList,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons"; // Ensure this package is installed
 import { supabase } from "../services/supabaseClient";
@@ -118,10 +118,16 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
               <Text style={styles.description}>{item.description}</Text>
               <Text style={styles.price}>Rp.{item.price}k</Text>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.settingsButton}>
+                <TouchableOpacity
+                  style={styles.settingsButton}
+                  onPress={() => navigation.navigate("ServiceSettings")}
+                >
                   <Icon name="settings" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.availabilityButton} onPress={() => navigation.navigate('AvailabilityScreen')}>
+                <TouchableOpacity
+                  style={styles.availabilityButton}
+                  onPress={() => navigation.navigate("AvailabilityScreen")}
+                >
                   <Icon name="check-circle" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -134,6 +140,10 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
                 >
                   <Icon name="edit" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.updateButton}>
+                  <Icon name="update" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+
                 <TouchableOpacity
                   style={styles.trashButton}
                   onPress={() => handleDelete(item.id)}

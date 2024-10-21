@@ -5,8 +5,8 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 
 type RootStackParamList = {
-  UserProfile: undefined; // Existing route
-  Login: undefined; // Existing route
+  UserProfile: undefined;
+  Login: undefined;
 };
 
 interface FooterProps {
@@ -21,7 +21,7 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
     <View style={styles.footerContainer}>
       <TouchableOpacity>
         <FontAwesome5 name="home" size={24} color="#00796B" />
-        <Text style={styles.footerText}></Text>
+        <Text style={styles.footerText}>Home</Text>
       </TouchableOpacity>
       <TouchableOpacity>
         <FontAwesome5 name="bell" size={26} color="#00796B" />
