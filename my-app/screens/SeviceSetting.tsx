@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Switch,
@@ -10,22 +9,63 @@ import {
   View,
 } from "react-native";
 
-interface ServiceSettingsProps {}
+interface ServiceSettingsProps {
+  serviceData: {
+    isServiceDisabled: boolean;
+    availability: string;
+    acceptComplaints: boolean;
+    acceptAppointments: boolean;
+    showReviews: boolean;
+    price: number;
+    maxAppointments: number;
+    autoConfirm: boolean;
+    staffAssigned: string;
+  };
+  onSave: (updatedService: any) => void;
+}
 
-const ServiceSettings: React.FC<ServiceSettingsProps> = () => {
-  const [isServiceDisabled, setIsServiceDisabled] = useState<boolean>(false);
-  const [availability, setAvailability] = useState<string>("9:00 AM - 5:00 PM");
-  const [acceptComplaints, setAcceptComplaints] = useState<boolean>(true);
-  const [acceptAppointments, setAcceptAppointments] = useState<boolean>(true);
-  const [showReviews, setShowReviews] = useState<boolean>(true);
-  const [price, setPrice] = useState<number>(100);
-  const [maxAppointments, setMaxAppointments] = useState<number>(10);
-  const [autoConfirm, setAutoConfirm] = useState<boolean>(false);
-  const [staffAssigned, setStaffAssigned] = useState<string>("John Doe");
+const ServiceSettings: React.FC<ServiceSettingsProps> = ({
+  serviceData = {
+    isServiceDisabled: false,
+    availability: "",
+    acceptComplaints: false,
+    acceptAppointments: false,
+    showReviews: false,
+    price: 0,
+    maxAppointments: 0,
+    autoConfirm: false,
+    staffAssigned: "",
+  },
+  onSave = () => {},
+}) => {
+  const [isServiceDisabled, setIsServiceDisabled] = useState<boolean>(
+    serviceData.isServiceDisabled
+  );
+  const [availability, setAvailability] = useState<string>(
+    serviceData.availability
+  );
+  const [acceptComplaints, setAcceptComplaints] = useState<boolean>(
+    serviceData.acceptComplaints
+  );
+  const [acceptAppointments, setAcceptAppointments] = useState<boolean>(
+    serviceData.acceptAppointments
+  );
+  const [showReviews, setShowReviews] = useState<boolean>(
+    serviceData.showReviews
+  );
+  const [price, setPrice] = useState<number>(serviceData.price);
+  const [maxAppointments, setMaxAppointments] = useState<number>(
+    serviceData.maxAppointments
+  );
+  const [autoConfirm, setAutoConfirm] = useState<boolean>(
+    serviceData.autoConfirm
+  );
+  const [staffAssigned, setStaffAssigned] = useState<string>(
+    serviceData.staffAssigned
+  );
 
-  // Handle save logic
   const handleSave = () => {
-    const settings = {
+    const updatedService = {
       isServiceDisabled,
       availability,
       acceptComplaints,
@@ -36,10 +76,7 @@ const ServiceSettings: React.FC<ServiceSettingsProps> = () => {
       autoConfirm,
       staffAssigned,
     };
-
-    // For now, just show an alert or log the settings (can replace with an API call)
-    console.log("Settings saved:", settings);
-    Alert.alert("Settings Saved", "Your changes have been saved successfully.");
+    onSave(updatedService);
   };
 
   return (
@@ -150,11 +187,10 @@ const ServiceSettings: React.FC<ServiceSettingsProps> = () => {
           placeholderTextColor="#a6a6a6"
         />
       </View>
-
-      {/* Save Button */}
       <TouchableOpacity style={styles.button} onPress={handleSave}>
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
+      {/* <ServiceSettings serviceData={serviceData} onSave={handleSave} /> */}
     </ScrollView>
   );
 };
