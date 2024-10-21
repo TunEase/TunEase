@@ -130,6 +130,16 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
                 >
                   <Icon name="check-circle" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.updateButton}
+                  onPress={() =>
+                    navigation.navigate("EditServiceScreen", {
+                      serviceId: item.id,
+                    })
+                  }
+                >
+                  <Icon name="edit" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.updateButton}>
                   <Icon name="update" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
