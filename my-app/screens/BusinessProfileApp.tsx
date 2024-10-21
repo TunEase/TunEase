@@ -112,18 +112,48 @@ const BusinessProfileApp: React.FC = () => {
         <Text style={styles.header}>{business.name}</Text>
         <Text style={styles.subheader}>{business.business_type}</Text>
       </View>
-      <TouchableOpacity style={styles.availableButton}
-      onPress={() => navigation.navigate('AddService' , {id: business.id})}
-      >
-        <Icon name="mail" size={20} color="#FFFFFF" style={styles.buttonIcon} />
-        <Text style={styles.availableText}>See All Services</Text>
-      </TouchableOpacity>
+      <View style={styles.availableButtonContainer}>
+        <TouchableOpacity
+          style={styles.availableButton}
+          onPress={() => navigation.navigate("AddService", { id: business.id })}
+        >
+          <Icon
+            name="mail"
+            size={20}
+            color="#FFFFFF"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.availableText}>See All Services</Text>
+        </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.availableButton}
+          onPress={() => navigation.navigate("EditProfileScreen" as never)}
+        >
+          <Icon
+            name="settings"
+            size={20}
+            color="#FFFFFF"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.availableText}>Edit Profile</Text>
+        </TouchableOpacity>
+      </View>
       <Animated.View style={[styles.card, { opacity: animation }]}>
         <Text style={styles.title}>Business Profile</Text>
 
         <Text style={styles.description}>{business.description}</Text>
-
+        <View style={styles.mediaContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {business.media.map((mediaItem) => (
+              <Image
+                key={mediaItem.id}
+                source={{ uri: mediaItem.media_url }}
+                style={styles.mediaImage}
+              />
+            ))}
+          </ScrollView>
+        </View>
         <View style={styles.detailContainer}>
           <Feather name="map-pin" size={24} color="#FFF" />
           <View style={styles.detailTextContainer}>
@@ -169,25 +199,12 @@ const BusinessProfileApp: React.FC = () => {
           </View>
         </View>
 
-        <View>
-          <Text style={styles.label}>Business Media</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {business.media.map((mediaItem) => (
-              <Image
-                key={mediaItem.id}
-                source={{ uri: mediaItem.media_url }}
-                style={styles.mediaImage}
-              />
-            ))}
-          </ScrollView>
-        </View>
-
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.settingsButton}
           onPress={() => navigation.navigate("BusinessProfile" as never)}
         >
           <Feather name="settings" size={24} color="#FFF" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </Animated.View>
     </ScrollView>
   );
@@ -196,6 +213,15 @@ const BusinessProfileApp: React.FC = () => {
 export default BusinessProfileApp;
 
 const styles = StyleSheet.create({
+  mediaContainer: {
+    marginBottom: 10,
+  },
+  availableButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginHorizontal: 10,
+    marginTop: 10,
+  },
   buttonIcon: {
     marginRight: 8,
   },
@@ -222,7 +248,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#E0F7FA",
-    // Using a light gradient for the background
   },
   profileHeader: {
     alignItems: "center",
@@ -291,12 +316,13 @@ const styles = StyleSheet.create({
   detailContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 15,
-    padding: 15,
+    marginBottom: 13,
+    padding: 14,
     borderRadius: 15,
-    backgroundColor: "#00796B", // Darker background for details
+    backgroundColor: "#00796B",
     borderWidth: 1,
     borderColor: "#004D40",
+    marginHorizontal: 5,
   },
   detailTextContainer: {
     marginLeft: 10,
