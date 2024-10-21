@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -20,6 +22,25 @@ const ServiceSettings: React.FC<ServiceSettingsProps> = () => {
   const [maxAppointments, setMaxAppointments] = useState<number>(10);
   const [autoConfirm, setAutoConfirm] = useState<boolean>(false);
   const [staffAssigned, setStaffAssigned] = useState<string>("John Doe");
+
+  // Handle save logic
+  const handleSave = () => {
+    const settings = {
+      isServiceDisabled,
+      availability,
+      acceptComplaints,
+      acceptAppointments,
+      showReviews,
+      price,
+      maxAppointments,
+      autoConfirm,
+      staffAssigned,
+    };
+
+    // For now, just show an alert or log the settings (can replace with an API call)
+    console.log("Settings saved:", settings);
+    Alert.alert("Settings Saved", "Your changes have been saved successfully.");
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -129,12 +150,27 @@ const ServiceSettings: React.FC<ServiceSettingsProps> = () => {
           placeholderTextColor="#a6a6a6"
         />
       </View>
+
+      {/* Save Button */}
+      <TouchableOpacity style={styles.button} onPress={handleSave}>
+        <Text style={styles.buttonText}>Save</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
 
 // Updated Styles
 const styles = StyleSheet.create({
+  button: {
+    backgroundColor: "#00796B",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
   container: {
     padding: 20,
     backgroundColor: "#f0f4f8", // Soft background
