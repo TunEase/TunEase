@@ -44,10 +44,11 @@ import UpdateQA from "./screens/UpdateQ&A";
 // import "./faker/index";
 import { useAuth } from "./hooks/useAuth";
 import AddService from "./screens/AddService";
+import CreateServiceScreen from "./screens/CreateServiceScreen";
 import AllService from "./screens/AllService";
 import Book from "./screens/Book";
 import UserProfile from "./screens/UserProfile";
-
+import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
 import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
 import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
 import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
@@ -231,6 +232,21 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="AvailabilityScreen"
+            component={AvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddAvailabilityScreen"
+            component={AddAvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CreateServiceScreen"
+            component={CreateServiceScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
             name="BusinessProfileApp"
             component={BusinessProfileApp}
             options={{ headerShown: false }}
@@ -268,11 +284,6 @@ export default function App() {
           <Stack.Screen
             name="ReplyToComplaintScreen"
             component={ReplyToComplaintScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="AvailabilityScreen"
-            component={AvailabilityScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen

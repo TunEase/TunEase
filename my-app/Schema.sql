@@ -63,16 +63,17 @@ create table
     answered_at timestamp
   );
 
-create table
-  availability (
-   id uuid primary key default uuid_generate_v4 (),
-    service_id uuid references services (id) on delete cascade,
-    date date not null,
-    start_datetime timestamp not null,
-    end_datetime timestamp not null
-    start_time time not null,
-    end_time time not null
-  );
+create table availability (
+  id uuid primary key default uuid_generate_v4(),
+  service_id uuid references services (id) on delete cascade,
+  start_date date not null,
+  end_date date not null,
+  start_time time not null,
+  end_time time not null,
+  days_of_week integer[] not null,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
 
 create table
   complaints (

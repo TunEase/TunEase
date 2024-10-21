@@ -1,14 +1,17 @@
 import { supabase } from "../services/supabaseClient";
 import { faker } from "@faker-js/faker";
+import { addDays, format } from "date-fns";
 
 import { getAllServices } from "./Helpers/getAllServices";
 
 // Define types for the data structures
 interface Availability {
-  service_id: string; // Reference to the service
-  start_time: string; // Time in HH:mm format
-  end_time: string; // Time in HH:mm format
-  day_of_week: string; // Day of the week
+  service_id: string;
+  start_date: string;
+  end_date: string;
+  start_time: string;
+  end_time: string;
+  days_of_week: number[];
 }
 
 export const createAvailabilityData = async () => {
@@ -19,32 +22,25 @@ export const createAvailabilityData = async () => {
     // Prepare availability data
     const availabilityData: Availability[] = [];
 
-    // Function to generate availability entries for the next week
+    // Function to generate availability entries
     const generateAvailabilityEntries = (serviceId: string) => {
-      const daysOfWeek = [
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY",
-        "SUNDAY",
-      ];
-      daysOfWeek.forEach((day) => {
-        const startHour = 9; // Example start hour (9 AM)
-        const endHour = 17; // Example end hour (5 PM)
-        const startDate = new Date(0, 0, 0, startHour, 0);
-        const endDate = new Date(0, 0, 0, endHour, 0);
-        const randomTime = new Date(
-          startDate.getTime() +
-            Math.random() * (endDate.getTime() - startDate.getTime())
-        );
-        availabilityData.push({
-          service_id: serviceId,
-          start_time: `${randomTime.getHours().toString().padStart(2, "0")}:00`, // Format start time
-          end_time: `${(randomTime.getHours() + 1).toString().padStart(2, "0")}:00`, // Format end time (1 hour later)
-          day_of_week: day, // Day of the week
-        });
+      const startDate = new Date();
+      const endDate = addDays(startDate, faker.number.int({ min: 30, max: 90 }));
+      
+      const startHour = faker.number.int({ min: 6, max: 12 });
+      const endHour = faker.number.int({ min: startHour + 4, max: 22 });
+      
+      const daysOfWeek = faker.helpers.shuffle([0, 1, 2, 3, 4, 5, 6])
+        .slice(0, faker.number.int({ min: 3, max: 7 }))
+        .sort((a, b) => a - b);
+
+      availabilityData.push({
+        service_id: serviceId,
+        start_date: format(startDate, 'yyyy-MM-dd'),
+        end_date: format(endDate, 'yyyy-MM-dd'),
+        start_time: `${startHour.toString().padStart(2, "0")}:00`,
+        end_time: `${endHour.toString().padStart(2, "0")}:00`,
+        days_of_week: daysOfWeek,
       });
     };
 
