@@ -12,9 +12,8 @@ import {
 import { supabase } from "../services/supabaseClient";
 
 const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
-  
   const [services, setServices] = useState<any[]>([]);
-  const [visibleCount, setVisibleCount] = useState(6); 
+  const [visibleCount, setVisibleCount] = useState(6);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +52,7 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
+        <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
       </SafeAreaView>
     );
   }
@@ -73,9 +72,7 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
                 style={styles.serviceImage}
               />
               <Text style={styles.serviceName}>{item.name}</Text>
-              <Text style={styles.serviceDescription}>
-                {item.description}
-              </Text>
+              <Text style={styles.serviceDescription}>{item.description}</Text>
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   style={styles.button}
@@ -96,7 +93,10 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
         />
       )}
       {visibleCount < services.length && ( // Show Load More button if there are more services
-        <TouchableOpacity style={styles.loadMoreButton} onPress={loadMoreServices}>
+        <TouchableOpacity
+          style={styles.loadMoreButton}
+          onPress={loadMoreServices}
+        >
           {loadingMore ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (

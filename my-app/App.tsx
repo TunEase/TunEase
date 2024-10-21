@@ -273,6 +273,9 @@ export default function App() {
           <Stack.Screen
             name="AvailabilityScreen"
             component={AvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
             name="ServiceSettings"
             component={ServiceSettings}
             options={{ headerShown: false }}
