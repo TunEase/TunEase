@@ -13,19 +13,20 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { supabase } from "../../services/supabaseClient";
 import * as ImagePicker from "expo-image-picker";
-
+// import { useSupabaseStorage } from "../../services/handleFiles";
 type SignupProps = {
   navigation: NativeStackNavigationProp<any>;
 };
 
 const Signup: React.FC<SignupProps> = ({ navigation }) => {
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [image, setImage] = useState<string | null>(null);
-
+  // const { uploadFile, downloadFile, deleteFile, getPublicUrl, isLoading, uploadFileAndSaveToDb,getMediaType } = useSupabaseStorage("avatars");
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -43,11 +44,13 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
     }
 
     const { data: success, error: signupError } = await supabase.auth.signUp({
+      
+      phone,
       email,
       password,
       options: {
         data: {
-          username,
+          name,
         },
       },
     });
@@ -103,8 +106,8 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
         <TextInput
           placeholder="Username"
           style={styles.input}
-          value={username}
-          onChangeText={setUsername}
+          value={name}
+          onChangeText={setName}
           placeholderTextColor="#888"
         />
         <TextInput

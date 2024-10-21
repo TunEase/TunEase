@@ -107,7 +107,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           <TouchableOpacity
             onPress={() => navigation.navigate("BusinessProfileApp")}
           >
-            <Icon name="notifications" size={24} color="#333" />
+            <Icon name="person" size={24} color="#333" />
           </TouchableOpacity>
         </View>
         <View style={styles.searchContainer}>

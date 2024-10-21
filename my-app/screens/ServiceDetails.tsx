@@ -124,7 +124,10 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
         >
           <Text style={styles.buttonText}>Raise a Complaint</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bookButton}>
+        <TouchableOpacity
+          style={styles.bookButton}
+          onPress={() => navigation.navigate("Book", { serviceId: service.id })}
+        >
           <Text style={styles.buttonText}>Book Now</Text>
         </TouchableOpacity>
       </View>
