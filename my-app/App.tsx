@@ -16,13 +16,12 @@ import BusinessProfileApp from "./screens/BusinessProfileApp";
 import EditProfileScreen from "./screens/EditProfileScreen";
 import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
-
-import Onboarding from "./screens/OnBoarding";
+import EditServiceScreen from "./screens/EditServiceScreen";
 import Review from "./screens/Review";
 
+import Onboarding from "./screens/OnBoarding";
+
 // import { insertFakeData } from "./services/supabaseClient";
-// import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
-import Notification from "./screens/Notification";
 import {
   OnBoardingScreen1,
   OnBoardingScreen2,
@@ -30,8 +29,10 @@ import {
   OnBoardingScreen4,
 } from "./screens/OnBoarding2";
 import ProfileScreen from "./screens/ProfileScreen";
-import ProfileSettings from "./screens/ProfileSettings";
 import UsernameSettings from "./screens/UsernameSettings";
+import ProfileSettings from "./screens/ProfileSettings";
+// import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
+import Notification from "./screens/Notification";
 
 import ComplaintsScreen from "./screens/ComplaintsScreen";
 import OneServices from "./screens/OneServices";
@@ -46,6 +47,11 @@ import AddService from "./screens/AddService";
 import AllService from "./screens/AllService";
 import Book from "./screens/Book";
 import UserProfile from "./screens/UserProfile";
+
+import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
+import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
+import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
+import AvailabilityScreen from "./screens/AvailabilityScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -245,6 +251,28 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="EditServiceScreen"
+            component={EditServiceScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OwnerComplaintsScreen"
+            component={OwnerComplaintsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OwnerReviewsScreen"
+            component={OwnerReviewsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ReplyToComplaintScreen"
+            component={ReplyToComplaintScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AvailabilityScreen"
+            component={AvailabilityScreen}
             name="ServiceSettings"
             component={ServiceSettings}
             options={{ headerShown: false }}
