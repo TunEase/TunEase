@@ -3,7 +3,6 @@ import {
   FlatList,
   Image,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -62,7 +61,10 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   ];
 
   const renderCategoryItem = ({ item }) => (
-    <TouchableOpacity style={styles.categoryItem}>
+    <TouchableOpacity 
+      style={styles.categoryItem}
+      onPress={() => navigation.navigate("CategoryDetails", { category: item.name })}
+    >
       <View style={styles.categoryIcon}>
         <Icon name={item.icon} size={25} color="#00796B" />
       </View>
@@ -99,96 +101,98 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  return (
-    <SafeAreaView style={styles.mainContainer}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>TunEase</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("BusinessProfileApp")}
-          >
-            <Icon name="person" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.searchContainer}>
-          <Icon
-            name="search"
-            size={24}
-            color="#888"
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search .."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
+  const renderHeader = () => (
+    <>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>TunEase</Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("BusinessProfileApp")}
+        >
+          <Icon name="person" size={24} color="#333" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.searchContainer}>
+        <Icon
+          name="search"
+          size={24}
+          color="#888"
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search .."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
 
-        {/* Scrollable Banner Section */}
+      <FlatList
+        data={banners}
+        renderItem={renderBanner}
+        keyExtractor={(item) => item.id}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        pagingEnabled
+        style={styles.bannerList}
+      />
+
+      <View style={styles.categoriesContainer}>
         <FlatList
-          data={banners}
-          renderItem={renderBanner}
-          keyExtractor={(item) => item.id}
+          data={categories}
+          renderItem={renderCategoryItem}
+          keyExtractor={(item) => item.name}
           horizontal
           showsHorizontalScrollIndicator={false}
-          pagingEnabled
-          style={styles.bannerList}
         />
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("CategoryDetails", { category: name })
-          }
-        >
-          <View style={styles.categoriesContainer}>
-            <FlatList
-              data={categories}
-              renderItem={renderCategoryItem}
-              keyExtractor={(item) => item.name}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
-        </TouchableOpacity>
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Top Services</Text>
-          <FlatList
-            data={TopServices}
-            renderItem={renderCard}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            columnWrapperStyle={styles.columnWrapper}
-          />
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.availableButton}
-            onPress={() => navigation.navigate("AllBusinesses")}
-          >
-            <Icon
-              name="business"
-              size={20}
-              color="#FFFFFF"
-              style={styles.buttonIcon}
-            />
-            <Text style={styles.availableText}>See All Businesses</Text>
-          </TouchableOpacity>
+      </View>
 
-          <TouchableOpacity
-            style={styles.availableButton}
-            onPress={() => navigation.navigate("AllServices")}
-          >
-            <Icon
-              name="mail"
-              size={20}
-              color="#FFFFFF"
-              style={styles.buttonIcon}
-            />
-            <Text style={styles.availableText}>See All Services</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+      <Text style={styles.sectionTitle}>Top Services</Text>
+    </>
+  );
+
+  const renderFooter = () => (
+    <View style={styles.buttonContainer}>
+      <TouchableOpacity
+        style={styles.availableButton}
+        onPress={() => navigation.navigate("AllBusinesses")}
+      >
+        <Icon
+          name="business"
+          size={20}
+          color="#FFFFFF"
+          style={styles.buttonIcon}
+        />
+        <Text style={styles.availableText}>See All Businesses</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.availableButton}
+        onPress={() => navigation.navigate("AllServices")}
+      >
+        <Icon
+          name="mail"
+          size={20}
+          color="#FFFFFF"
+          style={styles.buttonIcon}
+        />
+        <Text style={styles.availableText}>See All Services</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.mainContainer}>
+      <FlatList
+        data={TopServices}
+        renderItem={renderCard}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        showsVerticalScrollIndicator={false}
+        columnWrapperStyle={styles.columnWrapper}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        contentContainerStyle={styles.contentContainer}
+      />
       <Footer navigation={navigation} />
     </SafeAreaView>
   );

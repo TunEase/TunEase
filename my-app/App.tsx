@@ -49,6 +49,7 @@ import AllService from "./screens/AllService";
 import Book from "./screens/Book";
 import UserProfile from "./screens/UserProfile";
 import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
+import AddAvailabilityTimeScreen from "./screens/AddAvailabilityTimeScreen";
 import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
 import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
 import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
@@ -239,6 +240,11 @@ export default function App() {
             <Stack.Screen
             name="AddAvailabilityScreen"
             component={AddAvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddAvailabilityTimeScreen"
+            component={AddAvailabilityTimeScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen
