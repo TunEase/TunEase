@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { supabase } from '../services/supabaseClient';
 import { format } from 'date-fns';
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface Availability {
   id: string;
@@ -12,6 +13,7 @@ interface Availability {
   end_date: string;
   start_time: string;
   end_time: string;
+  
   days_of_week: number[];
 }
 
@@ -53,7 +55,7 @@ const AvailabilityScreen = ({ navigation }) => {
       const end = new Date(availability.end_date);
       for (let day = start; day <= end; day.setDate(day.getDate() + 1)) {
         const dateString = format(day, 'yyyy-MM-dd');
-        marked[dateString] = { marked: true, dotColor: 'green' };
+        marked[dateString] = { marked: true, dotColor: '#00796B' };
       }
     });
     setMarkedDates(marked);
@@ -70,86 +72,140 @@ const AvailabilityScreen = ({ navigation }) => {
 
   const renderAvailabilityItem = ({ item }: { item: Availability }) => (
     <View style={styles.availabilityItem}>
-      <Text>Service: {item.service_name}</Text>
-      <Text>Time: {item.start_time} - {item.end_time}</Text>
+      <Icon name="event-available" size={24} color="#00796B" style={styles.availabilityIcon} />
+      <View style={styles.availabilityInfo}>
+        <Text style={styles.serviceName}>{item.service_name}</Text>
+        <Text style={styles.availabilityTime}>{item.start_time} - {item.end_time}</Text>
+      </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Service Availability</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Service Availability</Text>
+      </View>
       <Calendar
         current={selectedDate}
         onDayPress={(day) => setSelectedDate(day.dateString)}
         markedDates={{
           ...markedDates,
-          [selectedDate]: { ...markedDates[selectedDate], selected: true },
+          [selectedDate]: { ...markedDates[selectedDate], selected: true, selectedColor: '#00796B' },
         }}
         style={styles.calendar}
         theme={{
-          todayTextColor: 'orange',
-          selectedDayBackgroundColor: '#00adf5',
+          todayTextColor: '#00796B',
+          selectedDayBackgroundColor: '#00796B',
           selectedDayTextColor: '#ffffff',
+          arrowColor: '#00796B',
+          monthTextColor: '#00796B',
+          textMonthFontWeight: 'bold',
+          textDayFontSize: 16,
+          textMonthFontSize: 18,
         }}
       />
       <View style={styles.availabilityContainer}>
-        <Text style={styles.subtitle}>Availability for {selectedDate}:</Text>
+        <Text style={styles.subtitle}>Availability for {format(new Date(selectedDate), 'MMMM d, yyyy')}:</Text>
         <FlatList
           data={getAvailabilityForDate(selectedDate)}
           renderItem={renderAvailabilityItem}
           keyExtractor={(item) => item.id}
-          ListEmptyComponent={<Text>No availability set for this date.</Text>}
+          ListEmptyComponent={<Text style={styles.emptyText}>No availability set for this date.</Text>}
+          contentContainerStyle={styles.availabilityList}
         />
       </View>
       <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddAvailabilityScreen')}>
+        <Icon name="add" size={24} color="#FFFFFF" />
         <Text style={styles.addButtonText}>Add Availability</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F2F2F2',
   },
-  title: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+    color: '#333',
+  },
+  calendar: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
+    marginHorizontal: 16,
+    marginTop: 20,
+  },
+  availabilityContainer: {
+    flex: 1,
+    marginTop: 20,
+    paddingHorizontal: 16,
   },
   subtitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginVertical: 10,
+    color: '#333',
+    marginBottom: 10,
   },
-  calendar: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  availabilityContainer: {
-    flex: 1,
+  availabilityList: {
+    flexGrow: 1,
   },
   availabilityItem: {
-    backgroundColor: '#fff',
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 10,
+    elevation: 2,
+  },
+  availabilityIcon: {
+    marginRight: 16,
+  },
+  availabilityInfo: {
+    flex: 1,
+  },
+  serviceName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  availabilityTime: {
+    fontSize: 14,
+    color: '#666',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 20,
   },
   addButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 5,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#00796B',
+    borderRadius: 10,
+    padding: 16,
+    margin: 16,
   },
   addButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
+    fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 8,
   },
 });
 
