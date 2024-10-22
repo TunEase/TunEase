@@ -1,6 +1,5 @@
-import { supabase } from "../services/supabaseClient";
 import { faker } from "@faker-js/faker";
-
+import { supabase } from "../services/supabaseClient";
 import { getAllBusineses } from "./Helpers/getAllBusinesses";
 
 export const createService = async () => {
@@ -11,27 +10,46 @@ export const createService = async () => {
   // Create service rows
   const services = businessIds.flatMap((businessId) => {
     const numServices = Math.floor(Math.random() * 5) + 1; // Random number of services between 1 and 5
-    return Array.from({ length: numServices }, () => ({
-      name: faker.commerce.productName(),
-      description: faker.commerce.productDescription(),
-      price: parseFloat(faker.commerce.price({ min: 20, max: 120, dec: 2 })),
-      duration: Math.floor(Math.random() * 60) + 30, // Random duration between 30 and 90 minutes
-      reordering: faker.helpers.arrayElement(["CUSTOM", "AUTOMATED"]),
-      business_id: businessId,
-      service_type: faker.helpers.arrayElement(["PUBLIC", "PRIVATE"]),
-      processing_time: `${Math.floor(Math.random() * 72) + 1} hours`, // Random processing time up to 3 days
-      disable_availability: faker.datatype.boolean(),
-      disable_service: faker.datatype.boolean(),
-      accept_cash: faker.datatype.boolean(),
-      accept_card: faker.datatype.boolean(),
-      accept_online: faker.datatype.boolean(),
-      accept_cheque: faker.datatype.boolean(),
-      accept_notification: faker.datatype.boolean(),
-      accept_complaint: faker.datatype.boolean(),
-      accept_review: faker.datatype.boolean(),
-      created_at: faker.date.past(),
-      updated_at: faker.date.recent(),
-    }));
+    return Array.from({ length: numServices }, () => {
+      const duration = Math.floor(Math.random() * 60) + 30; // Random duration between 30 and 90 minutes
+
+      // Generate random start time between 08:00 and 12:00
+      const startHour = Math.floor(Math.random() * 5) + 8; // Random hour between 8 and 12
+      const startMinute = Math.floor(Math.random() * 60); // Random minute between 0 and 59
+      const startTime = `${String(startHour).padStart(2, "0")}:${String(startMinute).padStart(2, "0")}`;
+
+      // Calculate end time based on the duration
+      const endTimeDate = new Date();
+      endTimeDate.setHours(startHour, startMinute, 0); // Set end time to start time
+      endTimeDate.setMinutes(endTimeDate.getMinutes() + duration); // Add duration to end time
+      const endTime = `${String(endTimeDate.getHours()).padStart(2, "0")}:${String(endTimeDate.getMinutes()).padStart(2, "0")}`;
+
+      return {
+        name: faker.commerce.productName(),
+        description: faker.commerce.productDescription(),
+        price: parseFloat(faker.commerce.price({ min: 20, max: 120, dec: 2 })),
+        duration, // Use the generated duration
+        reordering: faker.helpers.arrayElement(["CUSTOM", "AUTOMATED"]),
+        business_id: businessId,
+        service_type: faker.helpers.arrayElement(["PUBLIC", "PRIVATE"]),
+        processing_time: `${Math.floor(Math.random() * 72) + 1} hours`, // Random processing time up to 3 days
+        start_time: startTime, // Set the generated start time
+        end_time: endTime, // Set the calculated end time
+        start_date: faker.date.past(),
+        end_date: faker.date.future(),
+        disable_availability: faker.datatype.boolean(),
+        disable_service: faker.datatype.boolean(),
+        accept_cash: faker.datatype.boolean(),
+        accept_card: faker.datatype.boolean(),
+        accept_online: faker.datatype.boolean(),
+        accept_cheque: faker.datatype.boolean(),
+        accept_notification: faker.datatype.boolean(),
+        accept_complaint: faker.datatype.boolean(),
+        accept_review: faker.datatype.boolean(),
+        created_at: faker.date.past(),
+        updated_at: faker.date.recent(),
+      };
+    });
   });
 
   // Insert service data into the database
@@ -44,20 +62,4 @@ export const createService = async () => {
     return;
   }
   console.log("Service data created successfully");
-
-// // Generate media entries for fees
-// for (const fee of fees) {
-//   const imageUrls = await fetchImages('fees', 5); // Fetch images based on fee name
-//   imageUrls.forEach((imageUrl) => {
-//     const mediaEntry: MediaEntry = {
-//       user_profile_id: faker.helpers.arrayElement(users).id, 
-//       // @ts-ignore
-//       fee_id: fee.id, // Assign the current fee
-//       media_type: "image", // Default media type
-//       media_url: imageUrl, // Use the fetched image URL
-//       created_at: new Date().toISOString(),
-//     };
-//     mediaEntries.push(mediaEntry);
-//     });
-//   }
 };

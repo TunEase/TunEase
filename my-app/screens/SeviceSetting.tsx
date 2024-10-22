@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import {
+  Alert,
+  Modal,
   ScrollView,
   StyleSheet,
   Switch,
@@ -22,6 +24,7 @@ interface ServiceSettingsProps {
     staffAssigned: string;
   };
   onSave: (updatedService: any) => void;
+  navigation: any; // Add this prop to navigate back
 }
 
 const ServiceSettings: React.FC<ServiceSettingsProps> = ({
@@ -37,6 +40,7 @@ const ServiceSettings: React.FC<ServiceSettingsProps> = ({
     staffAssigned: "",
   },
   onSave = () => {},
+  navigation, // Destructure navigation for going back
 }) => {
   const [isServiceDisabled, setIsServiceDisabled] = useState<boolean>(
     serviceData.isServiceDisabled
@@ -63,7 +67,7 @@ const ServiceSettings: React.FC<ServiceSettingsProps> = ({
   const [staffAssigned, setStaffAssigned] = useState<string>(
     serviceData.staffAssigned
   );
-
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const handleSave = () => {
     const updatedService = {
       isServiceDisabled,
@@ -76,7 +80,17 @@ const ServiceSettings: React.FC<ServiceSettingsProps> = ({
       autoConfirm,
       staffAssigned,
     };
+
     onSave(updatedService);
+
+    Alert.alert("Service Saved", "Your service settings have been saved.", [
+      {
+        text: "OK",
+        onPress: () => {
+          navigation.goBack();
+        },
+      },
+    ]);
   };
 
   return (
@@ -105,7 +119,6 @@ const ServiceSettings: React.FC<ServiceSettingsProps> = ({
           placeholderTextColor="#a6a6a6"
         />
       </View>
-
       {/* Accept Complaints */}
       <View style={styles.settingCard}>
         <Text style={styles.label}>Accept Complaints</Text>
@@ -190,13 +203,85 @@ const ServiceSettings: React.FC<ServiceSettingsProps> = ({
       <TouchableOpacity style={styles.button} onPress={handleSave}>
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
-      {/* <ServiceSettings serviceData={serviceData} onSave={handleSave} /> */}
+      {/* Custom Modal for Save Confirmation */}
+      <Modal
+        transparent={true}
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(true)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>Service Saved</Text>
+            <Text style={styles.modalSubtext}>
+              Your service settings have been saved successfully.
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => {
+                setModalVisible(true);
+                navigation.goBack();
+              }}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
 
 // Updated Styles
 const styles = StyleSheet.create({
+  modalContent: {
+    // backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#00796B",
+  },
+  modalSubtext: {
+    fontSize: 18,
+    color: "#4A4A4A",
+    marginBottom: 24,
+    fontStyle: "italic",
+    lineHeight: 1.5,
+    textAlign: "center",
+    fontFamily: "Arial",
+  },
+
+  modalButton: {
+    backgroundColor: "#009688",
+    marginTop: 20,
+
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+
+  modalButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 16,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   button: {
     backgroundColor: "#00796B",
     padding: 10,

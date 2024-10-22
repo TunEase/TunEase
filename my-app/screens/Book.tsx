@@ -15,12 +15,9 @@ const BookNowScreen = ({ route }: { route: any }) => {
     undefined
   );
   const [selectedTime, setSelectedTime] = useState<string>("10:00 AM");
-  const [selectedService, setSelectedService] = useState<string>("La Poste");
 
   const handleBookNow = () => {
-    alert(
-      `Booking confirmed for ${selectedService} on ${selectedDate} at ${selectedTime}`
-    );
+    alert(`Booking confirmed   on ${selectedDate} at ${selectedTime}`);
   };
 
   return (
@@ -57,22 +54,6 @@ const BookNowScreen = ({ route }: { route: any }) => {
             <Picker.Item label="12:00 PM" value="12:00 PM" />
             <Picker.Item label="2:00 PM" value="2:00 PM" />
             <Picker.Item label="4:00 PM" value="4:00 PM" />
-          </Picker>
-        </View>
-      </View>
-
-      {/* Service Type Picker */}
-      <View style={styles.pickerContainer}>
-        <Text style={styles.label}>Select Service:</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker
-            selectedValue={selectedService}
-            onValueChange={(itemValue) => setSelectedService(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="La Poste" value="La Poste" />
-            <Picker.Item label="Baladia" value="Baladia" />
-            <Picker.Item label="" value="" />
           </Picker>
         </View>
       </View>

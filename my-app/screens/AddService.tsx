@@ -158,7 +158,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
       />
       <TouchableOpacity
         style={styles.addButton}
-        onLongPress={() => navigation.navigate("createService", { id: id })}
+        onLongPress={() => navigation.navigate("CreateServiceScreen", { id: id })}
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>

@@ -34,22 +34,24 @@ import UsernameSettings from "./screens/UsernameSettings";
 // import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
 import Notification from "./screens/Notification";
 
+import "./faker/index";
+import { useAuth } from "./hooks/useAuth";
+import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
+import AddService from "./screens/AddService";
+import AllService from "./screens/AllService";
+import AvailabilityScreen from "./screens/AvailabilityScreen";
+import Book from "./screens/Book";
 import ComplaintsScreen from "./screens/ComplaintsScreen";
+import CreateServiceScreen from "./screens/CreateServiceScreen";
 import OneServices from "./screens/OneServices";
+import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
+import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
+import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
 import ServiceDetails from "./screens/ServiceDetails";
 import ServiceSettings from "./screens/SeviceSetting";
 import staticBusinessProfile from "./screens/staticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
-// import "./faker/index";
-import { useAuth } from "./hooks/useAuth";
-import AddService from "./screens/AddService";
-import AllService from "./screens/AllService";
-import AvailabilityScreen from "./screens/AvailabilityScreen";
-import Book from "./screens/Book";
-import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
-import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
-import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
 import UserProfile from "./screens/UserProfile";
 ServiceSettings;
 
@@ -231,6 +233,21 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="AvailabilityScreen"
+            component={AvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddAvailabilityScreen"
+            component={AddAvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CreateServiceScreen"
+            component={CreateServiceScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
             name="BusinessProfileApp"
             component={BusinessProfileApp}
             options={{ headerShown: false }}
@@ -268,11 +285,6 @@ export default function App() {
           <Stack.Screen
             name="ReplyToComplaintScreen"
             component={ReplyToComplaintScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="AvailabilityScreen"
-            component={AvailabilityScreen}
             options={{ headerShown: false }}
           />
 

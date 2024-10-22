@@ -1,12 +1,12 @@
-import { supabase } from "../services/supabaseClient";
 import { faker } from "@faker-js/faker";
+import { supabase } from "../services/supabaseClient";
 import { fetchImages } from "./Helpers/fetchImages"; // Import the fetchImages function
 
-import { getAllUsers } from "./Helpers/getAllUsers";
-import { getAllServices } from "./Helpers/getAllServices";
 import { getAllBusineses } from "./Helpers/getAllBusinesses"; // Assuming you have a function to get all businesses
-import { getAllReviews } from "./Helpers/getAllReviews"; // Assuming you have a function to get all reviews
 import { getAllFees } from "./Helpers/getAllFees"; // Assuming you have a function to get all fees
+import { getAllReviews } from "./Helpers/getAllReviews"; // Assuming you have a function to get all reviews
+import { getAllServices } from "./Helpers/getAllServices";
+import { getAllUsers } from "./Helpers/getAllUsers";
 // Define the type for a media entry
 interface MediaEntry {
   user_profile_id: string; // Assuming UUIDs are strings
@@ -58,7 +58,7 @@ export const injectMedia = async (): Promise<void> => {
     // @ts-ignore
 
     const imageUrls = await fetchImages(
-      "custmer services offices private company agencies",
+      "customer services offices services private services",
       5
     ); // Fetch images based on service name
     imageUrls.forEach((imageUrl) => {
