@@ -144,7 +144,7 @@ const Profile = () => {
           )}
         </View>
 
-        {/* {selectedBusiness.latitude && selectedBusiness.longitude ? (
+        {selectedBusiness.latitude && selectedBusiness.longitude ? (
           <MapView
             style={styles.map}
             initialRegion={{
@@ -162,19 +162,19 @@ const Profile = () => {
             />
           </MapView>
         ) : (
-        )} */}
-        <View
-          style={[
-            styles.map,
-            {
-              backgroundColor: "#eee",
-              justifyContent: "center",
-              alignItems: "center",
-            },
-          ]}
-        >
-          <Text>Map not available</Text>
-        </View>
+          <View
+            style={[
+              styles.map,
+              {
+                backgroundColor: "#eee",
+                justifyContent: "center",
+                alignItems: "center",
+              },
+            ]}
+          >
+            <Text>Map not available</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

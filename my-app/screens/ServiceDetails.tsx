@@ -9,20 +9,40 @@ import {
   Text,
   TouchableOpacity,
   View,
+  FlatList,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
 import { Service } from "../types/business";
 import FAQs from "./FAQs";
 import Feedback from "./Feedback";
 import Review from "./Review";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RouteProp } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
-const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
-  const navigation = useNavigation();
+// Define the navigation parameter list
+type RootStackParamList = {
+  ServiceDetails: { serviceId: string };
+  Book: { serviceId: string };
+  ComplaintsScreen: undefined;
+};
+
+// Define the navigation and route props
+type ServiceDetailsNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "ServiceDetails"
+>;
+type ServiceDetailsRouteProp = RouteProp<RootStackParamList, "ServiceDetails">;
+
+const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
+  route,
+}) => {
+  const navigation = useNavigation<ServiceDetailsNavigationProp>();
   const { serviceId } = route.params;
   const [service, setService] = useState<Service | null>(null);
   const [activeTab, setActiveTab] = React.useState("About Me");
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -82,13 +102,28 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image
-        source={{
-          uri: service.media[Math.floor(Math.random() * service.media.length)]
-            .media_url,
+      <FlatList
+        data={service.media}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Image source={{ uri: item.media_url }} style={styles.coverImage} />
+        )}
+        pagingEnabled
+        onScroll={(event) => {
+          const index = Math.floor(event.nativeEvent.contentOffset.x / width);
+          setCurrentIndex(index);
         }}
-        style={styles.coverImage}
       />
+      <View style={styles.pagination}>
+        {service.media.map((_, index) => (
+          <View
+            key={index}
+            style={[styles.dot, currentIndex === index && styles.activeDot]}
+          />
+        ))}
+      </View>
       <View style={styles.profileContainer}>
         <Text style={styles.serviceName}>{service.name}</Text>
         <Text style={styles.servicePrice}>{`$${service.price}/hr`}</Text>
@@ -148,6 +183,21 @@ const styles = StyleSheet.create({
   coverImage: {
     width: width,
     height: 200,
+  },
+  pagination: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 10,
+  },
+  dot: {
+    height: 8,
+    width: 8,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: "#007AFF",
   },
   profileContainer: {
     alignItems: "center",
