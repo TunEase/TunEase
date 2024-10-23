@@ -172,8 +172,10 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         </TouchableOpacity>
 
         {/* Top Services */}
+
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Top Services</Text>
+
           <FlatList
             data={topServices}
             renderItem={renderCard}
@@ -244,8 +246,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 25,
     backgroundColor: "#00796B",
+    marginBottom: 5,
   },
   headerTitle: {
     fontSize: 24,

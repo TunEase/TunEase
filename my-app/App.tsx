@@ -34,7 +34,7 @@ import UsernameSettings from "./screens/UsernameSettings";
 // import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
 import Notification from "./screens/Notification";
 
-import "./faker/index";
+// import "./faker/index";
 import { useAuth } from "./hooks/useAuth";
 import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
 import AddService from "./screens/AddService";
