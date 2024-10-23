@@ -1,16 +1,16 @@
+import { format } from "date-fns";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   FlatList,
   SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { supabase } from "../services/supabaseClient";
-import { format } from "date-fns";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { supabase } from "../services/supabaseClient";
 
 interface Availability {
   id: string;
@@ -20,6 +20,7 @@ interface Availability {
   end_date: string;
   start_time: string;
   end_time: string;
+
   days_of_week: number[];
 }
 

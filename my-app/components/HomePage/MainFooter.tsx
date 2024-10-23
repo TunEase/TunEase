@@ -25,7 +25,7 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
       </TouchableOpacity>
       <TouchableOpacity>
         <FontAwesome5 name="bell" size={26} color="#00796B" />
-        <Text style={styles.footerText}></Text>
+        <Text style={styles.footerText}>Notifications</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -37,11 +37,11 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
         }}
       >
         <FontAwesome5 name="user" size={24} color="#00796B" />
-        <Text style={styles.footerText}></Text>
+        <Text style={styles.footerText}>Profile</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate("Login")}>
         <FontAwesome5 name="sign-out-alt" size={26} color="#00796B" />
-        <Text style={styles.footerText}></Text>
+        <Text style={styles.footerText}>Logout</Text>
       </TouchableOpacity>
 
       {/* Custom Styled Modal Alert */}

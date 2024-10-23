@@ -12,11 +12,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
-import MapView, { Marker } from "react-native-maps";
+
 import { RootStackParamList } from "../types/business";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 const { width, height } = Dimensions.get("window");
-
+// import MyMapScreen from "./MapView";
 type ProfileScreenRouteProp = RouteProp<RootStackParamList, "selectedBusiness">;
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -47,7 +47,7 @@ const Profile = () => {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [services]);
+  }, []);
 
   if (!selectedBusiness) {
     return <Text>Loading...</Text>;
@@ -56,6 +56,7 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
+        <Text>Hello</Text>
         <View style={styles.header}>
           <Image
             source={{
@@ -144,37 +145,20 @@ const Profile = () => {
           )}
         </View>
 
-        {selectedBusiness.latitude && selectedBusiness.longitude ? (
-          <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: selectedBusiness.latitude,
-              longitude: selectedBusiness.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            <Marker
-              coordinate={{
-                latitude: selectedBusiness.latitude,
-                longitude: selectedBusiness.longitude,
-              }}
-            />
-          </MapView>
+        {/* {selectedBusiness.latitude && selectedBusiness.longitude ? (
+          <MyMapScreen />
         ) : (
-          <View
-            style={[
-              styles.map,
-              {
-                backgroundColor: "#eee",
-                justifyContent: "center",
-                alignItems: "center",
-              },
-            ]}
-          >
-            <Text>Map not available</Text>
-          </View>
-        )}
+          // <View
+          //   style={[
+          //     styles.map,
+          //     {
+          //       backgroundColor: "#eee",
+          //       justifyContent: "center",
+          //       alignItems: "center",
+          //     },
+          //   ]}
+          // ></View>
+        )} */}
       </ScrollView>
     </SafeAreaView>
   );
