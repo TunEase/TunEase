@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { supabase } from "../../services/supabaseClient";
+import { supabase, googleSignUpAction } from "../../services/supabaseClient";
 
 type LoginProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -88,13 +88,14 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
               style={styles.socialIcon}
             />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity  onPress={googleSignUpAction}>
             <Icon
               name="google"
               size={40}
               color="#db4437"
               style={styles.socialIcon}
             />
+
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate("Signup")}>

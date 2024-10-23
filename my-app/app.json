@@ -18,7 +18,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff",
-        "package": "com.yourappname"
+        "package": "com.tunease"
       }
     },
     "web": {
