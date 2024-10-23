@@ -255,31 +255,31 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.card}
-        onPress={() => toggleCard("manageReviews")}
+        onPress={() => toggleCard("manageFees")}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Manage Reviews</Text>
-          <FontAwesome name="comments" size={20} color="#00796B" />
+          <Text style={styles.cardTitle}>Manage Fees</Text>
+          <FontAwesome name="money" size={20} color="#00796B" />
         </View>
-        {expandedCard === "manageReviews" && (
+        {expandedCard === "manageFees" && (
           <View style={styles.cardContent}>
-            <Text>View and respond to reviews</Text>
-            {/* Implement review management logic here */}
+            <Text>Manage service fees</Text>
+            {/* Implement fee management logic here */}
           </View>
         )}
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.card}
-        onPress={() => toggleCard("promotions")}
+        onPress={() => toggleCard("manageEligibility")}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Promotions or Discounts</Text>
-          <FontAwesome name="tags" size={20} color="#00796B" />
+          <Text style={styles.cardTitle}>Manage Eligibility</Text>
+          <FontAwesome name="check" size={20} color="#00796B" />
         </View>
-        {expandedCard === "promotions" && (
+        {expandedCard === "manageEligibility" && (
           <View style={styles.cardContent}>
-            <Text>Manage promotions/discounts</Text>
-            {/* Implement promotions management logic here */}
+            <Text>Manage eligibility criteria</Text>
+            {/* Implement eligibility management logic here */}
           </View>
         )}
       </TouchableOpacity>

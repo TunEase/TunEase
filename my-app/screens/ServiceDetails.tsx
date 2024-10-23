@@ -239,6 +239,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
+    minHeight: 400,
   },
   tabContent: {
     fontSize: 16,
