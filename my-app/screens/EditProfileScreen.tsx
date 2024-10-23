@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -7,11 +7,14 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import { useAuthContext } from "../components/AuthContext";
+import { supabase } from "../services/supabaseClient"; // Ensure you import your supabase client
 
 const EditProfileScreen: React.FC<{ route: any; navigation: any }> = ({
   route,
   navigation,
 }) => {
+  const { user } = useAuthContext();
   const [businessName, setBusinessName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
@@ -21,7 +24,35 @@ const EditProfileScreen: React.FC<{ route: any; navigation: any }> = ({
   const [website, setWebsite] = useState<string>("");
   const [establishedYear, setEstablishedYear] = useState<string>("");
 
-  const handleSubmit = () => {
+  // Fetch existing business data
+  useEffect(() => {
+    const fetchBusinessData = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("business")
+        .select("*")
+        .eq("manager_id", user.id)
+        .single();
+
+      if (error) {
+        Alert.alert("Error fetching business data", error.message);
+      } else if (data) {
+        setBusinessName(data.name);
+        setEmail(data.email);
+        setPhone(data.phone);
+        setAddress(data.address);
+        setDescription(data.description);
+        setType(data.business_type);
+        setWebsite(data.website);
+        setEstablishedYear(data.established_year.toString());
+      }
+    };
+
+    fetchBusinessData();
+  }, [user]);
+
+  const handleSubmit = async () => {
     if (
       !businessName ||
       !email ||
@@ -36,15 +67,27 @@ const EditProfileScreen: React.FC<{ route: any; navigation: any }> = ({
     }
 
     const profileData = {
-      businessName,
+      name: businessName,
       email,
       phone,
       address,
       description,
+      business_type: type,
+      website,
+      established_year: parseInt(establishedYear), // Convert to number
     };
 
-    console.log("Updated Profile:", profileData);
-    navigation.navigate("BusinessProfile");
+    const { error } = await supabase
+      .from("business")
+      .update(profileData)
+      .eq("manager_id", user.id); // Ensure to update based on the correct identifier
+
+    if (error) {
+      Alert.alert("Error updating profile", error.message);
+    } else {
+      console.log("Updated Profile:", profileData);
+      navigation.navigate("BusinessProfile"); // Navigate back after successful update
+    }
   };
 
   return (
@@ -100,7 +143,7 @@ const EditProfileScreen: React.FC<{ route: any; navigation: any }> = ({
         style={styles.input}
         placeholder="Website"
         placeholderTextColor="#666"
-        keyboardType="phone-pad"
+        keyboardType="url"
         value={website}
         onChangeText={setWebsite}
       />
@@ -108,7 +151,7 @@ const EditProfileScreen: React.FC<{ route: any; navigation: any }> = ({
         style={styles.input}
         placeholder="Established Year"
         placeholderTextColor="#666"
-        keyboardType="phone-pad"
+        keyboardType="numeric"
         value={establishedYear}
         onChangeText={setEstablishedYear}
       />
@@ -124,7 +167,6 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-
     justifyContent: "center",
   },
   title: {

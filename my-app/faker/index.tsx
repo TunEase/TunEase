@@ -1,13 +1,12 @@
-import { createBusiness } from "./createBusinesses";
-import { createService } from "./createServices";
+import { supabase } from "../services/supabaseClient";
 import { createAvailabilityData } from "./addAvailabilty";
+import { createBusiness } from "./createBusinesses";
 import { createComplaintsData } from "./createComplaints";
-import { injectMedia } from "./createImages";
-import { createReviewData } from "./createReviews";
 import { createEligibility } from "./createEligibility";
 import { createFees } from "./createFees";
-import { supabase } from "../services/supabaseClient";
-
+import { injectMedia } from "./createImages";
+import { createReviewData } from "./createReviews";
+import { createService } from "./createServices";
 const dropTablesExceptUsers = async () => {
   const tablesToDrop = [
     "media",
@@ -44,14 +43,14 @@ const dropTablesExceptUsers = async () => {
 };
 // Main function to run all operations in order
 const runAllFunctions = async () => {
-  // await createBusiness(); // Create businesses
-  // await createService(); // Create services
+  await createBusiness(); // Create businesses
+  await createService(); // Create services
   await createAvailabilityData(); // Create availability data
-  // await createComplaintsData(); // Create complaints data
-  // await createReviewData();   // Create review data
-  // await createEligibility(); // Create eligibility
-  // await createFees(); // Create fees
-  // await injectMedia(); // Inject media
+  await createComplaintsData(); // Create complaints data
+  await createReviewData(); // Create review data
+  await createEligibility(); // Create eligibility
+  await createFees(); // Create fees
+  await injectMedia(); // Inject media
 };
 
 // Execute the main function
