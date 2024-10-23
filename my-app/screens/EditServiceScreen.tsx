@@ -125,7 +125,9 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
       <View style={styles.buttonRow}>
         <TouchableOpacity
           style={styles.topButton}
-          onPress={() => navigation.navigate("ManageFeesScreen", { serviceId })}
+          onPress={() =>
+            navigation.navigate("ManageFeesScreen", { serviceId, serviceName })
+          }
         >
           <FontAwesome
             name="money"
@@ -138,7 +140,10 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
         <TouchableOpacity
           style={styles.topButton}
           onPress={() =>
-            navigation.navigate("ManageEligibilityScreen", { serviceId })
+            navigation.navigate("ManageEligibilityScreen", {
+              serviceId,
+              serviceName,
+            })
           }
         >
           <FontAwesome
