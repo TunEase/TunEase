@@ -18,6 +18,8 @@ import EditServiceScreen from "./screens/EditServiceScreen";
 import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
 import Review from "./screens/Review";
+import ManageFeesScreen from "./screens/ManageFeesScreen";
+import ManageEligibilityScreen from "./screens/ManageEligibilityScreen";
 
 import Onboarding from "./screens/OnBoarding";
 
@@ -302,6 +304,16 @@ export default function App() {
           <Stack.Screen
             name="ServiceSettings"
             component={ServiceSettings}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ManageFeesScreen"
+            component={ManageFeesScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ManageEligibilityScreen"
+            component={ManageEligibilityScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
