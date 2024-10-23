@@ -139,15 +139,13 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         </View>
 
         {/* Scrollable Banner */}
-        <FlatList
-          data={banners}
-          renderItem={renderBanner}
-          keyExtractor={(item) => item.id}
+        {/* <FlatList
+          data={categories}
+          renderItem={renderCategoryItem}
+          keyExtractor={(item) => item.name}
           horizontal
           showsHorizontalScrollIndicator={false}
-          pagingEnabled
-          style={styles.bannerList}
-        />
+        /> */}
 
         {/* Categories */}
         <TouchableOpacity

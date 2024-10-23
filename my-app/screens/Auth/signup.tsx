@@ -13,6 +13,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { supabase } from "../../services/supabaseClient";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from 'expo-file-system';
 // import { useSupabaseStorage } from "../../services/handleFiles";
 type SignupProps = {
   navigation: NativeStackNavigationProp<any>;
@@ -43,25 +44,71 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
       return;
     }
 
-    const { data: success, error: signupError } = await supabase.auth.signUp({
-      
-      phone,
-      email,
-      password,
-      options: {
-        data: {
-          name,
-        },
-      },
-    });
-
-    if (signupError) {
-      setError(signupError.message);
+    if (!image) {
+      setError("Please select a profile image");
       return;
     }
-    if (success) {
-      console.log("User signed up and email saved:", success);
+  
+    try {
+      // 1. Sign up the user
+      const { data: authData, error: signupError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+  
+      if (signupError) throw signupError;
+  
+      const userId = authData.user?.id;
+      if (!userId) throw new Error("User ID not found after signup");
+  
+      // 2. Upload the image
+      const fileExt = image.split('.').pop();
+      const fileName = `${userId}${Date.now()}.${fileExt}`;
+      const filePath = `${FileSystem.documentDirectory}${fileName}`;
+  
+      await FileSystem.copyAsync({
+        from: image,
+        to: filePath
+      });
+  
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, await FileSystem.readAsStringAsync(filePath, { encoding: 'base64' }));
+  
+      if (uploadError) throw uploadError;
+  
+      // 3. Get the public URL of the uploaded image
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const avatarUrl = urlData.publicUrl;
+  
+      // 4. Insert user profile data
+      const { error: profileError } = await supabase
+        .from('user_profile')
+        .insert({
+          id: userId,
+          name,
+          email,
+          phone,
+          password, // Note: Storing passwords in plain text is not recommended
+        });
+  
+      if (profileError) throw profileError;
+  
+      // 5. Insert media record for the avatar
+      const { error: mediaError } = await supabase
+        .from('media')
+        .insert({
+          user_profile_id: userId,
+          media_type: 'image',
+          media_url: avatarUrl,
+        });
+  
+      if (mediaError) throw mediaError;
+  
+      console.log("User signed up successfully");
       navigation.navigate("Login");
+    } catch (error) {
+      setError(error.message);
     }
   };
 

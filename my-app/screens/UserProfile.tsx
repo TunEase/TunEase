@@ -9,7 +9,6 @@ import {
   Alert,
   TouchableOpacity,
   Modal,
-  Button,
   TextInput,
   Switch,
 } from 'react-native';
@@ -55,21 +54,20 @@ const UserProfile: React.FC = () => {
         const userProfile = await fetchUserProfile(userId);
         if (userProfile) {
           setProfile(userProfile as UserProfile);
-          if (userProfile?.avatarUrl) {
-            setImage(userProfile.avatarUrl);
-          }
+          setImage(userProfile.avatarUrl || null);
           setName(userProfile.name || '');
           setEmail(userProfile.email || '');
           setPhone(userProfile.phone || null);
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
+        Alert.alert('Error', 'Failed to load user profile.');
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (!loading) {
+    if (!loading && userId) {
       loadProfile();
     }
   }, [userId, loading]);
@@ -85,7 +83,9 @@ const UserProfile: React.FC = () => {
     if (!result.canceled) {
       const selectedImage = result.assets[0].uri;
       setImage(selectedImage);
+      handleProfileUpdate(selectedImage);
     }
+    setIsModalVisible(false);
   };
 
   const handleCameraPicker = async () => {
@@ -99,15 +99,18 @@ const UserProfile: React.FC = () => {
     if (!result.canceled) {
       const capturedImage = result.assets[0].uri;
       setImage(capturedImage);
+      handleProfileUpdate(capturedImage);
     }
+    setIsModalVisible(false);
   };
 
   const removeImage = () => {
     setImage(null);
+    handleProfileUpdate(null);
     setIsModalVisible(false);
   };
 
-  const handleProfileUpdate = async () => {
+  const handleProfileUpdate = async (newImage?: string | null) => {
     if (!userId) {
       Alert.alert('Error', 'User ID is not available.');
       return;
@@ -117,14 +120,14 @@ const UserProfile: React.FC = () => {
       name,
       email,
       phone: phone || undefined,
-      avatarUrl: image || undefined,
+      avatarUrl: newImage !== undefined ? newImage : image,
     };
 
     try {
-      const success = await updateUserProfile(userId, updatedProfile);
+      const success = await updateUserProfile(userId, updatedProfile as Partial<UserProfile>);
       if (success) {
         Alert.alert('Profile updated successfully!');
-        setProfile(updatedProfile as UserProfile);
+        setProfile(prevProfile => ({ ...prevProfile, ...updatedProfile } as UserProfile));
       } else {
         Alert.alert('Failed to update profile.');
       }
@@ -133,6 +136,7 @@ const UserProfile: React.FC = () => {
       Alert.alert('Error updating profile.');
     }
   };
+
   const handleNavigateToOnboarding = () => {
     navigation.navigate('OnBoarding1' as never);
   };
@@ -195,25 +199,25 @@ const UserProfile: React.FC = () => {
         <TextInput
           style={styles.input}
           placeholder="Enter Name"
-          value={profile?.name}
+          value={name}
           onChangeText={setName}
         />
 
         <TextInput
           style={styles.input}
           placeholder="Enter Email"
-          value={profile?.email}
+          value={email}
           onChangeText={setEmail}
         />
 
         <TextInput
           style={styles.input}
           placeholder="Enter Phone"
-          value={profile?.phone}
+          value={phone || ''}
           onChangeText={setPhone}
         />
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleProfileUpdate}>
+        <TouchableOpacity style={styles.saveButton} onPress={() => handleProfileUpdate()}>
           <Text style={styles.saveButtonText}>Save Changes</Text>
         </TouchableOpacity>
 
@@ -241,7 +245,6 @@ const UserProfile: React.FC = () => {
           <Text style={styles.deactivateText}>Deactivate Account</Text>
         </TouchableOpacity>
         
-          
         <TouchableOpacity
           style={styles.convertButton}
           onPress={handleNavigateToOnboarding}
@@ -249,48 +252,70 @@ const UserProfile: React.FC = () => {
           <Text style={styles.convertButtonText}>Convert to Business Profile</Text>
         </TouchableOpacity>
       </View>
-      <Modal
-      visible={isChangePasswordModalVisible}
-      animationType="slide"
-      transparent={true}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <TextInput
-            style={styles.input}
-            placeholder="Current Password"
-            secureTextEntry
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="New Password"
-            secureTextEntry
-            value={newPassword}
-            onChangeText={setNewPassword}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm New Password"
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-          <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
-            <Text style={styles.buttonText}>Change Password</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.button, styles.cancelButton]} 
-            onPress={() => setIsChangePasswordModalVisible(false)}
-          >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
 
-      {/* ... existing modals */}
+      <Modal
+        visible={isChangePasswordModalVisible}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TextInput
+              style={styles.input}
+              placeholder="Current Password"
+              secureTextEntry
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="New Password"
+              secureTextEntry
+              value={newPassword}
+              onChangeText={setNewPassword}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm New Password"
+              secureTextEntry
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+            />
+            <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
+              <Text style={styles.buttonText}>Change Password</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.cancelButton]} 
+              onPress={() => setIsChangePasswordModalVisible(false)}
+            >
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity style={styles.modalButton} onPress={handleImagePicker}>
+              <Text style={styles.modalButtonText}>Choose from Gallery</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalButton} onPress={handleCameraPicker}>
+              <Text style={styles.modalButtonText}>Take a Photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalButton} onPress={removeImage}>
+              <Text style={styles.modalButtonText}>Remove Photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalButton} onPress={() => setIsModalVisible(false)}>
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -402,7 +427,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   convertButton: {
-    backgroundColor: "#FFA000", // A warm amber color
+    backgroundColor: "#FFA000",
     borderRadius: 10,
     paddingVertical: 16,
     paddingHorizontal: 32,
@@ -422,7 +447,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     fontSize: 16,
-    marginLeft: 8, // Add some space if you decide to include an icon
+    marginLeft: 8,
   },
   modalContainer: {
     flex: 1,
@@ -440,7 +465,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     marginTop: 10,
   },
-  // ... other existing styles
+  modalButton: {
+    backgroundColor: "#00796B",
+    borderRadius: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    marginVertical: 10,
+    width: '100%',
+  },
+  modalButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 16,
+  },
 });
 
 export default UserProfile;

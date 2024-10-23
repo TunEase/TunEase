@@ -37,6 +37,7 @@ import Notification from "./screens/Notification";
 // import "./faker/index";
 import { useAuth } from "./hooks/useAuth";
 import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
+import AddAvailabilityTimeScreen from "./screens/AddAvailabilityTimeScreen";
 import AddService from "./screens/AddService";
 import AllService from "./screens/AllService";
 import AvailabilityScreen from "./screens/AvailabilityScreen";
@@ -240,6 +241,11 @@ export default function App() {
           <Stack.Screen
             name="AddAvailabilityScreen"
             component={AddAvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddAvailabilityTimeScreen"
+            component={AddAvailabilityTimeScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen
