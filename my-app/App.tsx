@@ -35,15 +35,20 @@ import ComplaintsScreen from "./screens/ComplaintsScreen";
 import staticBusinessProfile from "./screens/staticBusinessProfile";
 // import "./faker/index";
 import AddService from "./screens/AddService";
+import UploadMedia from './screens/UploadMedia'; 
+
+// Ensure this import is correct
+import CreateServiceScreen from "./screens/CreateServiceScreen";
 import AllService from "./screens/AllService";
 import UserProfile from "./screens/UserProfile";
 import { useAuth } from "./hooks/useAuth";
-import CreateService from "./screens/createService";
-
+import AvailabilityScreen from "./screens/AvailabilityScreen";
 const Stack = createNativeStackNavigator();
 
 
+
 export default function App() {
+
   const { user } = useAuth();
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<
     boolean | null
@@ -218,6 +223,17 @@ export default function App() {
             component={AddService}
             options={{ headerShown: false }}
           />
+            <Stack.Screen
+            name="CreateServiceScreen"
+            component={CreateServiceScreen}
+            options={{ headerShown: false }}
+
+          />
+          <Stack.Screen
+            name="AvailabilityScreen"
+            component={AvailabilityScreen}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="BusinessProfileApp"
             component={BusinessProfileApp}
@@ -238,11 +254,11 @@ export default function App() {
             component={Statistics}
             options={{ headerShown: false }}
           />
-            <Stack.Screen
-          name="createService"
-          component={CreateService} // Assurez-vous que ce composant est correctement importé
-          options={{ headerShown: false }}
-        />
+          <Stack.Screen
+            name="UploadMedia"
+            component={UploadMedia}
+            options={{ headerShown: false }}
+          />
         </Stack.Navigator>
       </AuthProvider>
       <StatusBar style="auto" />

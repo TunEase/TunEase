@@ -36,7 +36,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
     }
   };
 
-  const addService = async () => {
+  const addService = async () => { 
     const { data, error } = await supabase
       .from("services")
       .insert([...selectedServices, { ...newService, id:"id" }]);
@@ -70,7 +70,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
     console.log("Submitting form for service id:", currentServiceId);
     setModalVisible(false);
   };
-
+  
   useEffect(() => {
     fetchServices();
   }, []);
@@ -81,7 +81,10 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
         data={services}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Image source={{ uri: item.media[0].media_url }} style={styles.coverImage}/>
+          {item.media && item.media.length > 0 && item.media[0].media_url ? (
+            <Image source={{ uri: item.media[0].media_url }} style={styles.coverImage} />
+          ) : null
+          }
             <View style={styles.cardContent}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.description}>{item.description}</Text>
@@ -111,7 +114,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
       />
       <TouchableOpacity
         style={styles.addButton} 
-        onLongPress={() => navigation.navigate('CreateService', {id: id})}
+        onPress={() => navigation.navigate('CreateServiceScreen', { businessId: id })}
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
