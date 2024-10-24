@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
 import { Service } from "../types/business";
 import FAQs from "./FAQs";
@@ -23,7 +24,8 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
   const { serviceId } = route.params;
   const [service, setService] = useState<Service | null>(null);
   const [activeTab, setActiveTab] = React.useState("About Me");
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const { user } = useAuth();
   useEffect(() => {
     const fetchServiceDetails = async () => {
       console.log("Service ID:", serviceId);
@@ -126,7 +128,17 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.bookButton}
-          onPress={() => navigation.navigate("Book", { service: service })}
+          onPress={() => {
+            if (user) {
+              // Check if the user is logged in
+              navigation.navigate("Book", {
+                service: service,
+                serviceName: service.name,
+              });
+            } else {
+              navigation.navigate("Login");
+            }
+          }}
         >
           <Text style={styles.buttonText}>Book Now</Text>
         </TouchableOpacity>
