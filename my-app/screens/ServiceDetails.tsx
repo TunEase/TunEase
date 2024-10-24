@@ -14,8 +14,6 @@ import {
 import { supabase } from "../services/supabaseClient";
 import { Service } from "../types/business";
 import FAQs from "./FAQs";
-import Feedback from "./Feedback";
-import Review from "./Review";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 
@@ -41,6 +39,8 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
   const navigation = useNavigation<ServiceDetailsNavigationProp>();
   const { serviceId } = route.params;
   const [service, setService] = useState<Service | null>(null);
+  const [fees, setFees] = useState<any[]>([]);
+  const [eligibility, setEligibility] = useState<any[]>([]);
   const [activeTab, setActiveTab] = React.useState("About Me");
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -70,7 +70,35 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
       }
     };
 
+    const fetchFees = async () => {
+      const { data, error } = await supabase
+        .from("fees")
+        .select("*")
+        .eq("service_id", serviceId);
+
+      if (error) {
+        console.error("Error fetching fees:", error);
+      } else {
+        setFees(data);
+      }
+    };
+
+    const fetchEligibility = async () => {
+      const { data, error } = await supabase
+        .from("eligibility")
+        .select("*")
+        .eq("service_id", serviceId);
+
+      if (error) {
+        console.error("Error fetching eligibility:", error);
+      } else {
+        setEligibility(data);
+      }
+    };
+
     fetchServiceDetails();
+    fetchFees();
+    fetchEligibility();
   }, [serviceId]);
 
   const renderTabContent = () => {
@@ -81,10 +109,39 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
             {service?.description || "No description available."}
           </Text>
         );
-      case "Feedback":
-        return <Feedback />;
-      case "Reviews":
-        return <Review />;
+      case "Fees":
+        return (
+          <View style={styles.contentContainer}>
+            {fees && fees.length > 0 ? (
+              fees.map((fee, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <Text style={styles.tableCell}>{fee.name}</Text>
+                  <Text style={styles.tableCell}>{`$${fee.fee}`}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.tabContent}>
+                No fees information available.
+              </Text>
+            )}
+          </View>
+        );
+      case "Eligibility":
+        return (
+          <View style={styles.contentContainer}>
+            {eligibility && eligibility.length > 0 ? (
+              eligibility.map((criteria, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <Text style={styles.tableCell}>{criteria.description}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.tabContent}>
+                No eligibility information available.
+              </Text>
+            )}
+          </View>
+        );
       case "FAQs":
         return <FAQs />;
       default:
@@ -132,7 +189,7 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
         </Text>
       </View>
       <View style={styles.tabContainer}>
-        {["About Me", "Feedback", "Reviews", "FAQs"].map((tab) => (
+        {["About Me", "Fees", "Eligibility", "FAQs"].map((tab) => (
           <TouchableOpacity
             key={tab}
             style={[styles.tab, activeTab === tab && styles.activeTab]}
@@ -244,6 +301,19 @@ const styles = StyleSheet.create({
   tabContent: {
     fontSize: 16,
     color: "#666",
+  },
+  tableRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1, // Added border for better separation
+    borderBottomColor: "#E0E0E0",
+  },
+  tableCell: {
+    fontSize: 16,
+    color: "#333",
+    flex: 1, // Ensures cells take equal space
+    textAlign: "center", // Centers text within each cell
   },
   buttonContainer: {
     flexDirection: "row",

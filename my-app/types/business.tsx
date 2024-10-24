@@ -40,6 +40,8 @@ export interface Service {
   reviews: Review[];
   media: Media[];
   price: number;
+  eligibility: string;
+  fees: string;
 }
 
 export interface Review {

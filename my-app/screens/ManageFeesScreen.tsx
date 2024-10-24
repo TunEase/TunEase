@@ -9,19 +9,32 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { supabase } from "../services/supabaseClient";
+import { FontAwesome } from "@expo/vector-icons"; // Import FontAwesome from @expo/vector-icons
 
 const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
   const { serviceId, serviceName } = route.params;
   const [fees, setFees] = useState<
-    { id: string; name: string; fee: number; description: string }[]
+    {
+      id: string;
+      name: string;
+      fee: number;
+      description: string;
+      created_at: string;
+      updated_at: string;
+    }[]
   >([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentFee, setCurrentFee] = useState<any>(null);
 
+  const handleUploadImage = (feeId: string) => {
+    // Logic to handle image upload for the specific fee
+    console.log(`Upload image for fee with ID: ${feeId}`);
+  };
+
   const fetchFees = async () => {
     const { data, error } = await supabase
       .from("fees")
-      .select("*")
+      .select("id, name, fee, description, created_at, updated_at") // Include created_at and updated_at
       .eq("service_id", serviceId);
 
     if (error) {
@@ -41,6 +54,12 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
   };
 
   const handleSaveFee = async () => {
+    // Validate fee amount
+    if (isNaN(currentFee.fee) || currentFee.fee === null) {
+      console.error("Invalid fee amount");
+      return;
+    }
+
     if (currentFee.id) {
       // Update existing fee
       const { error } = await supabase
@@ -87,16 +106,29 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
         data={fees}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.feeItem}
-            onPress={() => handleEditFee(item)}
-          >
+          <View style={styles.feeItem}>
+            <View style={styles.iconContainer}>
+              <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
+                <FontAwesome name="cloud-upload" size={20} color="#00796B" />
+              </TouchableOpacity>
+            </View>
             <View style={styles.feeTextContainer}>
               <Text style={styles.feeName}>{item.name}</Text>
-              <Text style={styles.feeDate}>24/nov/2023</Text>
+              <Text style={styles.feeDescription}>{item.description}</Text>
+              <Text style={styles.feeDate}>
+                Created: {new Date(item.created_at).toLocaleDateString()}
+              </Text>
+              <Text style={styles.feeDate}>
+                Updated: {new Date(item.updated_at).toLocaleDateString()}
+              </Text>
             </View>
-            <Text style={styles.feeAmount}>${item.fee.toFixed(2)}</Text>
-          </TouchableOpacity>
+            <View style={styles.amountAndEditContainer}>
+              <Text style={styles.feeAmount}>${item.fee.toFixed(2)}</Text>
+              <TouchableOpacity onPress={() => handleEditFee(item)}>
+                <FontAwesome name="edit" size={20} color="#00796B" />
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
       />
       <TouchableOpacity style={styles.addButton} onPress={handleAddFee}>
@@ -128,9 +160,13 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
             style={styles.input}
             placeholder="Fee Amount"
             value={currentFee?.fee.toString()}
-            onChangeText={(text) =>
-              setCurrentFee({ ...currentFee, fee: parseFloat(text) })
-            }
+            onChangeText={(text) => {
+              const feeValue = parseFloat(text);
+              setCurrentFee({
+                ...currentFee,
+                fee: isNaN(feeValue) ? 0 : feeValue,
+              });
+            }}
             keyboardType="numeric"
           />
           <TextInput
@@ -165,6 +201,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: "#f5f5f5", // Light background for contrast
   },
   serviceName: {
     fontSize: 24,
@@ -177,16 +214,37 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 15,
-    marginVertical: 5,
-    borderRadius: 10,
-    backgroundColor: "#f0f0f0",
+    marginVertical: 10,
+    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  iconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
   },
   feeTextContainer: {
     flexDirection: "column",
+    flex: 1,
+    marginHorizontal: 10,
+  },
+  amountAndEditContainer: {
+    alignItems: "flex-end",
   },
   feeName: {
     fontSize: 16,
     fontWeight: "bold",
+    color: "#333",
+  },
+  feeDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginVertical: 5,
   },
   feeDate: {
     fontSize: 12,
@@ -196,6 +254,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#00796B",
+    marginBottom: 5,
   },
   addButton: {
     position: "absolute",

@@ -9,14 +9,22 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { supabase } from "../services/supabaseClient";
+import { FontAwesome } from "@expo/vector-icons"; // Import FontAwesome from @expo/vector-icons
 
 const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
   const { serviceId } = route.params;
   const [eligibilities, setEligibilities] = useState<
-    { id: string; name: string; description: string }[]
+    {
+      id: string;
+      name: string;
+      description: string;
+      created_at: string;
+      updated_at: string;
+    }[]
   >([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentEligibility, setCurrentEligibility] = useState<any>(null);
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEligibilities();
@@ -25,7 +33,7 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
   const fetchEligibilities = async () => {
     const { data, error } = await supabase
       .from("eligibility")
-      .select("*")
+      .select("id, name, description, created_at, updated_at") // Include created_at and updated_at
       .eq("service_id", serviceId);
 
     if (error) {
@@ -78,6 +86,11 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
     fetchEligibilities();
   };
 
+  const handleUploadImage = (eligibilityId: string) => {
+    // Toggle the expanded state of the card
+    setExpandedCardId(expandedCardId === eligibilityId ? null : eligibilityId);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Manage Eligibility</Text>
@@ -85,15 +98,34 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
         data={eligibilities}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.eligibilityItem}
-            onPress={() => handleEditEligibility(item)}
-          >
-            <Text style={styles.eligibilityName}>{item.name}</Text>
-            <Text style={styles.eligibilityDescription}>
-              {item.description}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.eligibilityItem}>
+            <View style={styles.iconContainer}>
+              <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
+                <FontAwesome name="cloud-upload" size={20} color="#00796B" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.eligibilityTextContainer}>
+              <Text style={styles.eligibilityName}>{item.name}</Text>
+              <Text style={styles.eligibilityDescription}>
+                {item.description}
+              </Text>
+              <Text style={styles.eligibilityDate}>
+                Created: {new Date(item.created_at).toLocaleDateString()}
+              </Text>
+              <Text style={styles.eligibilityDate}>
+                Updated: {new Date(item.updated_at).toLocaleDateString()}
+              </Text>
+              {expandedCardId === item.id && (
+                <View style={styles.imageUploadSection}>
+                  <Text style={styles.uploadText}>Upload Image Section</Text>
+                  {/* Add your image upload logic here */}
+                </View>
+              )}
+            </View>
+            <TouchableOpacity onPress={() => handleEditEligibility(item)}>
+              <FontAwesome name="edit" size={20} color="#00796B" />
+            </TouchableOpacity>
+          </View>
         )}
       />
       <TouchableOpacity style={styles.addButton} onPress={handleAddEligibility}>
@@ -172,9 +204,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   eligibilityItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
+  },
+  iconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  eligibilityTextContainer: {
+    flex: 1,
+    marginHorizontal: 10,
   },
   eligibilityName: {
     fontSize: 16,
@@ -183,6 +227,20 @@ const styles = StyleSheet.create({
   eligibilityDescription: {
     fontSize: 14,
     color: "#555",
+  },
+  eligibilityDate: {
+    fontSize: 12,
+    color: "#888",
+  },
+  imageUploadSection: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 5,
+  },
+  uploadText: {
+    fontSize: 14,
+    color: "#333",
   },
   addButton: {
     position: "absolute",
