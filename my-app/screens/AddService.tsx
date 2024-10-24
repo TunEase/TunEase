@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import {
   Alert,
   FlatList,
@@ -16,7 +17,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
   route,
   navigation,
 }) => {
-  const { id } = route.params;
+  const { id } = route.params || {};
   const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [newService, setNewService] = useState({
@@ -126,7 +127,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.availabilityButton}
-                  onPress={() => navigation.navigate("AvailabilityScreen")}
+                  onPress={() => navigation.navigate("AvailabilityScreen",{serviceId:item.id})}
                 >
                   <Icon name="check-circle" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
