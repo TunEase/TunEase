@@ -14,38 +14,55 @@ import Signup from "./screens/Auth/signup";
 import BusinessProfile from "./screens/BusinessProfile";
 import BusinessProfileApp from "./screens/BusinessProfileApp";
 import EditProfileScreen from "./screens/EditProfileScreen";
+import EditServiceScreen from "./screens/EditServiceScreen";
 import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
-
 import Review from "./screens/Review";
+
+
 import Onboarding from "./screens/OnBoarding";
 
 // import { insertFakeData } from "./services/supabaseClient";
-import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
+import {
+  OnBoardingScreen1,
+  OnBoardingScreen2,
+  OnBoardingScreen3,
+  OnBoardingScreen4,
+} from "./screens/OnBoarding2";
 import ProfileScreen from "./screens/ProfileScreen";
-import UsernameSettings from "./screens/UsernameSettings";
 import ProfileSettings from "./screens/ProfileSettings";
+import UsernameSettings from "./screens/UsernameSettings";
+// import { OnBoardingScreen1, OnBoardingScreen2,OnBoardingScreen3,OnBoardingScreen4 } from "./screens/OnBoarding2";
 import Notification from "./screens/Notification";
 
-import ServiceDetails from "./screens/ServiceDetails";
-import Statistics from "./screens/Statistics";
-import UpdateQA from "./screens/UpdateQ&A";
-import OneServices from "./screens/OneServices";
-import ComplaintsScreen from "./screens/ComplaintsScreen";
-import staticBusinessProfile from "./screens/staticBusinessProfile";
 // import "./faker/index";
+import { useAuth } from "./hooks/useAuth";
+import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
+import AddAvailabilityTimeScreen from "./screens/AddAvailabilityTimeScreen";
 import AddService from "./screens/AddService";
 import UploadMedia from './screens/UploadMedia'; 
 
 // Ensure this import is correct
 import CreateServiceScreen from "./screens/CreateServiceScreen";
 import AllService from "./screens/AllService";
-import UserProfile from "./screens/UserProfile";
-import { useAuth } from "./hooks/useAuth";
 import AvailabilityScreen from "./screens/AvailabilityScreen";
+import Book from "./screens/Book";
+import ComplaintsScreen from "./screens/ComplaintsScreen";
+
+import OneServices from "./screens/OneServices";
+import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
+import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
+import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
+import ServiceDetails from "./screens/ServiceDetails";
+import ServiceSettings from "./screens/SeviceSetting";
+import staticBusinessProfile from "./screens/staticBusinessProfile";
+import Statistics from "./screens/Statistics";
+import UpdateQA from "./screens/UpdateQ&A";
+import UserProfile from "./screens/UserProfile";
+import News from "./screens/News";
+ServiceSettings;
+
 const Stack = createNativeStackNavigator();
-
-
 
 export default function App() {
 
@@ -223,15 +240,24 @@ export default function App() {
             component={AddService}
             options={{ headerShown: false }}
           />
-            <Stack.Screen
-            name="CreateServiceScreen"
-            component={CreateServiceScreen}
-            options={{ headerShown: false }}
-
-          />
           <Stack.Screen
             name="AvailabilityScreen"
             component={AvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddAvailabilityScreen"
+            component={AddAvailabilityScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddAvailabilityTimeScreen"
+            component={AddAvailabilityTimeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CreateServiceScreen"
+            component={CreateServiceScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen
@@ -257,6 +283,42 @@ export default function App() {
           <Stack.Screen
             name="UploadMedia"
             component={UploadMedia}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="EditServiceScreen"
+            component={EditServiceScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OwnerComplaintsScreen"
+            component={OwnerComplaintsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OwnerReviewsScreen"
+            component={OwnerReviewsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ReplyToComplaintScreen"
+            component={ReplyToComplaintScreen}
+            options={{ headerShown: false }}
+          />
+
+          <Stack.Screen
+            name="Book"
+            component={Book}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ServiceSettings"
+            component={ServiceSettings}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="News"
+            component={News}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

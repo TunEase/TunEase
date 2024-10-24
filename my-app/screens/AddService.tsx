@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Image, FlatList, Alert } from "react-native";
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Ensure this package is installed
+import {
+  Alert,
+  FlatList,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Ensure this package is installed
 import { supabase } from "../services/supabaseClient";
 
 const AddService: React.FC<{ route: any; navigation: any }> = ({
@@ -10,11 +19,28 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
   const { id } = route.params;
   const [selectedServices, setSelectedServices] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
-  const [newService, setNewService] = useState({ name: '', description: '', imageUrl: '', price: '' });
+  const [newService, setNewService] = useState({
+    name: "",
+    description: "",
+    imageUrl: "",
+    price: "",
+  });
   const [showForm, setShowForm] = useState<boolean>(false);
   const [showServices, setShowServices] = useState<boolean>(false);
-  const [newServices, setNewServices] = useState<Record<string, {name: string; description: string; price: number; duration: string; reordering: string; service_type: string }>>({});
-  
+  const [newServices, setNewServices] = useState<
+    Record<
+      string,
+      {
+        name: string;
+        description: string;
+        price: number;
+        duration: string;
+        reordering: string;
+        service_type: string;
+      }
+    >
+  >({});
+
   const [showInputs, setShowInputs] = useState<Record<string, boolean>>({});
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [currentServiceId, setCurrentServiceId] = useState<string | null>(null);
@@ -22,10 +48,12 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
   const fetchServices = async () => {
     const { data, error } = await supabase
       .from("services")
-      .select(`
+      .select(
+        `
         *,
         media:media(service_id, media_url)
-      `)
+      `
+      )
       .eq("business_id", id);
 
     if (error) {
@@ -39,7 +67,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
   const addService = async () => { 
     const { data, error } = await supabase
       .from("services")
-      .insert([...selectedServices, { ...newService, id:"id" }]);
+      .insert([...selectedServices, { ...newService, id: "id" }]);
     setSelectedServices([...selectedServices, data]);
 
     if (error) {
@@ -50,7 +78,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
         setServices([...services, ...data]);
       }
       setShowForm(false);
-      setNewService({ name: '', description: '', imageUrl: '', price: '' });
+      setNewService({ name: "", description: "", imageUrl: "", price: "" });
       fetchServices(); // Use the last added service ID
     }
   };
@@ -90,15 +118,31 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
               <Text style={styles.description}>{item.description}</Text>
               <Text style={styles.price}>Rp.{item.price}k</Text>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.settingsButton}>
+                <TouchableOpacity
+                  style={styles.settingsButton}
+                  onPress={() => navigation.navigate("ServiceSettings")}
+                >
                   <Icon name="settings" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.availabilityButton} onPress={() => navigation.navigate('AvailabilityScreen')}>
+                <TouchableOpacity
+                  style={styles.availabilityButton}
+                  onPress={() => navigation.navigate("AvailabilityScreen")}
+                >
                   <Icon name="check-circle" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.updateButton}
+                  onPress={() =>
+                    navigation.navigate("EditServiceScreen", {
+                      serviceId: item.id,
+                    })
+                  }
+                >
+                  <Icon name="edit" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.updateButton}>
-    <Icon name="update" size={24} color="#FFFFFF" />
-  </TouchableOpacity>
+                  <Icon name="update" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
 
                 <TouchableOpacity
                   style={styles.trashButton}
@@ -120,7 +164,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
       </TouchableOpacity>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -132,16 +176,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
     marginVertical: 10,
-    overflow: 'hidden',
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
   },
   coverImage: {
-    width: '100%',
+    width: "100%",
     height: 150,
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
   cardContent: {
     padding: 20,
@@ -162,13 +206,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between', // Distribute space evenly
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between", // Distribute space evenly
+    alignItems: "center",
     marginTop: 10,
   },
   addButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     right: 20,
     backgroundColor: "#00796B",
@@ -193,11 +237,11 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2
+      height: 2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5
+    elevation: 5,
   },
   modalText: {
     marginBottom: 15,
@@ -206,7 +250,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   input: {
-    width: '100%',
+    width: "100%",
     borderWidth: 1,
     borderColor: "#ccc",
     padding: 10,

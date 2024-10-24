@@ -1,14 +1,15 @@
-import { supabase } from "../services/supabaseClient";
 import { faker } from "@faker-js/faker";
-
+import { addDays, format } from "date-fns";
+import { supabase } from "../services/supabaseClient";
 import { getAllServices } from "./Helpers/getAllServices";
 
 // Define types for the data structures
 interface Availability {
-  service_id: string; // Reference to the service
-  start_time: string; // Time in HH:mm format
-  end_time: string; // Time in HH:mm format
-  day_of_week: string; // Day of the week
+  service_id: string;
+  currentdate: string;
+  start_time: string;
+  end_time: string;
+  days_of_week: number[];
 }
 
 export const createAvailabilityData = async () => {
@@ -19,38 +20,57 @@ export const createAvailabilityData = async () => {
     // Prepare availability data
     const availabilityData: Availability[] = [];
 
-    // Function to generate availability entries for the next week
-    const generateAvailabilityEntries = (serviceId: string) => {
-      const daysOfWeek = [
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY",
-        "SUNDAY",
-      ];
-      daysOfWeek.forEach((day) => {
-        const startHour = 9; // Example start hour (9 AM)
-        const endHour = 17; // Example end hour (5 PM)
-        const startDate = new Date(0, 0, 0, startHour, 0);
-        const endDate = new Date(0, 0, 0, endHour, 0);
-        const randomTime = new Date(
-          startDate.getTime() +
-            Math.random() * (endDate.getTime() - startDate.getTime())
-        );
-        availabilityData.push({
-          service_id: serviceId,
-          start_time: `${randomTime.getHours().toString().padStart(2, "0")}:00`, // Format start time
-          end_time: `${(randomTime.getHours() + 1).toString().padStart(2, "0")}:00`, // Format end time (1 hour later)
-          day_of_week: day, // Day of the week
-        });
+    // Function to generate availability entries
+    const generateAvailabilityEntries = (
+      serviceId: string,
+      serviceStartTime: string,
+      serviceEndTime: string,
+      duration: number
+    ) => {
+      const startDate = new Date();
+      const endDate = addDays(
+        startDate,
+        faker.number.int({ min: 30, max: 90 })
+      );
+
+      // Convert service start and end times to Date objects
+      const [startHour, startMinute] = serviceStartTime.split(":").map(Number);
+      const [endHour, endMinute] = serviceEndTime.split(":").map(Number);
+
+      const startTime = new Date(startDate);
+      startTime.setHours(startHour, startMinute, 0); // Set start time to service start time
+
+      const endTime = new Date(startDate);
+      endTime.setHours(endHour, endMinute, 0); // Set end time to service end time
+
+      // Ensure availability times are within the service time range
+      const availabilityStartTime =
+        startTime.getTime() +
+        Math.random() * (endTime.getTime() - startTime.getTime());
+      const availabilityEndTime = availabilityStartTime + duration * 60 * 1000; // Add duration in milliseconds
+
+      const daysOfWeek = faker.helpers
+        .shuffle([0, 1, 2, 3, 4, 5, 6])
+        .slice(0, faker.number.int({ min: 3, max: 7 }))
+        .sort((a, b) => a - b);
+
+      availabilityData.push({
+        service_id: serviceId,
+        currentdate: format(startDate, "yyyy-MM-dd"),
+        start_time: format(new Date(availabilityStartTime), "HH:mm"), // Format start time to HH:mm
+        end_time: format(new Date(availabilityEndTime), "HH:mm"), // Format end time to HH:mm
+        days_of_week: daysOfWeek,
       });
     };
 
     // Generate availability for each service
     services.forEach((service: any) => {
-      generateAvailabilityEntries(service.id);
+      generateAvailabilityEntries(
+        service.id,
+        service.start_time,
+        service.end_time,
+        service.duration
+      ); // Pass the service start time, end time, and duration
     });
 
     // Insert availability data into the database
@@ -69,4 +89,4 @@ export const createAvailabilityData = async () => {
 };
 
 // Call the function to create availability data
-createAvailabilityData();
+// createAvailabilityData();

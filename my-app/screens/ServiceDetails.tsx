@@ -1,21 +1,20 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
+  Dimensions,
+  Image,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  ScrollView,
-  Image,
-  Dimensions,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 import { supabase } from "../services/supabaseClient";
+import { Service } from "../types/business";
+import FAQs from "./FAQs";
 import Feedback from "./Feedback";
 import Review from "./Review";
-import FAQs from "./FAQs";
-import { Service, Media, Review as ReviewType } from "../types/business";
 
 const { width } = Dimensions.get("window");
 
@@ -125,7 +124,10 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
         >
           <Text style={styles.buttonText}>Raise a Complaint</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bookButton}>
+        <TouchableOpacity
+          style={styles.bookButton}
+          onPress={() => navigation.navigate("Book", { service: service })}
+        >
           <Text style={styles.buttonText}>Book Now</Text>
         </TouchableOpacity>
       </View>

@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Image, Text, TouchableOpacity, FlatList, Button } from 'react-native';
-import { ImagePickerResponse, launchImageLibrary } from 'react-native-image-picker';
-import { getAllMedia } from '../faker/Helpers/getAllMedia';
+import React, { useState } from 'react';
+import { StyleSheet, View, Image, Text, TouchableOpacity, FlatList } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 interface UploadMediaProps {
   onImageSelect: (uri: string | null) => void;
@@ -12,34 +11,23 @@ const UploadMedia = ({ onImageSelect }: UploadMediaProps) => {
   const [mediaList, setMediaList] = useState<string[]>([]);
   const [showMediaList, setShowMediaList] = useState<boolean>(false);
   const [visibleCount, setVisibleCount] = useState<number>(6);
-  
-
-  useEffect(() => {
-    const fetchMedia = async () => {
-      const media = await getAllMedia();
-      setMediaList(media.map(item => item.media_url));
-    };
-    fetchMedia();
-  }, []);
-  
 
   const toggleMediaList = () => {
     setShowMediaList(!showMediaList);
   };
-  
+
   const handleAddImage = async () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
-      selectionLimit: 1,
+      selectionLimit: 1, // Limit to one selection
     });
-  
-    if (!result.didCancel && result.assets && result.assets.length > 0) {
-      const newImageUri = result.assets[0].uri;
-      if (newImageUri) {
-      setMediaList(prevList => [...prevList, newImageUri]);
+
+    if (!result.didCancel && result.assets && result.assets[0].uri) {
+      const selectedImageUri = result.assets[0].uri;
+      setMediaUrl(selectedImageUri);
+      onImageSelect(selectedImageUri);
     }
   };
-}
 
   const renderMediaItem = ({ item }: { item: string }) => (
     <TouchableOpacity onPress={() => setMediaUrl(item)}>
@@ -49,34 +37,37 @@ const UploadMedia = ({ onImageSelect }: UploadMediaProps) => {
 
   return (
     <View style={styles.container}>
-     
-        <View style={styles.card}>
-          <TouchableOpacity style={styles.uploadBox} onPress={toggleMediaList}>
-            {mediaUrl ? (
-              <Image source={{ uri: mediaUrl }} style={styles.mediaPreview} />
-            ) : (
-              <View style={styles.placeholder}>
-                <Text style={styles.uploadIcon}>↑</Text>
-                <Text style={styles.uploadText}>Upload files or drag and drop</Text>
-                <Text style={styles.uploadSubtext}>PNG, JPG, GIF or MP4 up to 10MB each</Text>
-                {showMediaList && (
-              <>
-             <FlatList
-              data={mediaList.slice(0, visibleCount)}
-              keyExtractor={(item, index) => index.toString()}
-               renderItem={renderMediaItem}
-               numColumns={2}
-              contentContainerStyle={styles.mediaList}
-             />
-             </>
-                )}
-              </View>
-            )}
-                  <TouchableOpacity style={styles.addButton} onPress={handleAddImage}>
+      <View style={styles.card}>
+        <TouchableOpacity style={styles.uploadBox} onPress={toggleMediaList}>
+          {mediaUrl ? (
+            <Image source={{ uri: mediaUrl }} style={styles.mediaPreview} />
+          ) : (
+            <View style={styles.placeholder}>
+              <Text style={styles.uploadIcon}>↑</Text>
+              <Text style={styles.uploadText}>Upload files or drag and drop</Text>
+              <Text style={styles.uploadSubtext}>PNG, JPG, GIF or MP4 up to 10MB each</Text>
+              {showMediaList && (
+                <>
+                  <FlatList
+                    data={mediaList.slice(0, visibleCount)}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={renderMediaItem}
+                    numColumns={2}
+                    contentContainerStyle={styles.mediaList}
+                  />
+                </>
+              )}
+            </View>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddImage}>
+          {mediaUrl ? (
+            <Image source={{ uri: mediaUrl }} style={styles.mediaPreview} />
+          ) : (
             <Text style={styles.addButtonText}>+</Text>
-          </TouchableOpacity>
-          </TouchableOpacity>
-        </View>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -91,7 +82,6 @@ const styles = StyleSheet.create({
   uploadBox: {
     width: 300,
     height: 500,
-
     borderColor: "#00796B",
     borderWidth: 1,
     borderRadius: 15,
@@ -145,16 +135,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
   },
-  mediaUrl: {
-    fontSize: 14,
-    color: "#333",
-    marginTop: 10,
-  },
   mediaList: {
     paddingHorizontal: 25,
     marginBottom: 10,
     flexDirection: "row",
-    flexWrap: "wrap",
+  
   },
   addButton: {
     backgroundColor: "#00796B",
@@ -177,7 +162,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
-
 });
 
-export default UploadMedia
+export default UploadMedia;

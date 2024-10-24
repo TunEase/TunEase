@@ -9,26 +9,27 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ImageBackground,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Footer from "../components/HomePage/MainFooter";
 
 interface HomeProps {
   navigation: any;
+  
 }
 
 const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
-
+  
+  
   const categories = [
     { icon: "mail", name: "Baldia" },
-    { icon: "money", name: "Bousta" },
+    { icon: "money", name: "la Poste" },
     { icon: "local-hospital", name: "Hospital" },
     { icon: "medical-services", name: "Medicine" },
   ];
 
-  const TopServices = [
+  const topServices = [
     {
       id: "1",
       name: "Bousta",
@@ -47,6 +48,25 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     },
   ];
 
+  const topBusinesses = [
+    {
+      id: "1",
+      name: "Tech Solutions",
+      specialty: "Technology",
+      rating: 4.7,
+      image:
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2NjQ0NzF8MHwxfHNlYXJjaHw2fHxidXNpbmVzc3xlbnwwfHx8fDE3MjkwMjcwMjR8MA&ixlib=rb-4.0.3&q=80&w=1080",
+    },
+    {
+      id: "2",
+      name: "Creative Agency",
+      specialty: "Design",
+      rating: 4.5,
+      image:
+        "https://www.designinc.co.uk/wp-content/uploads/2019/01/Design-is-incorporated.jpg",
+    },
+  ];
+
   const banners = [
     {
       id: "1",
@@ -61,15 +81,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         "https://i0.wp.com/lapresse.tn/wp-content/uploads/2023/01/la-poste-tunisienne.jpg?resize=740%2C427&ssl=1",
     },
   ];
-
-  const renderCategoryItem = ({ item }) => (
-    <TouchableOpacity style={styles.categoryItem}>
-      <View style={styles.categoryIcon}>
-        <Icon name={item.icon} size={25} color="#00796B" />
-      </View>
-      <Text style={styles.categoryName}>{item.name}</Text>
-    </TouchableOpacity>
-  );
 
   const renderCard = ({ item }) => (
     <TouchableOpacity style={styles.card}>
@@ -88,24 +99,32 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       <Image source={{ uri: item.image }} style={styles.bannerImage} />
       <View style={styles.bannerTextContainer}>
         <Text style={styles.bannerText}>{item.text}</Text>
-        <TouchableOpacity style={styles.bannerButton}>
+        <TouchableOpacity
+          style={styles.bannerButton}
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: "la Poste" })
+          }
+        >
           <Text style={styles.bannerButtonText}>Book Now</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
-
+  
   return (
     <SafeAreaView style={styles.mainContainer}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>TunEase</Text>
           <TouchableOpacity
             onPress={() => navigation.navigate("BusinessProfileApp")}
           >
-            <Icon name="notifications" size={24} color="#333" />
+            <Icon name="person" size={24} color="#333" />
           </TouchableOpacity>
         </View>
+
+        {/* Search */}
         <View style={styles.searchContainer}>
           <Icon
             name="search"
@@ -120,31 +139,45 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             onChangeText={setSearchQuery}
           />
         </View>
-
-        {/* Scrollable Banner Section */}
-        <FlatList
-          data={banners}
-          renderItem={renderBanner}
-          keyExtractor={(item) => item.id}
+        
+        {/* Scrollable Banner */}
+        {/* <FlatList
+          data={categories}
+          renderItem={renderCategoryItem}
+          keyExtractor={(item) => item.name}
           horizontal
           showsHorizontalScrollIndicator={false}
-          pagingEnabled
-          style={styles.bannerList}
-        />
+        /> */}
 
-        <View style={styles.categoriesContainer}>
-          <FlatList
-            data={categories}
-            renderItem={renderCategoryItem}
-            keyExtractor={(item) => item.name}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-          />
-        </View>
+        {/* Categories */}
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("CategoryDetails", { category: name })
+          }
+        >
+          <View style={styles.categoriesContainer}>
+            <FlatList
+              data={categories}
+              renderItem={({ item }) => (
+                <View style={styles.categoryItem}>
+                  <Icon name={item.icon} size={25} color="#00796B" />
+                  <Text style={styles.categoryName}>{item.name}</Text>
+                </View>
+              )}
+              keyExtractor={(item) => item.name}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* Top Services */}
+
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Top Services</Text>
+
           <FlatList
-            data={TopServices}
+            data={topServices}
             renderItem={renderCard}
             keyExtractor={(item) => item.id}
             numColumns={2}
@@ -152,6 +185,21 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             columnWrapperStyle={styles.columnWrapper}
           />
         </View>
+
+        {/* Top Businesses */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Top Businesses</Text>
+          <FlatList
+            data={topBusinesses}
+            renderItem={renderCard}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            showsVerticalScrollIndicator={false}
+            columnWrapperStyle={styles.columnWrapper}
+          />
+        </View>
+
+        {/* Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.availableButton}
@@ -171,7 +219,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             onPress={() => navigation.navigate("AllServices")}
           >
             <Icon
-              name="mail"
+              name="business"
               size={20}
               color="#FFFFFF"
               style={styles.buttonIcon}
@@ -180,112 +228,97 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <Footer navigation={navigation} />
+      <Footer navigation={navigation}/>
     </SafeAreaView>
   );
 };
 
-export default Home;
-
 const styles = StyleSheet.create({
-  bannerContainer: {
-    marginRight: 16,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    overflow: "hidden",
-    width: 300,
-  },
-  bannerImage: {
-    width: "100%",
-    height: 100,
-  },
-  bannerTextContainer: {
-    padding: 10,
-  },
-  bannerText: {
-    fontSize: 14,
-    color: "#333",
-    marginBottom: 10,
-  },
-  bannerButton: {
-    backgroundColor: "#00796B",
-    borderRadius: 5,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-  },
-  bannerButtonText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-  },
-  bannerList: {
-    marginBottom: 20,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 55,
-  },
-  availableButton: {
-    flex: 0.48,
-    backgroundColor: "#00796B",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 10,
-    borderRadius: 10,
-    marginHorizontal: 8,
-  },
-  buttonIcon: {
-    marginRight: 5,
-  },
-  availableText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
   mainContainer: {
     flex: 1,
     backgroundColor: "#F2F2F2",
   },
   contentContainer: {
-    flexGrow: 1,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    paddingBottom: 60,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 25,
+    backgroundColor: "#00796B",
+    marginBottom: 5,
   },
   headerTitle: {
     fontSize: 24,
+    color: "#FFFFFF",
     fontWeight: "bold",
-    color: "#333",
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 20,
+    marginVertical: 10,
     backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 20,
+    borderRadius: 25,
+    elevation: 2,
+    marginHorizontal: 15,
   },
   searchIcon: {
-    marginRight: 10,
+    padding: 10,
   },
   searchInput: {
     flex: 1,
-    height: 40,
+    fontSize: 16,
+    paddingHorizontal: 10,
+  },
+  bannerList: {
+    marginVertical: 10,
+    paddingLeft: 10,
+  },
+  bannerContainer: {
+    marginRight: 10,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#FFFFFF",
+    elevation: 2,
+    width: 280,
+  },
+  bannerImage: {
+    height: 150,
+    width: "100%",
+  },
+  bannerTextContainer: {
+    padding: 10,
+    justifyContent: "space-between",
+  },
+  bannerText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  bannerButton: {
+    backgroundColor: "#00796B",
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 25,
+  },
+  bannerButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
   },
   categoriesContainer: {
-    marginBottom: 30,
+    marginHorizontal: 30,
+    marginVertical: 15,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 35,
   },
   categoryItem: {
     alignItems: "center",
-    marginRight: 45,
+    marginRight: 50,
     display: "flex",
-    // flexDirection: "row",
     justifyContent: "center",
   },
   categoryIcon: {
@@ -298,51 +331,103 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryName: {
-    fontSize: 12,
+    marginTop: 5,
+    fontSize: 14,
     color: "#333",
-    textAlign: "center",
   },
-  sectionContainer: {},
+  sectionContainer: {
+    paddingHorizontal: 20,
+    marginVertical: 15,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 10,
-  },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    padding: 10,
-    margin: 5,
-    width: "100%",
-    maxWidth: 160,
-  },
-  image: {
-    width: "100%",
-    height: 100,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  name: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  specialty: {
-    fontSize: 12,
-    color: "#888",
-    marginBottom: 5,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  ratingText: {
-    fontSize: 12,
-    color: "#333",
-    marginLeft: 4,
+    color: "#00796B",
   },
   columnWrapper: {
     justifyContent: "space-between",
   },
+  card: {
+    flex: 1,
+    marginBottom: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    elevation: 3,
+    padding: 10,
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  image: {
+    height: 100,
+    width: "100%",
+    borderRadius: 10,
+  },
+  name: {
+    marginTop: 10,
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  specialty: {
+    fontSize: 14,
+    color: "#666",
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 5,
+  },
+  ratingText: {
+    fontSize: 14,
+    marginLeft: 5,
+  },
+  buttonContainer: {
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  availableButton: {
+    backgroundColor: "#00796B",
+    borderRadius: 25,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  buttonIcon: {
+    marginRight: 10,
+  },
+  availableText: {
+    fontSize: 16,
+    color: "#FFFFFF",
+  },
+  newsCard: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  newsImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+  },
+  newsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  newsContent: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  newsDate: {
+    fontSize: 14,
+    color: '#888',
+  },
+
 });
+
+export default Home;
