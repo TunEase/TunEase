@@ -96,7 +96,7 @@ create table
 create table availability (
   id uuid primary key default uuid_generate_v4(),
   service_id uuid references services (id) on delete cascade,
-  currentDate date not null,
+  currentdate date not null,
   start_time time not null,
   end_time time not null,
   days_of_week integer[] not null,
