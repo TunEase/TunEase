@@ -19,15 +19,16 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
 
   return (
     <View style={styles.footerContainer}>
-      <TouchableOpacity>
-        <FontAwesome5 name="home" size={24} color="#00796B" />
+      <TouchableOpacity style={styles.iconContainer}>
+        <FontAwesome5 name="home" size={24} color="#004D40" />
         <Text style={styles.footerText}>Home</Text>
       </TouchableOpacity>
-      <TouchableOpacity>
-        <FontAwesome5 name="bell" size={26} color="#00796B" />
+      <TouchableOpacity style={styles.iconContainer}>
+        <FontAwesome5 name="bell" size={24} color="#004D40" />
         <Text style={styles.footerText}>Notifications</Text>
       </TouchableOpacity>
       <TouchableOpacity
+        style={styles.iconContainer}
         onPress={() => {
           if (!user) {
             setModalVisible(true); // Show modal if user is not logged in
@@ -36,11 +37,14 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
           }
         }}
       >
-        <FontAwesome5 name="user" size={24} color="#00796B" />
+        <FontAwesome5 name="user" size={24} color="#004D40" />
         <Text style={styles.footerText}>Profile</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <FontAwesome5 name="sign-out-alt" size={26} color="#00796B" />
+      <TouchableOpacity
+        style={styles.iconContainer}
+        onPress={() => navigation.navigate("Login")}
+      >
+        <FontAwesome5 name="sign-out-alt" size={24} color="#004D40" />
         <Text style={styles.footerText}>Logout</Text>
       </TouchableOpacity>
 
@@ -86,16 +90,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    backgroundColor: "#FAFAFA", // Lighter background for modern feel
+    backgroundColor: "#FAFAFA",
     borderTopWidth: 1,
     borderTopColor: "#B0BEC5",
-    paddingVertical: 15,
-    elevation: 5, // Subtle elevation to lift the footer off the screen slightly
+    paddingVertical: 10,
+    elevation: 5,
+  },
+  iconContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
   },
   footerText: {
-    fontSize: 14, // Slightly larger font for readability
-    color: "#004D40", // Softer dark color to match the icon color
-    marginTop: 5,
+    fontSize: 12,
+    color: "#004D40",
+    marginTop: 3,
   },
   modalOverlay: {
     flex: 1,
