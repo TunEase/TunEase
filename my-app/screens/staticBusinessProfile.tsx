@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,8 +15,8 @@ import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 
 import { RootStackParamList } from "../types/business";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-const { width, height } = Dimensions.get("window");
-// import MyMapScreen from "./MapView";
+const { width } = Dimensions.get("window");
+
 type ProfileScreenRouteProp = RouteProp<RootStackParamList, "selectedBusiness">;
 type ProfileScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,7 +27,7 @@ const Profile = () => {
   const route = useRoute<ProfileScreenRouteProp>();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const { selectedBusiness } = route.params;
-  const { services, media } = selectedBusiness;
+  const { services = [], media = [] } = selectedBusiness; // Default to empty arrays
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -47,7 +47,7 @@ const Profile = () => {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [services.length]);
 
   if (!selectedBusiness) {
     return <Text>Loading...</Text>;
@@ -56,22 +56,21 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <Text>Hello</Text>
         <View style={styles.header}>
           <Image
             source={{
-              uri: media[
-                Math.floor(Math.random() * selectedBusiness.media.length)
-              ].media_url,
+              uri:
+                media[Math.floor(Math.random() * media.length)]?.media_url ||
+                "default-image-url",
             }}
             style={styles.backgroundImage}
           />
           <View style={styles.profileImageContainer}>
             <Image
               source={{
-                uri: media[
-                  Math.floor(Math.random() * selectedBusiness.media.length)
-                ].media_url,
+                uri:
+                  media[Math.floor(Math.random() * media.length)]?.media_url ||
+                  "default-image-url",
               }}
               style={styles.profileImage}
             />
@@ -121,14 +120,13 @@ const Profile = () => {
                     })
                   }
                 >
-                  {service.media.length > 0 && (
+                  {service.media?.length > 0 && (
                     <Image
                       source={{
-                        uri: service.media[
-                          Math.floor(
-                            Math.random() * selectedBusiness.media.length
-                          )
-                        ].media_url,
+                        uri:
+                          service.media[
+                            Math.floor(Math.random() * service.media.length)
+                          ]?.media_url || "default-image-url",
                       }}
                       style={styles.serviceImage}
                     />
@@ -144,21 +142,6 @@ const Profile = () => {
             <Text style={styles.noServicesText}>No services available.</Text>
           )}
         </View>
-
-        {/* {selectedBusiness.latitude && selectedBusiness.longitude ? (
-          <MyMapScreen />
-        ) : (
-          // <View
-          //   style={[
-          //     styles.map,
-          //     {
-          //       backgroundColor: "#eee",
-          //       justifyContent: "center",
-          //       alignItems: "center",
-          //     },
-          //   ]}
-          // ></View>
-        )} */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -231,11 +214,6 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 14,
     color: "#666666",
-  },
-  map: {
-    width: width,
-    height: height * 0.3,
-    marginTop: 20,
   },
   servicesContainer: {
     padding: 20,

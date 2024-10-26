@@ -45,9 +45,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
   useEffect(() => {
     fetchBusinesses();
-
     fetchPopularServices();
   }, []);
+
   const fetchPopularServices = async () => {
     try {
       const { data, error } = await supabase.from("services").select(`
@@ -59,7 +59,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       if (error) throw error;
 
       const servicesWithAverageRating = data.map((service) => {
-        const ratings = service.reviews.map((review) => review.rating);
+        const ratings = service.reviews?.map((review) => review.rating) || [];
         const averageRating = ratings.length
           ? ratings.reduce((a, b) => a + b, 0) / ratings.length
           : null;
@@ -82,10 +82,12 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const fetchBusinesses = async () => {
     try {
       const { data, error } = await supabase.from("business").select(`
-          *,
-          media:media(business_id, media_url)
-        `);
+        *,
+        media:media(business_id, media_url),
+        services:services(*)
+      `);
       if (error) throw error;
+      console.log("Fetched Businesses:", data); // Debugging log
       setBusinesses(data);
     } catch (error) {
       console.error("Error fetching businesses:", error);
@@ -99,7 +101,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         style={styles.headerImage}
       />
       <View style={styles.overlay}>
-        <Text style={styles.headerTitle}>Discover Services</Text>
+        <Text style={styles.headerTitle}>Welcome</Text>
         <View style={styles.searchContainer}>
           <Icon name="search" size={24} color="#888" />
           <TextInput
@@ -119,37 +121,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     </View>
   );
 
-  const categories = [
-    { name: "Category 1", icon: "category" },
-    { name: "Category 2", icon: "star" },
-    { name: "Category 3", icon: "favorite" },
-    { name: "Category 4", icon: "build" },
-    { name: "Category 5", icon: "face" },
-    { name: "Category 6", icon: "pets" },
-    // Add more categories as needed
-  ];
-
-  const renderCategories = () => (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.categoriesContainer}
-      decelerationRate="fast" // Adjust this for smoother scrolling
-    >
-      {categories.map((item, index) => (
-        <TouchableOpacity key={index} style={styles.categoryItem}>
-          <ImageBackground
-            source={{ uri: "your-background-image-url" }}
-            style={styles.categoryBackground}
-          >
-            <Icon name={item.icon} size={40} color="#FFF" />
-            <Text style={styles.categoryText}>{item.name}</Text>
-          </ImageBackground>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  );
-
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -164,7 +135,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         <Animated.FlatList
-          data={businesses} // Assuming this is your top businesses data
+          data={businesses}
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
@@ -188,19 +159,24 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
               <Animated.View
                 style={[styles.recommendedCard, { transform: [{ scale }] }]}
               >
-                <Image
-                  source={{
-                    uri: item.media[0]?.media_url || "default-image-url",
-                  }}
-                  style={styles.recommendedImage}
-                />
-                <TouchableOpacity style={styles.heartIcon}>
-                  <FontAwesome name="heart" size={24} color="#FFF" />
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("staticBusinessProfile", {
+                      selectedBusiness: item,
+                    })
+                  }
+                >
+                  <Image
+                    source={{
+                      uri: item.media?.[0]?.media_url || "default-image-url",
+                    }}
+                    style={styles.recommendedImage}
+                  />
+                  <Text style={styles.recommendedTitle}>{item.name}</Text>
+                  <Text
+                    style={styles.recommendedReview}
+                  >{`⭐ ${item.rating}`}</Text>
                 </TouchableOpacity>
-                <Text style={styles.recommendedTitle}>{item.name}</Text>
-                <Text
-                  style={styles.recommendedReview}
-                >{`⭐ ${item.rating}`}</Text>
               </Animated.View>
             );
           }}
@@ -210,6 +186,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </View>
     );
   };
+
   const renderPopularServices = () => (
     <View>
       <View style={styles.sectionHeaderContainer}>
@@ -219,19 +196,26 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
       <FlatList
-        data={popularServices.slice(0, 4)} // Limit to 4 items
+        data={popularServices.slice(0, 4)}
         renderItem={({ item }) => (
-          <View style={styles.serviceCard}>
+          <TouchableOpacity
+            style={styles.serviceCard}
+            onPress={() =>
+              navigation.navigate("ServiceDetails", { serviceId: item.id })
+            }
+          >
             <Image
-              source={{ uri: item.media[0]?.media_url || "default-image-url" }}
+              source={{
+                uri: item.media?.[0]?.media_url || "default-image-url",
+              }}
               style={styles.serviceImage}
             />
             <Text style={styles.serviceName}>{item.name}</Text>
             <Text style={styles.serviceDescription}>{item.description}</Text>
             <Text
               style={styles.serviceReview}
-            >{`⭐ ${item.reviews[0]?.rating}`}</Text>
-          </View>
+            >{`⭐ ${item.reviews?.[0]?.rating}`}</Text>
+          </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
         numColumns={2}
@@ -263,7 +247,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         ListHeaderComponent={() => (
           <>
             {renderHeader()}
-            {renderCategories()}
+            {renderFooterButtons()}
             {renderTopBusinesses()}
             {renderPopularServices()}
           </>
@@ -272,7 +256,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         renderItem={null}
         keyExtractor={() => ""}
         showsVerticalScrollIndicator={false}
-        ListFooterComponent={renderFooterButtons}
       />
       <Footer navigation={navigation} />
     </SafeAreaView>
@@ -418,20 +401,27 @@ const styles = StyleSheet.create({
     color: "#888",
   },
   availableButton: {
-    backgroundColor: "#00796B",
-    padding: 10,
-    borderRadius: 10,
-    margin: 10,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginHorizontal: 10,
+    alignItems: "center",
+    shadowColor: "#00796B",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 3,
   },
   availableText: {
-    color: "#FFF",
-    textAlign: "center",
+    color: "#00796B",
     fontSize: 16,
+    fontWeight: "bold",
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginBottom: 20,
+    marginVertical: 20,
   },
   row: { justifyContent: "space-between" },
   sectionHeader: {
