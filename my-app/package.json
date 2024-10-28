@@ -25,11 +25,13 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "expo": "~51.0.28",
+    "expo-auth-session": "~5.5.2",
     "expo-constants": "~16.0.2",
     "expo-file-system": "^17.0.1",
     "expo-image-picker": "~15.0.7",
     "expo-linear-gradient": "^13.0.2",
     "expo-location": "^17.0.1",
+    "expo-random": "~14.0.1",
     "expo-status-bar": "~1.12.1",
     "install": "^0.13.0",
     "js-levenshtein": "^1.1.6",
@@ -51,7 +53,8 @@
     "react-native-screens": "^3.31.1",
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-wheel-time-picker": "^0.4.3"
+    "react-native-wheel-time-picker": "^0.4.3",
+    "react-native-reanimated": "~3.10.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -20,11 +20,12 @@ interface Availability {
   end_date: string;
   start_time: string;
   end_time: string;
-
+  duration: number;
   days_of_week: number[];
 }
 
-const AvailabilityScreen = ({ navigation }) => {
+const AvailabilityScreen = ({ navigation, route }) => {
+  const { serviceId } = route.params || {};
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
@@ -35,7 +36,7 @@ const AvailabilityScreen = ({ navigation }) => {
 
   useEffect(() => {
     fetchAvailabilities();
-  }, []);
+  }, [serviceId]);
 
   const fetchAvailabilities = async () => {
     const { data, error } = await supabase.from("availability").select(`
@@ -83,7 +84,7 @@ const AvailabilityScreen = ({ navigation }) => {
     });
   };
 
-  const renderAvailabilityItem = ({ item }: { item: Availability }) => (
+ const renderAvailabilityItem = ({ item }: { item: Availability }) => (
     <View style={styles.availabilityItem}>
       <Icon
         name="event-available"
@@ -94,7 +95,7 @@ const AvailabilityScreen = ({ navigation }) => {
       <View style={styles.availabilityInfo}>
         <Text style={styles.serviceName}>{item.service_name}</Text>
         <Text style={styles.availabilityTime}>
-          {item.start_time} - {item.end_time}
+          {item.start_time} - {item.end_time} (Duration: {item.duration} min)
         </Text>
       </View>
     </View>
@@ -146,10 +147,10 @@ const AvailabilityScreen = ({ navigation }) => {
       </View>
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate("AddAvailabilityScreen")}
+        onPress={() => navigation.navigate("AddAvailabilityScreen", { serviceId: serviceId })}
       >
         <Icon name="add" size={24} color="#FFFFFF" />
-        <Text style={styles.addButtonText}>Add Availability</Text>
+        <Text style={styles.addButtonText}>Update Availability</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

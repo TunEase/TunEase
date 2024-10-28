@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView, TextInput } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { supabase } from '../services/supabaseClient';
@@ -11,24 +11,51 @@ interface Service {
   name: string;
 }
 
-const AddAvailabilityScreen = ({ navigation }) => {
+const AddAvailabilityScreen = ({ navigation, route }) => {
+  const { serviceId } = route.params || {};
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState('');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [showStartDate, setShowStartDate] = useState(false);
   const [showEndDate, setShowEndDate] = useState(false);
-
+  const [duration, setDuration] = useState(0); // New state for duration
   useEffect(() => {
-    fetchServices();
-  }, []);
+    if (serviceId) {
+      fetchServiceDetails();
+    } else {
+      fetchAllServices();
+    }
+  }, [serviceId]);
 
-  const fetchServices = async () => {
-    const { data, error } = await supabase.from('services').select('id, name');
+  const fetchAllServices = async () => {
+    const { data, error } = await supabase
+      .from('services')
+      .select('*');
+
     if (error) {
       console.error('Error fetching services:', error);
     } else {
       setServices(data);
+      if (data.length > 0) {
+        setSelectedService(data[0].id);
+      }
+    }
+  };
+
+  const fetchServiceDetails = async () => {
+    const { data, error } = await supabase
+      .from('services')
+      .select('*')
+      .eq('id', serviceId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching service details:', error);
+    } else {
+      setSelectedService(data.id);
+      setStartDate(new Date(data.start_date));
+      setEndDate(new Date(data.end_date));
     }
   };
 
@@ -37,14 +64,15 @@ const AddAvailabilityScreen = ({ navigation }) => {
     showSetter(Platform.OS === 'ios');
     setDate(currentDate);
   };
-
   const handleNext = () => {
     navigation.navigate('AddAvailabilityTimeScreen', {
       selectedService,
-      startDate,
-      endDate,
+      startDate: format(startDate, 'yyyy-MM-dd'),
+      endDate: format(endDate, 'yyyy-MM-dd'),
+      duration,
     });
   };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -52,11 +80,11 @@ const AddAvailabilityScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Availability (1/2)</Text>
+        <Text style={styles.headerTitle}>Update Availability (1/2)</Text>
         <View style={{ width: 24 }} />
       </View>
       <ScrollView style={styles.content}>
-        <View style={styles.pickerContainer}>
+        {/* <View style={styles.pickerContainer}>
           <Picker
             selectedValue={selectedService}
             onValueChange={(itemValue) => setSelectedService(itemValue)}
@@ -67,7 +95,7 @@ const AddAvailabilityScreen = ({ navigation }) => {
               <Picker.Item key={service.id} label={service.name} value={service.id} />
             ))}
           </Picker>
-        </View>
+        </View> */}
 
         <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowStartDate(true)}>
           <Icon name="event" size={20} color="#00796B" style={styles.buttonIcon} />
@@ -94,6 +122,15 @@ const AddAvailabilityScreen = ({ navigation }) => {
             onChange={(event, selectedDate) => onChangeDate(event, selectedDate, setEndDate, setShowEndDate)}
           />
         )}
+         <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Duration (minutes):</Text>
+          <TextInput
+            style={styles.input}
+            value={duration.toString()}
+            onChangeText={(text) => setDuration(parseInt(text) || 0)}
+            keyboardType="numeric"
+          />
+        </View> 
 
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.nextButtonText}>Next</Text>
@@ -205,6 +242,20 @@ nextButtonText: {
   color: '#FFFFFF',
   fontWeight: 'bold',
   fontSize: 18,
+},
+inputContainer: {
+  marginBottom: 16,
+},
+inputLabel: {
+  fontSize: 16,
+  marginBottom: 8,
+},
+input: {
+  height: 40,
+  borderWidth: 1,
+  borderColor: '#00796B',
+  borderRadius: 5,
+  paddingHorizontal: 10,
 },
 });
 

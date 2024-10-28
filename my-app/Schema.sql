@@ -93,15 +93,17 @@ create table
     answered_at timestamp
   );
 
-create table availability (
-  id uuid primary key default uuid_generate_v4(),
-  service_id uuid references services (id) on delete cascade,
-  currentdate date not null,
-  start_time time not null,
-  end_time time not null,
-  days_of_week integer[] not null,
-  created_at timestamp with time zone default now(),
-  updated_at timestamp with time zone default now()
+CREATE TABLE availability (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  service_id uuid REFERENCES services (id) ON DELETE CASCADE,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  duration INT NOT NULL, -- Duration in minutes
+  days_of_week integer[] NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
 create table

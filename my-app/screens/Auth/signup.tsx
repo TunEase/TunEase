@@ -78,7 +78,7 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
       if (uploadError) throw uploadError;
   
       // 3. Get the public URL of the uploaded image
-      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
       const avatarUrl = urlData.publicUrl;
   
       // 4. Insert user profile data

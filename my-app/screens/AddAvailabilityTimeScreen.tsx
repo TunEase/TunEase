@@ -1,17 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { supabase } from '../services/supabaseClient';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const AddAvailabilityTimeScreen = ({ navigation, route }) => {
-  const { selectedService, startDate, endDate } = route.params;
+  const { selectedService, startDate, endDate, duration } = route.params;
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
   const [daysOfWeek, setDaysOfWeek] = useState([false, false, false, false, false, false, false]);
   const [showStartTime, setShowStartTime] = useState(false);
-  const [showEndTime, setShowEndTime] = useState(false);
+  const [showEndTime, setShowEndTime] = useState(false); 
+  // Convert string dates back to Date objects
+  const parsedStartDate = parse(startDate, 'yyyy-MM-dd', new Date());
+  const parsedEndDate = parse(endDate, 'yyyy-MM-dd', new Date());
+
+   useEffect(() => {
+    fetchExistingAvailability();
+  }, [selectedService]);
+  
+
+
+  const fetchExistingAvailability = async () => {
+    const { data, error } = await supabase
+      .from('availability')
+      .select('*')
+      .eq('service_id', selectedService)
+      .gte('start_date', startDate)
+      .lte('end_date', endDate)
+      .order('start_date', { ascending: true })
+      .limit(1);
+
+    if (error) {
+      console.error('Error fetching existing availability:', error);
+    } else if (data && data.length > 0) {
+      const availability = data[0];
+      setStartTime(new Date(`2000-01-01T${availability.start_time}`));
+      setEndTime(new Date(`2000-01-01T${availability.end_time}`));
+      setDaysOfWeek(availability.days_of_week.map(day => day !== -1));
+    }
+  };
+
 
   const onChangeTime = (
     event: Event,
@@ -31,18 +61,22 @@ const AddAvailabilityTimeScreen = ({ navigation, route }) => {
       end_date: format(endDate, 'yyyy-MM-dd'),
       start_time: format(startTime, 'HH:mm'),
       end_time: format(endTime, 'HH:mm'),
+      duration: duration,
       days_of_week: daysOfWeek.map((day, index) => day ? index : -1).filter(day => day !== -1),
     };
 
-    const { data, error } = await supabase.from('availability').insert(availabilityData);
+    const { data, error } = await supabase
+      .from('availability')
+      .upsert(availabilityData, { onConflict: 'service_id, start_date, end_date, start_time, end_time' });
 
     if (error) {
-      console.error('Error adding availability:', error);
+      console.error('Error updating availability:', error);
     } else {
-      console.log('Availability added successfully');
-      navigation.navigate('Home'); // Or wherever you want to navigate after submission
+      console.log('Availability updated successfully');
+      navigation.navigate('ServiceDetails', { serviceId: selectedService });
     }
   };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -50,7 +84,7 @@ const AddAvailabilityTimeScreen = ({ navigation, route }) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Availability (2/2)</Text>
+        <Text style={styles.headerTitle}>Update Availability (2/2)</Text>
         <View style={{ width: 24 }} />
       </View>
       <ScrollView style={styles.content}>
