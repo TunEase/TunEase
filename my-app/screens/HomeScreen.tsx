@@ -1,17 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FlatList,
   Image,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  ScrollView,
+  ImageBackground,
+  Animated,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
+import { supabase } from "../services/supabaseClient";
 
 interface HomeProps {
   navigation: any;
@@ -19,387 +23,423 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [services, setServices] = useState<any[]>([]);
+  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [recommendedServices, setRecommendedServices] = useState<any[]>([]);
+  const [popularServices, setPopularServices] = useState<any[]>([]);
 
-  const categories = [
-    { icon: "mail", name: "Baldia" },
-    { icon: "money", name: "la Poste" },
-    { icon: "local-hospital", name: "Hospital" },
-    { icon: "medical-services", name: "Medicine" },
-  ];
+  const scrollX = useRef(new Animated.Value(0)).current;
 
-  const topServices = [
-    {
-      id: "1",
-      name: "Bousta",
-      specialty: "",
-      rating: 4.9,
-      image:
-        "https://images.unsplash.com/photo-1554232456-8727aae0cfa4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2NjQ0NzF8MHwxfHNlYXJjaHw1fHxjdXN0bWVyJTIwc2VydmljZXMlMjBvZmZpY2VzJTIwcHJpdmF0ZSUyMGNvbXBhbnklMjBhZ2VuY2llc3xlbnwwfHx8fDE3MjkwMjcwMjR8MA&ixlib=rb-4.0.3&q=80&w=1080",
-    },
-    {
-      id: "2",
-      name: "Baldia",
-      specialty: "",
-      rating: 4.8,
-      image:
-        "https://images.unsplash.com/photo-1621773734563-63e6004ed6a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2NjQ0NzF8MHwxfHNlYXJjaHwyfHxjdXN0bWVyJTIwc2VydmljZXMlMjBvZmZpY2VzJTIwcHJpdmF0ZSUyMGNvbXBhbnklMjBhZ2VuY2llc3xlbnwwfHx8fDE3MjkwMjcwMjR8MA&ixlib=rb-4.0.3&q=80&w=1080",
-    },
-  ];
+  useEffect(() => {
+    const scrollAnimation = Animated.loop(
+      Animated.timing(scrollX, {
+        toValue: 1,
+        duration: 20000, // Adjust duration for speed
+        useNativeDriver: true,
+      })
+    );
+    scrollAnimation.start();
 
-  const topBusinesses = [
-    {
-      id: "1",
-      name: "Tech Solutions",
-      specialty: "Technology",
-      rating: 4.7,
-      image:
-        "https://images.unsplash.com/photo-1518770660439-4636190af475?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2NjQ0NzF8MHwxfHNlYXJjaHw2fHxidXNpbmVzc3xlbnwwfHx8fDE3MjkwMjcwMjR8MA&ixlib=rb-4.0.3&q=80&w=1080",
-    },
-    {
-      id: "2",
-      name: "Creative Agency",
-      specialty: "Design",
-      rating: 4.5,
-      image:
-        "https://www.designinc.co.uk/wp-content/uploads/2019/01/Design-is-incorporated.jpg",
-    },
-  ];
+    return () => scrollAnimation.stop();
+  }, [scrollX]);
 
-  const banners = [
-    {
-      id: "1",
-      text: "Get a 35% discount on the first video consultation from now",
-      image:
-        "https://th.bing.com/th/id/OIP.QM2X4k8I2gKttM4ClRsvPwHaEH?rs=1&pid=ImgDetMain",
-    },
-    {
-      id: "2",
-      text: "Exclusive offer for new users: Book now and save 20%",
-      image:
-        "https://i0.wp.com/lapresse.tn/wp-content/uploads/2023/01/la-poste-tunisienne.jpg?resize=740%2C427&ssl=1",
-    },
-  ];
+  useEffect(() => {
+    fetchBusinesses();
+    fetchPopularServices();
+  }, []);
 
-  const renderCard = ({ item }) => (
-    <TouchableOpacity style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.specialty}>{item.specialty}</Text>
-      <View style={styles.ratingContainer}>
-        <Icon name="star" size={18} color="#FFD700" />
-        <Text style={styles.ratingText}>{item.rating}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const fetchPopularServices = async () => {
+    try {
+      const { data, error } = await supabase.from("services").select(`
+        *,
+        media:media(service_id, media_url),
+        reviews:reviews(rating)
+      `);
 
-  const renderBanner = ({ item }) => (
-    <TouchableOpacity style={styles.bannerContainer}>
-      <Image source={{ uri: item.image }} style={styles.bannerImage} />
-      <View style={styles.bannerTextContainer}>
-        <Text style={styles.bannerText}>{item.text}</Text>
-        <TouchableOpacity
-          style={styles.bannerButton}
-          onPress={() =>
-            navigation.navigate("CategoryDetails", { category: "la Poste" })
-          }
-        >
-          <Text style={styles.bannerButtonText}>Book Now</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+      if (error) throw error;
 
-  return (
-    <SafeAreaView style={styles.mainContainer}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>TunEase</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("BusinessProfileApp")}
-          >
-            <Icon name="person" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+      const servicesWithAverageRating = data.map((service) => {
+        const ratings = service.reviews?.map((review) => review.rating) || [];
+        const averageRating = ratings.length
+          ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+          : null;
+        return { ...service, averageRating };
+      });
 
-        {/* Search */}
+      // Sort services by average rating and take the top 4
+      const sortedServices = servicesWithAverageRating
+        .filter((service) => service.averageRating !== null)
+        .sort((a, b) => b.averageRating - a.averageRating)
+        .slice(0, 4);
+
+      setPopularServices(sortedServices);
+      console.log("Popular Services:", sortedServices);
+    } catch (error) {
+      console.error("Error fetching popular services:", error);
+    }
+  };
+
+  const fetchBusinesses = async () => {
+    try {
+      const { data, error } = await supabase.from("business").select(`
+        *,
+        media:media(business_id, media_url),
+        services:services(*)
+      `);
+      if (error) throw error;
+      console.log("Fetched Businesses:", data); // Debugging log
+      setBusinesses(data);
+    } catch (error) {
+      console.error("Error fetching businesses:", error);
+    }
+  };
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Image
+        source={require("../assets/background.jpg")}
+        style={styles.headerImage}
+      />
+      <View style={styles.overlay}>
+        <Text style={styles.headerTitle}>Welcome</Text>
         <View style={styles.searchContainer}>
-          <Icon
-            name="search"
-            size={24}
-            color="#888"
-            style={styles.searchIcon}
-          />
+          <Icon name="search" size={24} color="#888" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search .."
+            placeholder="Search for services..."
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
-
-        {/* Scrollable Banner */}
-        {/* <FlatList
-          data={categories}
-          renderItem={renderCategoryItem}
-          keyExtractor={(item) => item.name}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        /> */}
-
-        {/* Categories */}
         <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("CategoryDetails", { category: name })
-          }
+          style={styles.profileIcon}
+          onPress={() => navigation.navigate("BusinessProfileApp")}
         >
-          <View style={styles.categoriesContainer}>
-            <FlatList
-              data={categories}
-              renderItem={({ item }) => (
-                <View style={styles.categoryItem}>
-                  <Icon name={item.icon} size={25} color="#00796B" />
-                  <Text style={styles.categoryName}>{item.name}</Text>
-                </View>
-              )}
-              keyExtractor={(item) => item.name}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
+          <Icon name="person" size={30} color="#FFF" />
         </TouchableOpacity>
+      </View>
+    </View>
+  );
 
-        {/* Top Services */}
+  const renderTopBusinesses = () => {
+    const scrollX = useRef(new Animated.Value(0)).current;
 
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Top Services</Text>
-
-          <FlatList
-            data={topServices}
-            renderItem={renderCard}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            columnWrapperStyle={styles.columnWrapper}
-          />
-        </View>
-
-        {/* Top Businesses */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Top Businesses</Text>
-          <FlatList
-            data={topBusinesses}
-            renderItem={renderCard}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            columnWrapperStyle={styles.columnWrapper}
-          />
-        </View>
-
-        {/* Buttons */}
-        <View style={styles.buttonContainer}>
+    return (
+      <View>
+        <View style={styles.sectionHeaderContainer}>
+          <Text style={styles.sectionHeader}>Top Businesses</Text>
           <TouchableOpacity
-            style={styles.availableButton}
             onPress={() => navigation.navigate("AllBusinesses")}
           >
-            <Icon
-              name="business"
-              size={20}
-              color="#FFFFFF"
-              style={styles.buttonIcon}
-            />
-            <Text style={styles.availableText}>See All Businesses</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.availableButton}
-            onPress={() => navigation.navigate("AllServices")}
-          >
-            <Icon
-              name="business"
-              size={20}
-              color="#FFFFFF"
-              style={styles.buttonIcon}
-            />
-            <Text style={styles.availableText}>See All Services</Text>
+            <Text style={styles.viewAllText}>View All</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        <Animated.FlatList
+          data={businesses}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+            { useNativeDriver: true }
+          )}
+          renderItem={({ item, index }) => {
+            const inputRange = [
+              (index - 1) * 200,
+              index * 200,
+              (index + 1) * 200,
+            ];
+            const scale = scrollX.interpolate({
+              inputRange,
+              outputRange: [0.8, 1, 0.8],
+              extrapolate: "clamp",
+            });
+
+            return (
+              <Animated.View
+                style={[styles.recommendedCard, { transform: [{ scale }] }]}
+              >
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("staticBusinessProfile", {
+                      selectedBusiness: item,
+                    })
+                  }
+                >
+                  <Image
+                    source={{
+                      uri: item.media?.[0]?.media_url || "default-image-url",
+                    }}
+                    style={styles.recommendedImage}
+                  />
+                  <Text style={styles.recommendedTitle}>{item.name}</Text>
+                  <Text
+                    style={styles.recommendedReview}
+                  >{`⭐ ${item.rating}`}</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            );
+          }}
+          snapToInterval={200}
+          decelerationRate="fast"
+        />
+      </View>
+    );
+  };
+
+  const renderPopularServices = () => (
+    <View>
+      <View style={styles.sectionHeaderContainer}>
+        <Text style={styles.sectionHeader}>Popular Services</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("AllService")}>
+          <Text style={styles.viewAllText}>View All</Text>
+        </TouchableOpacity>
+      </View>
+      <FlatList
+        data={popularServices.slice(0, 4)}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.serviceCard}
+            onPress={() =>
+              navigation.navigate("ServiceDetails", { serviceId: item.id })
+            }
+          >
+            <Image
+              source={{
+                uri: item.media?.[0]?.media_url || "default-image-url",
+              }}
+              style={styles.serviceImage}
+            />
+            <Text style={styles.serviceName}>{item.name}</Text>
+            <Text style={styles.serviceDescription}>{item.description}</Text>
+            <Text
+              style={styles.serviceReview}
+            >{`⭐ ${item.reviews?.[0]?.rating}`}</Text>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+      />
+    </View>
+  );
+
+  const renderFooterButtons = () => (
+    <View style={styles.buttonContainer}>
+      <TouchableOpacity
+        style={styles.availableButton}
+        onPress={() => navigation.navigate("AllBusinesses")}
+      >
+        <Text style={styles.availableText}>See All Businesses</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.availableButton}
+        onPress={() => navigation.navigate("AllService")}
+      >
+        <Text style={styles.availableText}>See All Services</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        ListHeaderComponent={() => (
+          <>
+            {renderHeader()}
+            {renderFooterButtons()}
+            {renderTopBusinesses()}
+            {renderPopularServices()}
+          </>
+        )}
+        data={[]}
+        renderItem={null}
+        keyExtractor={() => ""}
+        showsVerticalScrollIndicator={false}
+      />
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  mainContainer: {
+  container: {
     flex: 1,
-    backgroundColor: "#F2F2F2",
-  },
-  contentContainer: {
-    paddingBottom: 60,
+    backgroundColor: "#F8F8F8",
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    height: 250,
+    position: "relative",
+  },
+  headerImage: {
+    height: "100%",
+    width: "100%",
+    resizeMode: "cover",
+  },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 25,
-    backgroundColor: "#00796B",
-    marginBottom: 5,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
   headerTitle: {
-    fontSize: 24,
-    color: "#FFFFFF",
+    fontSize: 28,
+    color: "#FFF",
     fontWeight: "bold",
+    marginBottom: 15,
+  },
+  profileIcon: {
+    position: "absolute",
+    top: 30,
+    right: 20,
+    padding: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 50,
   },
   searchContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    marginVertical: 10,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 25,
-    elevation: 2,
-    marginHorizontal: 15,
-  },
-  searchIcon: {
+    backgroundColor: "#FFF",
     padding: 10,
+    borderRadius: 25,
+    alignItems: "center",
+    width: "90%",
+    marginTop: 10,
   },
   searchInput: {
+    marginLeft: 10,
+    fontSize: 16,
     flex: 1,
-    fontSize: 16,
-    paddingHorizontal: 10,
-  },
-  bannerList: {
-    marginVertical: 10,
-    paddingLeft: 10,
-  },
-  bannerContainer: {
-    marginRight: 10,
-    borderRadius: 10,
-    overflow: "hidden",
-    backgroundColor: "#FFFFFF",
-    elevation: 2,
-    width: 280,
-  },
-  bannerImage: {
-    height: 150,
-    width: "100%",
-  },
-  bannerTextContainer: {
-    padding: 10,
-    justifyContent: "space-between",
-  },
-  bannerText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  bannerButton: {
-    backgroundColor: "#00796B",
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 25,
-  },
-  bannerButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
   },
   categoriesContainer: {
-    marginHorizontal: 30,
-    marginVertical: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 35,
+    paddingVertical: 15,
+    paddingHorizontal: 10,
   },
   categoryItem: {
+    marginRight: 10,
     alignItems: "center",
-    marginRight: 50,
-    display: "flex",
+    width: 80,
+    height: 80,
     justifyContent: "center",
   },
-  categoryIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#E8F5E9",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  categoryName: {
-    marginTop: 5,
-    fontSize: 14,
-    color: "#333",
-  },
-  sectionContainer: {
-    paddingHorizontal: 20,
-    marginVertical: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "#00796B",
-  },
-  columnWrapper: {
-    justifyContent: "space-between",
-  },
-  card: {
-    flex: 1,
-    marginBottom: 20,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    elevation: 3,
-    padding: 10,
-    alignItems: "center",
-    marginHorizontal: 5,
-  },
-  image: {
-    height: 100,
+  categoryBackground: {
     width: "100%",
+    height: "100%",
+    borderRadius: 50,
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Added background color for better visibility
+  },
+  categoryText: {
+    color: "#FFF",
+    marginTop: 5,
+    fontSize: 12,
+    textAlign: "center",
+  },
+  recommendedCard: {
+    width: 200,
+    marginRight: 10,
+    position: "relative",
+  },
+  recommendedImage: {
+    width: "100%",
+    height: 150,
     borderRadius: 10,
   },
-  name: {
-    marginTop: 10,
+  heartIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 15,
+    padding: 5,
+  },
+  recommendedTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
+    marginTop: 5,
   },
-  specialty: {
+  recommendedReview: {
+    fontSize: 14,
+    color: "#888",
+  },
+  serviceCard: {
+    backgroundColor: "#FFF",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 15,
+    marginHorizontal: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    flex: 1,
+    maxWidth: "45%",
+    alignItems: "center",
+  },
+  serviceImage: {
+    width: "100%",
+    height: 120,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  serviceName: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  serviceDescription: {
     fontSize: 14,
     color: "#666",
+    marginBottom: 5,
   },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 5,
-  },
-  ratingText: {
+  serviceReview: {
     fontSize: 14,
-    marginLeft: 5,
-  },
-  buttonContainer: {
-    paddingHorizontal: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
+    color: "#888",
   },
   availableButton: {
-    backgroundColor: "#00796B",
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     borderRadius: 25,
-    flexDirection: "row",
+    marginHorizontal: 10,
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-  },
-  buttonIcon: {
-    marginRight: 10,
+    shadowColor: "#00796B",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 3,
   },
   availableText: {
+    color: "#00796B",
     fontSize: 16,
-    color: "#FFFFFF",
+    fontWeight: "bold",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 20,
+  },
+  row: { justifyContent: "space-between" },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginVertical: 10,
+    marginLeft: 10,
+  },
+  sectionHeaderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: 10,
+    marginVertical: 10,
+  },
+  viewAllText: {
+    fontSize: 16,
+    color: "#00796B",
   },
 });
 

@@ -16,9 +16,17 @@ export default {
     backgroundColor: "#ffffff", // Background color for splash
   },
   ios: {
+    config: {
+      googleMapsApiKey: "AIzaSyB5gnUWjb84t6klt5vcPjMOQylhQRFB5Wc",
+    },
     supportsTablet: true, // Support for tablets on iOS
   },
   android: {
+    config: {
+      googleMaps: {
+        apiKey: "AIzaSyB5gnUWjb84t6klt5vcPjMOQylhQRFB5WcY",
+      },
+    },
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png", // Adaptive icon
       backgroundColor: "#ffffff", // Background color for adaptive icon

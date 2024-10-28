@@ -9,6 +9,8 @@ import {
   View,
   ListRenderItem,
   Modal,
+  TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
@@ -29,6 +31,7 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(
     null
   );
+  const [searchQuery, setSearchQuery] = useState("");
 
   const toggleModal = (businessId: string | null = null) => {
     setSelectedBusinessId(businessId);
@@ -39,29 +42,37 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
     setModalVisible(false);
   };
 
+  const fetchBusinesses = async () => {
+    if (loadingMore) return;
+
+    setLoadingMore(true);
+    const { data: businessData, error: businessError } = await supabase
+      .from("business")
+      .select(
+        `
+        *,
+        media:media(business_id, media_url),
+        services:services(*, media:media(*), reviews:reviews(*, media:media(*), user_profile:user_profile(*))),
+        reviews:reviews(*, media:media(*), user_profile:user_profile(*))
+      `
+      )
+      .range((page - 1) * itemsPerPage, page * itemsPerPage - 1);
+
+    if (businessError) {
+      console.error("Error fetching businesses:", businessError);
+    } else {
+      setBusinesses((prevBusinesses) => [
+        ...prevBusinesses,
+        ...(businessData as Business[]),
+      ]);
+    }
+    setLoading(false);
+    setLoadingMore(false);
+  };
+
   useEffect(() => {
-    const fetchBusinesses = async (page: number) => {
-      setLoadingMore(true);
-      const { data: businessData, error: businessError } = await supabase.from(
-        "business"
-      ).select(`
-          *,
-          media:media(business_id, media_url),
-          services:services(*, media:media(*), reviews:reviews(*, media:media(*), user_profile:user_profile(*))),
-          reviews:reviews(*, media:media(*), user_profile:user_profile(*))
-        `);
-
-      if (businessError) {
-        console.error("Error fetching businesses:", businessError);
-      } else {
-        setBusinesses(businessData as Business[]);
-      }
-      setLoading(false);
-      setLoadingMore(false);
-    };
-
-    fetchBusinesses(page);
-  }, []);
+    fetchBusinesses();
+  }, [page]);
 
   const loadMoreBusinesses = () => {
     if (!loadingMore) {
@@ -97,6 +108,10 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
     );
   };
 
+  const filteredBusinesses = businesses.filter((business) =>
+    business.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading && businesses.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -108,16 +123,28 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={businesses}
+        data={filteredBusinesses}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => `${item.id}-${index}`} // Combine id with index for uniqueness
         numColumns={2}
         columnWrapperStyle={styles.row}
-        onEndReached={loadMoreBusinesses}
-        onEndReachedThreshold={0.5}
         ListHeaderComponent={
           <>
             <Text style={styles.header}>All Businesses</Text>
+            <View style={styles.searchContainer}>
+              <FontAwesome
+                name="search"
+                size={20}
+                color="#333"
+                style={styles.searchIcon}
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search businesses..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+            </View>
             <Modal
               animationType="slide"
               transparent={true}
@@ -181,11 +208,17 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
           </>
         }
         ListFooterComponent={
-          loadingMore ? (
-            <View style={styles.loadingMoreContainer}>
-              <Text style={styles.loadingMoreText}>Loading more...</Text>
-            </View>
-          ) : null
+          <TouchableOpacity
+            style={styles.loadMoreButton}
+            onPress={loadMoreBusinesses}
+            disabled={loadingMore}
+          >
+            {loadingMore ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.loadMoreText}>Load More</Text>
+            )}
+          </TouchableOpacity>
         }
       />
     </SafeAreaView>
@@ -325,6 +358,47 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 16,
+    color: "#333",
+  },
+  loadMoreButton: {
+    backgroundColor: "#00796B",
+    padding: 15,
+    borderRadius: 25,
+    marginVertical: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  loadMoreText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 16,
   },
 });
 

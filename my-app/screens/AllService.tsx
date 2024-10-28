@@ -8,20 +8,25 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
+import { FontAwesome } from "@expo/vector-icons";
 
 const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
-  
   const [services, setServices] = useState<any[]>([]);
-  const [visibleCount, setVisibleCount] = useState(6); 
+  const [visibleCount, setVisibleCount] = useState(6);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchServices = async () => {
-      const { data, error } = await supabase.from("services").select("*");
+      const { data, error } = await supabase.from("services").select(`
+          *,
+          media:media(service_id, media_url)
+        `);
       if (error) {
         console.error("Error fetching services:", error);
         setError("Failed to load services. Please try again later.");
@@ -42,6 +47,10 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
   };
 
+  const filteredServices = services.filter((service) =>
+    service.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -53,7 +62,7 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
   if (error) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={{ color: 'red', textAlign: 'center' }}>{error}</Text>
+        <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
       </SafeAreaView>
     );
   }
@@ -61,21 +70,39 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>All Services</Text>
-      {services.length === 0 ? (
+      <View style={styles.searchContainer}>
+        <FontAwesome
+          name="search"
+          size={20}
+          color="#333"
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search services..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+      {filteredServices.length === 0 ? (
         <Text style={styles.noServicesText}>No services found.</Text>
       ) : (
         <FlatList
-          data={services.slice(0, visibleCount)} // Show only the visibleCount number of services
+          data={filteredServices.slice(0, visibleCount)} // Show only the visibleCount number of services
           renderItem={({ item }) => (
             <View style={styles.serviceCard}>
-              <Image
-                source={{ uri: item.imageUrl }} // Assuming you have an imageUrl field
-                style={styles.serviceImage}
-              />
+              {item.media && item.media.length > 0 && (
+                <Image
+                  source={{
+                    uri: item.media[
+                      Math.floor(Math.random() * item.media.length)
+                    ].media_url,
+                  }} // Use a random media image
+                  style={styles.serviceImage}
+                />
+              )}
               <Text style={styles.serviceName}>{item.name}</Text>
-              <Text style={styles.serviceDescription}>
-                {item.description}
-              </Text>
+              <Text style={styles.serviceDescription}>{item.description}</Text>
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   style={styles.button}
@@ -95,8 +122,11 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
           columnWrapperStyle={styles.row}
         />
       )}
-      {visibleCount < services.length && ( // Show Load More button if there are more services
-        <TouchableOpacity style={styles.loadMoreButton} onPress={loadMoreServices}>
+      {visibleCount < filteredServices.length && ( // Show Load More button if there are more services
+        <TouchableOpacity
+          style={styles.loadMoreButton}
+          onPress={loadMoreServices}
+        >
           {loadingMore ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
@@ -114,6 +144,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
+    paddingHorizontal: 10,
   },
   header: {
     fontSize: 28,
@@ -122,11 +153,25 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
-  loadingText: {
-    fontSize: 18,
-    color: "#00796B",
-    textAlign: "center",
-    marginTop: 20,
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 16,
+    color: "#333",
   },
   noServicesText: {
     fontSize: 16,
@@ -145,7 +190,9 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
     flex: 1,
+    height: 250,
     maxWidth: "45%",
+    alignItems: "center",
   },
   serviceImage: {
     width: "100%",
@@ -158,15 +205,18 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
     marginBottom: 5,
+    textAlign: "center",
   },
   serviceDescription: {
     fontSize: 12,
     color: "#666",
     marginBottom: 10,
+    textAlign: "center",
+    flex: 1,
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
   },
   button: {
     backgroundColor: "#00796B",
@@ -196,5 +246,8 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "600",
     fontSize: 16,
+  },
+  searchIcon: {
+    marginRight: 10,
   },
 });
