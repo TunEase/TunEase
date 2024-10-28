@@ -51,6 +51,7 @@ CREATE TABLE services (
     accept_review BOOLEAN DEFAULT FALSE, -- New field for review acceptance
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
+    
 );
 CREATE TABLE fees (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),

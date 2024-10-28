@@ -11,6 +11,8 @@ export interface Business {
   media: Media[];
   services: Service[];
   reviews: Review[];
+  category: string; // Add this line
+  location: string;
 }
 export interface User_profile {
   id: string;
@@ -38,6 +40,8 @@ export interface Service {
   reviews: Review[];
   media: Media[];
   price: number;
+  eligibility: string;
+  fees: string;
 }
 
 export interface Review {

@@ -18,6 +18,8 @@ import EditServiceScreen from "./screens/EditServiceScreen";
 import FAQs from "./screens/FAQs";
 import Feedback from "./screens/Feedback";
 import Review from "./screens/Review";
+import ManageFeesScreen from "./screens/ManageFeesScreen";
+import ManageEligibilityScreen from "./screens/ManageEligibilityScreen";
 
 
 import Onboarding from "./screens/OnBoarding";
@@ -49,14 +51,14 @@ import AppointmentBook from "./screens/AppointmentBook";
 import AvailabilityScreen from "./screens/AvailabilityScreen";
 import Book from "./screens/Book";
 import ComplaintsScreen from "./screens/ComplaintsScreen";
-
+import MainFooter from "./components/HomePage/MainFooter";
 import OneServices from "./screens/OneServices";
 import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
 import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
 import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
 import ServiceDetails from "./screens/ServiceDetails";
 import ServiceSettings from "./screens/SeviceSetting";
-import StaticBusinessProfile from "./screens/StaticBusinessProfile";
+import StaticBusinessProfile from "./screens/staticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
@@ -121,7 +123,7 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="StaticBusinessProfile"
+            name="staticBusinessProfile"
             component={StaticBusinessProfile}
             options={{ headerShown: false }}
           />
@@ -141,6 +143,7 @@ export default function App() {
             component={CategoryDetails}
             options={{ headerShown: false }}
           />
+
           <Stack.Screen
             name="AllBusinesses"
             component={AllBusinesses}
@@ -149,6 +152,11 @@ export default function App() {
           <Stack.Screen
             name="AllService"
             component={AllService}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="MainFooter"
+            component={MainFooter}
             options={{ headerShown: false }}
           />
           <Stack.Screen
@@ -315,6 +323,16 @@ export default function App() {
           <Stack.Screen
             name="ServiceSettings"
             component={ServiceSettings}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ManageFeesScreen"
+            component={ManageFeesScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ManageEligibilityScreen"
+            component={ManageEligibilityScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen

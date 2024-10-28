@@ -9,21 +9,42 @@ import {
   Text,
   TouchableOpacity,
   View,
+  FlatList,
 } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
 import { Service } from "../types/business";
 import FAQs from "./FAQs";
-import Feedback from "./Feedback";
-import Review from "./Review";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RouteProp } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
-const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
-  const navigation = useNavigation();
+// Define the navigation parameter list
+type RootStackParamList = {
+  ServiceDetails: { serviceId: string };
+  Book: { serviceId: string };
+  ComplaintsScreen: undefined;
+};
+
+// Define the navigation and route props
+type ServiceDetailsNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "ServiceDetails"
+>;
+type ServiceDetailsRouteProp = RouteProp<RootStackParamList, "ServiceDetails">;
+
+const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
+  route,
+}) => {
+  const navigation = useNavigation<ServiceDetailsNavigationProp>();
   const { serviceId } = route.params;
   const [service, setService] = useState<Service | null>(null);
+  const [fees, setFees] = useState<any[]>([]);
+  const [eligibility, setEligibility] = useState<any[]>([]);
   const [activeTab, setActiveTab] = React.useState("About Me");
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const [modalVisible, setModalVisible] = useState(false);
   const { user } = useAuth();
   useEffect(() => {
@@ -52,7 +73,35 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
       }
     };
 
+    const fetchFees = async () => {
+      const { data, error } = await supabase
+        .from("fees")
+        .select("*")
+        .eq("service_id", serviceId);
+
+      if (error) {
+        console.error("Error fetching fees:", error);
+      } else {
+        setFees(data);
+      }
+    };
+
+    const fetchEligibility = async () => {
+      const { data, error } = await supabase
+        .from("eligibility")
+        .select("*")
+        .eq("service_id", serviceId);
+
+      if (error) {
+        console.error("Error fetching eligibility:", error);
+      } else {
+        setEligibility(data);
+      }
+    };
+
     fetchServiceDetails();
+    fetchFees();
+    fetchEligibility();
   }, [serviceId]);
 
   const renderTabContent = () => {
@@ -63,10 +112,39 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
             {service?.description || "No description available."}
           </Text>
         );
-      case "Feedback":
-        return <Feedback />;
-      case "Reviews":
-        return <Review />;
+      case "Fees":
+        return (
+          <View style={styles.contentContainer}>
+            {fees && fees.length > 0 ? (
+              fees.map((fee, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <Text style={styles.tableCell}>{fee.name}</Text>
+                  <Text style={styles.tableCell}>{`$${fee.fee}`}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.tabContent}>
+                No fees information available.
+              </Text>
+            )}
+          </View>
+        );
+      case "Eligibility":
+        return (
+          <View style={styles.contentContainer}>
+            {eligibility && eligibility.length > 0 ? (
+              eligibility.map((criteria, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <Text style={styles.tableCell}>{criteria.description}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.tabContent}>
+                No eligibility information available.
+              </Text>
+            )}
+          </View>
+        );
       case "FAQs":
         return <FAQs />;
       default:
@@ -84,13 +162,28 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image
-        source={{
-          uri: service.media[Math.floor(Math.random() * service.media.length)]
-            .media_url,
+      <FlatList
+        data={service.media}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Image source={{ uri: item.media_url }} style={styles.coverImage} />
+        )}
+        pagingEnabled
+        onScroll={(event) => {
+          const index = Math.floor(event.nativeEvent.contentOffset.x / width);
+          setCurrentIndex(index);
         }}
-        style={styles.coverImage}
       />
+      <View style={styles.pagination}>
+        {service.media.map((_, index) => (
+          <View
+            key={index}
+            style={[styles.dot, currentIndex === index && styles.activeDot]}
+          />
+        ))}
+      </View>
       <View style={styles.profileContainer}>
         <Text style={styles.serviceName}>{service.name}</Text>
         <Text style={styles.servicePrice}>{`$${service.price}/hr`}</Text>
@@ -99,7 +192,7 @@ const ServiceDetails: React.FC<{ route: any }> = ({ route }) => {
         </Text>
       </View>
       <View style={styles.tabContainer}>
-        {["About Me", "Feedback", "Reviews", "FAQs"].map((tab) => (
+        {["About Me", "Fees", "Eligibility", "FAQs"].map((tab) => (
           <TouchableOpacity
             key={tab}
             style={[styles.tab, activeTab === tab && styles.activeTab]}
@@ -161,6 +254,21 @@ const styles = StyleSheet.create({
     width: width,
     height: 200,
   },
+  pagination: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 10,
+  },
+  dot: {
+    height: 8,
+    width: 8,
+    backgroundColor: "#E0E0E0",
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: "#007AFF",
+  },
   profileContainer: {
     alignItems: "center",
     padding: 20,
@@ -201,10 +309,24 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
+    minHeight: 400,
   },
   tabContent: {
     fontSize: 16,
     color: "#666",
+  },
+  tableRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1, // Added border for better separation
+    borderBottomColor: "#E0E0E0",
+  },
+  tableCell: {
+    fontSize: 16,
+    color: "#333",
+    flex: 1, // Ensures cells take equal space
+    textAlign: "center", // Centers text within each cell
   },
   buttonContainer: {
     flexDirection: "row",
