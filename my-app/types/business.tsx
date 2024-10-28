@@ -57,5 +57,6 @@ export interface Review {
 export type RootStackParamList = {
   selectedBusiness: {
     selectedBusiness: Business;
+    ServiceDetails: { serviceId: string };
   };
 };

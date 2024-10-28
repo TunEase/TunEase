@@ -1,13 +1,13 @@
 import React, { useRef, useEffect } from "react";
 import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
   Dimensions,
   FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -28,6 +28,10 @@ const Profile = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const { selectedBusiness } = route.params;
   const { services = [], media = [] } = selectedBusiness; // Default to empty arrays
+
+  if (!selectedBusiness) {
+    return <Text>Loading...</Text>; // Or handle the error appropriately
+  }
 
   const flatListRef = useRef<FlatList>(null);
 
