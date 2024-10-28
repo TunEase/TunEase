@@ -122,6 +122,39 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
           <Text style={styles.buttonText}>See Complaints</Text>
         </TouchableOpacity>
       </View>
+      <View style={styles.buttonRow}>
+        <TouchableOpacity
+          style={styles.topButton}
+          onPress={() =>
+            navigation.navigate("ManageFeesScreen", { serviceId, serviceName })
+          }
+        >
+          <FontAwesome
+            name="money"
+            size={16}
+            color="#FFFFFF"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.buttonText}>Manage Fees</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.topButton}
+          onPress={() =>
+            navigation.navigate("ManageEligibilityScreen", {
+              serviceId,
+              serviceName,
+            })
+          }
+        >
+          <FontAwesome
+            name="check"
+            size={16}
+            color="#FFFFFF"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.buttonText}>Manage Eligibility</Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity
         style={styles.card}
         onPress={() => toggleCard("editService")}
@@ -255,36 +288,6 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.card}
-        onPress={() => toggleCard("manageReviews")}
-      >
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Manage Reviews</Text>
-          <FontAwesome name="comments" size={20} color="#00796B" />
-        </View>
-        {expandedCard === "manageReviews" && (
-          <View style={styles.cardContent}>
-            <Text>View and respond to reviews</Text>
-            {/* Implement review management logic here */}
-          </View>
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => toggleCard("promotions")}
-      >
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Promotions or Discounts</Text>
-          <FontAwesome name="tags" size={20} color="#00796B" />
-        </View>
-        {expandedCard === "promotions" && (
-          <View style={styles.cardContent}>
-            <Text>Manage promotions/discounts</Text>
-            {/* Implement promotions management logic here */}
-          </View>
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.card}
         onPress={() => toggleCard("historyOfChanges")}
       >
         <View style={styles.cardHeader}>
@@ -336,19 +339,25 @@ const styles = StyleSheet.create({
   },
   topButton: {
     backgroundColor: "#00796B",
-    borderRadius: 10,
+    borderRadius: 8,
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    width: 150, // Fixed width for all buttons
     alignItems: "center",
     flexDirection: "row",
+    justifyContent: "center", // Center content within the button
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   buttonText: {
     color: "#FFFFFF",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
   },
   buttonIcon: {
-    marginRight: 8,
+    marginRight: 6,
   },
   header: {
     flexDirection: "row",
