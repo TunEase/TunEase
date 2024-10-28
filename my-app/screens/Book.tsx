@@ -11,8 +11,15 @@ import { Calendar } from "react-native-calendars";
 import { supabase } from "../services/supabaseClient";
 import BookingCard from "./BookingCard";
 
-const BookNowScreen = ({ route }: { route: any }) => {
+const BookNowScreen = ({
+  route,
+  navigation,
+}: {
+  route: any;
+  navigation: any;
+}) => {
   const [confirmationVisible, setConfirmationVisible] = useState(false);
+  const selectedBusiness = route?.params?.selectedBusiness || {};
 
   const { service, serviceName } = route.params;
   const [modalVisible, setModalVisible] = useState(false);
@@ -458,7 +465,10 @@ const BookNowScreen = ({ route }: { route: any }) => {
             </Text>
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
+              onPress={() => {
+                setModalVisible(false);
+                navigation.navigate("AppointmentBook");
+              }}
             >
               <Text style={styles.buttonText}>Close</Text>
             </TouchableOpacity>

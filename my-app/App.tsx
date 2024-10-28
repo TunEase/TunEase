@@ -40,6 +40,7 @@ import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
 import AddAvailabilityTimeScreen from "./screens/AddAvailabilityTimeScreen";
 import AddService from "./screens/AddService";
 import AllService from "./screens/AllService";
+import AppointmentBook from "./screens/AppointmentBook";
 import AvailabilityScreen from "./screens/AvailabilityScreen";
 import Book from "./screens/Book";
 import ComplaintsScreen from "./screens/ComplaintsScreen";
@@ -50,7 +51,7 @@ import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
 import ReplyToComplaintScreen from "./screens/ReplyToComplaintScreen";
 import ServiceDetails from "./screens/ServiceDetails";
 import ServiceSettings from "./screens/SeviceSetting";
-import staticBusinessProfile from "./screens/staticBusinessProfile";
+import StaticBusinessProfile from "./screens/StaticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
@@ -113,8 +114,8 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="staticBusinessProfile"
-            component={staticBusinessProfile}
+            name="StaticBusinessProfile"
+            component={StaticBusinessProfile}
             options={{ headerShown: false }}
           />
           {/* Main Screens */}
@@ -302,6 +303,11 @@ export default function App() {
           <Stack.Screen
             name="ServiceSettings"
             component={ServiceSettings}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AppointmentBook"
+            component={AppointmentBook}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
