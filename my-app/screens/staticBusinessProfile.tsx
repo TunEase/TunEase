@@ -1,20 +1,19 @@
-import React, { useRef, useEffect, useState } from "react";
+import { Feather } from "@expo/vector-icons";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React, { useEffect, useRef } from "react";
 import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
   Dimensions,
   FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
-import MapView, { Marker } from "react-native-maps";
 import { RootStackParamList } from "../types/business";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 const { width, height } = Dimensions.get("window");
 
 type ProfileScreenRouteProp = RouteProp<RootStackParamList, "selectedBusiness">;
@@ -26,8 +25,13 @@ type ProfileScreenNavigationProp = NativeStackNavigationProp<
 const Profile = () => {
   const route = useRoute<ProfileScreenRouteProp>();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const { selectedBusiness } = route.params;
-  const { services, media } = selectedBusiness;
+  const { selectedBusiness } = route.params || {};
+  const services = selectedBusiness?.services || [];
+  const media = selectedBusiness?.media || [];
+
+  if (!selectedBusiness) {
+    return <Text>Loading...</Text>; // Or handle the error appropriately
+  }
 
   const flatListRef = useRef<FlatList>(null);
 
