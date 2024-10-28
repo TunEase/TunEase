@@ -12,9 +12,11 @@ module.exports = {
         safe: false,
         allowUndefined: true,
       },
+      'react-native-reanimated/plugin',
     ],
     ["@babel/plugin-transform-private-methods", { loose: true }], // Added 'loose' option
     ["@babel/plugin-transform-class-properties", { loose: true }], // Ensure consistency
     ["@babel/plugin-transform-private-property-in-object", { loose: true }], // Ensure consistency
+
   ],
 };
