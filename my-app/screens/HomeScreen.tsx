@@ -30,7 +30,8 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [recommendedServices, setRecommendedServices] = useState<any[]>([]);
   const [popularServices, setPopularServices] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
-
+const [loading, setLoading] = useState(false);
+const [Error, setError] = useState<string | null>(null);
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -50,7 +51,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   useEffect(() => {
     fetchBusinesses();
     fetchPopularServices();
-    fetchNews()
+    // fetchNews()
   }, []);
 
   const fetchPopularServices = async () => {
@@ -99,21 +100,21 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     }
   }
  
-    const fetchNews = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('news')
-          .select('*')
-          .order('published_at', { ascending: false });
+    // const fetchNews = async () => {
+    //   try {
+    //     const { data, error } = await supabase
+    //       .from('news')
+    //       .select('*')
+    //       .order('published_at', { ascending: false });
 
-        if (error) throw error;
-        setNews(data);
-      } catch (error) {
-        console.error("Error fetching news:", error.message);
-      } finally {
-        console.log("Loading news completed.");
-      }
-    };
+    //     // if (error) setError(error.message);
+    //     setNews(data || []);
+    //   } catch (error) {
+    //     console.error("Error fetching news:", error.message);
+    //   } finally {
+    //     console.log("Loading news completed.");
+    //   }
+    // };
 
     const renderNewsItem = ({ item }) => (
       <View style={styles.newsCard}>
@@ -145,7 +146,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             onChangeText={setSearchQuery}
           />
         </View>
-        {error && <Text style={styles.errorText}>{error}</Text>}
+        {Error && <Text style={styles.errorText}>{Error}</Text>}
       {loading ? (
         <Text>Loading...</Text>
       ) : (
