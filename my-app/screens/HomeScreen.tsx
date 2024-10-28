@@ -16,6 +16,8 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
+import News from "./News";
+      
 
 interface HomeProps {
   navigation: any;
@@ -27,6 +29,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [recommendedServices, setRecommendedServices] = useState<any[]>([]);
   const [popularServices, setPopularServices] = useState<any[]>([]);
+  const [news, setNews] = useState<any[]>([]);
+const [loading, setLoading] = useState(false);
+const [Error, setError] = useState<string | null>(null);
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -46,6 +51,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   useEffect(() => {
     fetchBusinesses();
     fetchPopularServices();
+    // fetchNews()
   }, []);
 
   const fetchPopularServices = async () => {
@@ -92,8 +98,37 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     } catch (error) {
       console.error("Error fetching businesses:", error);
     }
-  };
+  }
+ 
+    // const fetchNews = async () => {
+    //   try {
+    //     const { data, error } = await supabase
+    //       .from('news')
+    //       .select('*')
+    //       .order('published_at', { ascending: false });
 
+    //     // if (error) setError(error.message);
+    //     setNews(data || []);
+    //   } catch (error) {
+    //     console.error("Error fetching news:", error.message);
+    //   } finally {
+    //     console.log("Loading news completed.");
+    //   }
+    // };
+
+    const renderNewsItem = ({ item }) => (
+      <View style={styles.newsCard}>
+        <Image source={{ uri: item.image_url }} style={styles.newsImage} />
+        <View style={styles.textContainer}>
+          <Text style={styles.discountText}>25% off</Text>
+          <Text style={styles.withCodeText}>WITH CODE</Text>
+          <Text style={styles.shopNowButton}>Shop Now</Text>
+        </View>
+        <Icon name="add-shopping-cart" size={24} color="#007AFF" style={styles.cartIcon} />
+      </View>
+    );
+    
+  
   const renderHeader = () => (
     <View style={styles.header}>
       <Image
@@ -111,6 +146,21 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             onChangeText={setSearchQuery}
           />
         </View>
+        {Error && <Text style={styles.errorText}>{Error}</Text>}
+      {loading ? (
+        <Text>Loading...</Text>
+      ) : (
+        <FlatList
+          data={news}
+          renderItem={renderNewsItem}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          pagingEnabled
+        />
+      )}
+    </View>
+
         <TouchableOpacity
           style={styles.profileIcon}
           onPress={() => navigation.navigate("BusinessProfileApp")}
@@ -118,8 +168,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           <Icon name="person" size={30} color="#FFF" />
         </TouchableOpacity>
       </View>
-    </View>
+    
   );
+  
 
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
@@ -260,8 +311,8 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
-};
 
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -441,6 +492,44 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#00796B",
   },
+  newsCard: {
+    width: 300,
+    marginRight: 10,
+    position: "relative",
+  },
+  newsImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 10,
+  },
+  textContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  discountText: {
+    fontSize: 20,
+    color: "#FFF",
+  },
+  withCodeText: {
+    fontSize: 16,
+    color: "#FFF",
+  },
+  shopNowButton: {
+    fontSize: 16,
+    color: "#FFF",
+  },
+  cartIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+  errorText: {
+    color: "red",
+    marginLeft: 10,
+  },  
 });
 
 export default Home;
