@@ -1,4 +1,3 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useEffect, useState } from "react";
 import {
   Modal,
@@ -9,26 +8,25 @@ import {
   View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
-import Icon from "react-native-vector-icons/MaterialIcons"; // Add this line
 import { supabase } from "../services/supabaseClient";
+import BookingCard from "./BookingCard";
 
 const BookNowScreen = ({ route }: { route: any }) => {
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
+
+  const { service, serviceName } = route.params;
   const [modalVisible, setModalVisible] = useState(false);
   const [showPicker, setShowPicker] = useState(false); // State for time picker visibility
   const [availableTimes, setAvailableTimes] = useState<string[]>([]); // State for available times
 
-  const { service
-
-
-    
-   } = route.params;
+  // const { service } = route.params;
   const serviceId = service.id;
   const { start_date, end_date, duration, start_time, end_time } = service; // Assuming duration is in minutes
 
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
     undefined
   );
-  const [selectedTime, setSelectedTime] = useState<string>("8:00 AM");
+  const [selectedTime, setSelectedTime] = useState<string>("");
   const [markedDates, setMarkedDates] = useState<{
     [key: string]: {
       marked: boolean;
@@ -37,6 +35,7 @@ const BookNowScreen = ({ route }: { route: any }) => {
       selectedColor?: string;
     };
   }>({});
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
 
   useEffect(() => {
     getAvailableDates(start_date, end_date);
@@ -50,11 +49,16 @@ const BookNowScreen = ({ route }: { route: any }) => {
       .eq("service_id", serviceId);
 
     if (error) {
-      console.error("Error fetching availability:", error);
+      console.error(
+        "Error fetching availability:",
+        error.message,
+        error.details
+      );
       return [];
     }
 
-    return data; // Return the fetched availability data
+    console.log("Availability:", data);
+    return data;
   };
 
   const getAvailableDates = (start: string, end: string) => {
@@ -136,6 +140,8 @@ const BookNowScreen = ({ route }: { route: any }) => {
             t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           );
         }
+        console.log("Booked Times:", bookedTimes);
+
         return times;
       })
       .flat();
@@ -145,7 +151,7 @@ const BookNowScreen = ({ route }: { route: any }) => {
       //@ts-ignore
       (time) => !bookedTimes.includes(time)
     );
-
+    console.log("Final Available Times:", finalAvailableTimes);
     setAvailableTimes(finalAvailableTimes); // Set available times state
   };
 
@@ -172,7 +178,7 @@ const BookNowScreen = ({ route }: { route: any }) => {
           [day.dateString]: {
             selected: true,
             marked: true,
-            selectedColor: "blue",
+            selectedColor: "#00796B",
           },
         };
         setMarkedDates(updatedMarkedDates);
@@ -197,75 +203,253 @@ const BookNowScreen = ({ route }: { route: any }) => {
   };
 
   const handleBookNow = () => {
-    console.log("Booking confirmed for", selectedDate, "at", selectedTime);
-    setModalVisible(true);
+    console.log("Booking button pressed");
+    setConfirmationVisible(true); // Show confirmation modal
+  };
+  const confirmBooking = () => {
+    console.log("Booking confirmed");
+    setConfirmationVisible(false); // Close modal after confirmation
+    setModalVisible(true); // Show booking confirmation modal
+  };
+  const createAvailability = async (date: string, time: string) => {
+    // Log the input values for debugging
+    console.log("Input date:", date);
+    console.log("Input time:", time);
+
+    // Parse the selected time into hours and minutes
+    const timeParts = time.split(":");
+    if (timeParts.length !== 2) {
+      console.error("Invalid time format:", time);
+      return; // Exit if the time format is invalid
+    }
+
+    const hours = parseInt(timeParts[0]);
+    const minutes = parseInt(timeParts[1]);
+
+    // Create a Date object for the start time
+    const dateParts = date.split("-"); // Assuming date is in "YYYY-MM-DD" format
+    const startDateTime = new Date(
+      parseInt(dateParts[0]), // Year
+      parseInt(dateParts[1]) - 1, // Month (0-based index)
+      parseInt(dateParts[2]) // Day
+    );
+
+    // Set the hours and minutes
+    startDateTime.setHours(hours, minutes, 0); // Set the hours and minutes
+
+    // Check if startDateTime is valid
+    if (isNaN(startDateTime.getTime())) {
+      console.error("Invalid start date:", startDateTime);
+      return; // Exit if the date is invalid
+    }
+
+    // Calculate end time by adding the service duration in minutes
+    const endDateTime = new Date(startDateTime);
+    endDateTime.setMinutes(endDateTime.getMinutes() + duration); // Add service duration
+
+    // Check if endDateTime is valid
+    if (isNaN(endDateTime.getTime())) {
+      console.error("Invalid end date:", endDateTime);
+      return; // Exit if the date is invalid
+    }
+
+    // Format end time to a string
+    const endTime = endDateTime.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const hasAppointment = await checkExistingAppointment(
+      "004ea820-ac36-49bd-b519-cc0bc052bd98",
+      date,
+      time
+    ); // Replace with actual client ID
+
+    if (hasAppointment) {
+      alert("You already have an appointment at this time.");
+      return; // Exit if the user already has an appointment
+    }
+    // Debugging: Log the values before inserting
+    console.log("Inserting availability with:", {
+      service_id: serviceId,
+      currentdate: date,
+      start_time: time,
+      end_time: endTime,
+      start_date: date,
+      end_date: date,
+      duration: duration,
+      days_of_week: [],
+    });
+
+    const { data, error } = await supabase.from("availability").insert({
+      service_id: serviceId,
+      currentdate: date,
+      start_time: time,
+      start_date: date,
+      end_date: date,
+      end_time: endTime,
+      duration: duration,
+      days_of_week: [], // Adjust this if you want to store the days of the week
+    });
+
+    if (error) {
+      console.error(
+        "Error creating availability:",
+        error.message,
+        error.details
+      );
+    } else {
+      console.log("Availability created:", data);
+      await createAppointment(
+        serviceId,
+        "004ea820-ac36-49bd-b519-cc0bc052bd98",
+        date,
+        time,
+        endTime,
+        "SCHEDULED"
+      );
+    }
+  };
+  const checkExistingAppointment = async (
+    clientId: string,
+    date: string | undefined,
+    startTime: string
+  ) => {
+    const { data, error } = await supabase
+      .from("appointments")
+      .select("*")
+      .eq("client_id", clientId)
+      .eq("date", date)
+      .eq("start_time", startTime);
+
+    if (error) {
+      console.error("Error checking existing appointments:", error);
+      return false; // Return false if there's an error
+    }
+
+    return data.length > 0; // Return true if there are existing appointments
+  };
+  const createAppointment = async (
+    serviceId: string,
+    clientId: string,
+    date: string,
+    startTime: string,
+    endTime: string,
+    status: string
+  ) => {
+    const { data, error } = await supabase.from("appointments").insert({
+      service_id: serviceId,
+      client_id: clientId, // Replace with the actual client ID
+      date: date,
+      start_time: startTime,
+      end_time: endTime,
+      status: status,
+    });
+
+    if (error) {
+      console.error("Error creating appointment:", error);
+    } else {
+      console.log("Appointment created:", data);
+    }
+  };
+  const handleTimeSelect = (time: string) => {
+    if (selectedDate) {
+      createAvailability(selectedDate, time);
+      setSelectedTime(time);
+    }
+    setSelectedTimeSlot(time);
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.headerText}>Book </Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerText}>{serviceName}</Text>
+      </View>
 
-      {/* Calendar for Date Selection */}
-      <Calendar
-        onDayPress={handleDayPress}
-        markedDates={markedDates}
-        theme={{
-          selectedDayBackgroundColor: "#00796B",
-          arrowColor: "#00796B",
-          todayTextColor: "#00796B",
-        }}
-      />
+      <View style={styles.calendarContainer}>
+        <Calendar
+          onDayPress={handleDayPress}
+          markedDates={markedDates}
+          theme={{
+            selectedDayBackgroundColor: "#00796B",
+            arrowColor: "#00796B",
+            todayTextColor: "#00796B",
+          }}
+        />
+      </View>
 
       {availableTimes.length > 0 && (
         <View style={styles.availableTimesContainer}>
           <Text style={styles.label}>Available Times:</Text>
-          <View style={styles.timeSlotsContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.timeSlotsContainer}
+          >
             {availableTimes.map((time, index) => (
               <TouchableOpacity
                 key={index}
-                onPress={() => setSelectedTime(time)}
-                style={styles.timeSlot}
+                onPress={() => handleTimeSelect(time)}
+                style={[
+                  styles.timeSlot,
+                  selectedTimeSlot === time ? styles.selectedTimeSlot : {},
+                ]}
               >
-                <Text style={styles.timeText}>{time}</Text>
+                <Text
+                  style={{ color: selectedTimeSlot === time ? "#fff" : "#000" }}
+                >
+                  {time}
+                </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         </View>
       )}
 
-      {/* Time Picker */}
-      <View style={styles.pickerContainer}>
-        <Text style={styles.label}>Select Time:</Text>
-        <View style={styles.timeRow}>
-          <Text>{selectedTime}</Text>
-          <TouchableOpacity
-            onPress={() => setShowPicker(true)} // Show the time picker
-            style={styles.iconButton}
-          >
-            <Icon name="access-time" size={24} color="#00796B" />
-            {/* Icon for the time picker */}
-          </TouchableOpacity>
-        </View>
-        {showPicker && (
-          <DateTimePicker
-            value={new Date()}
-            mode="time"
-            is24Hour={false}
-            display="default"
-            onChange={handleTimeChange}
+      {/* Booking Card */}
+      <View>
+        {selectedDate && selectedTime && (
+          <BookingCard
+            date={selectedDate}
+            time={selectedTime}
+            serviceName={service.name}
           />
         )}
       </View>
 
-      {/* Book Now Button */}
       <TouchableOpacity style={styles.bookNowButton} onPress={handleBookNow}>
         <Text style={styles.buttonText}>Book Now</Text>
       </TouchableOpacity>
+
+      {/* Confirmation Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={confirmationVisible}
+        onRequestClose={() => setConfirmationVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>Are you sure you want to book?</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.button} onPress={confirmBooking}>
+                <Text style={styles.buttonText}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => setConfirmationVisible(false)}
+              >
+                <Text style={styles.buttonText}>No</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      {/* Booking Confirmation Modal */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)} // Close modal on back press
+        onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -274,7 +458,7 @@ const BookNowScreen = ({ route }: { route: any }) => {
             </Text>
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setModalVisible(false)} // Close modal
+              onPress={() => setModalVisible(false)}
             >
               <Text style={styles.buttonText}>Close</Text>
             </TouchableOpacity>
@@ -285,9 +469,88 @@ const BookNowScreen = ({ route }: { route: any }) => {
   );
 };
 
-export default BookNowScreen;
-
 const styles = StyleSheet.create({
+  buttonContainer: {
+    flexDirection: "row", // Arrange children in a row
+    justifyContent: "space-between", // Space between buttons
+    alignItems: "center", // Align items vertically centered
+    width: "100%", // Full width of the container
+    paddingHorizontal: 20, // Optional: Add padding for spacing
+  },
+  button: {
+    justifyContent: "center", // Center content within the button
+    width: "45%", // Adjust width to fit two buttons side by side
+    marginTop: 9,
+    padding: 8,
+    borderRadius: 50,
+    backgroundColor: "#00796B",
+    alignItems: "center",
+    elevation: 5,
+    display: "flex",
+  },
+  container: {
+    flexGrow: 3,
+    padding: 25,
+    backgroundColor: "#f1f1f1",
+  },
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  headerText: {
+    marginTop: 30,
+    marginBottom: 25,
+    fontSize: 25,
+    fontWeight: "bold",
+    color: "#00796B",
+  },
+  calendarContainer: {
+    marginBottom: 20,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    elevation: 3,
+  },
+  availableTimesContainer: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    elevation: 3,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  timeSlotsContainer: {
+    flexDirection: "row",
+  },
+  timeSlot: {
+    padding: 10,
+    borderRadius: 5,
+    borderColor: "#00796B",
+    borderWidth: 1,
+    marginHorizontal: 5,
+    backgroundColor: "#fff",
+  },
+  selectedTimeSlot: {
+    backgroundColor: "#00796B",
+    borderColor: "#004D40",
+  },
+  bookNowButton: {
+    backgroundColor: "#00796B",
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+    elevation: 5,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
@@ -300,10 +563,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
     elevation: 5,
   },
   modalText: {
@@ -316,77 +575,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
-  },
-  container: {
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 16,
-    backgroundColor: "#f1f1f1",
-  },
-  headerText: {
-    fontSize: 28,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#00796B",
-    marginBottom: 20,
-  },
-  pickerContainer: {
-    marginVertical: 16,
-  },
-  label: {
-    fontSize: 18,
-    marginBottom: 8,
-    color: "#333",
-    fontWeight: "600",
-  },
-  timeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: "#00796B",
-    paddingVertical: 8,
-  },
-  iconButton: {
-    marginLeft: 10,
-  },
-  bookNowButton: {
-    backgroundColor: "#00796B",
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
     elevation: 5,
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  availableTimesContainer: {
-    marginVertical: 16,
-  },
-  timeSlot: {
-    backgroundColor: "#00796B",
-    borderRadius: 50, // Make it circular
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    margin: 5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  timeText: {
-    fontSize: 16,
-    color: "#fff",
-  },
-
-  timeSlotsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-around",
-  },
 });
+
+export default BookNowScreen;

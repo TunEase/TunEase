@@ -1,7 +1,7 @@
     import { useSupabaseStorage } from '../hooks/useSupabaseStorage';
 
 const SomeComponent = () => {
-  const { uploadFileAndSaveToDb, isLoading, error } = useSupabaseStorage('your-bucket-name');
+  const { uploadFileAndSaveToDb, isLoading, error } = useSupabaseStorage('uploads');
 
   const handleUpload = async (file: File) => {
     const path = `uploads/${file.name}`;
