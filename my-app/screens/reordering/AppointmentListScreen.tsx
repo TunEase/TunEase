@@ -50,7 +50,7 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
   const renderAppointmentItem = ({ item }: { item: Appointment }) => (
     <TouchableOpacity
       style={styles.appointmentItem}
-      onPress={() => navigation.navigate('AppointmentDetailsScreen', { appointmentId: item.id })}
+      onPress={() => navigation.navigate('AppointmentDetailsScreen', { appointment: item })}
     >
       <View style={styles.appointmentInfo}>
         <Text style={styles.appointmentDate}>{format(new Date(item.date), 'MMM dd, yyyy')}</Text>
