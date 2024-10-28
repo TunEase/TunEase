@@ -13,15 +13,19 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Footer from "../components/HomePage/MainFooter";
 
+// import News from "./News";
+
 interface HomeProps {
   navigation: any;
-  
 }
+
 
 const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  
-  
+  const [news, setNews]=useState<any[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+
   const categories = [
     { icon: "mail", name: "Baldia" },
     { icon: "money", name: "la Poste" },
@@ -81,16 +85,14 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         "https://i0.wp.com/lapresse.tn/wp-content/uploads/2023/01/la-poste-tunisienne.jpg?resize=740%2C427&ssl=1",
     },
   ];
+  
 
-  const renderCard = ({ item }) => (
-    <TouchableOpacity style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.specialty}>{item.specialty}</Text>
-      <View style={styles.ratingContainer}>
-        <Icon name="star" size={18} color="#FFD700" />
-        <Text style={styles.ratingText}>{item.rating}</Text>
-      </View>
+  const renderCard = ({ item }: { item: { id: string; news: any[] } }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('News')}
+    >
+      <Image source={{ uri: item.news[0].image }} style={styles.cardImage} />
     </TouchableOpacity>
   );
 
@@ -111,6 +113,53 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     </TouchableOpacity>
   );
   
+const renderServiceCard = ({ item }: { item: { id: string; name: string; specialty: string; rating: number; image: string; } }) => (
+  <TouchableOpacity style={styles.card}>
+    <Image source={{ uri: item.image }} style={styles.cardImage} />
+    <Text style={styles.name}>{item.name}</Text>
+    <Text style={styles.specialty}>{item.specialty}</Text>
+    <View style={styles.ratingContainer}>
+      <Icon name="star" size={16} color="#FFD700" />
+      <Text style={styles.ratingText}>{item.rating}</Text>
+    </View>
+  </TouchableOpacity>
+);
+const renderBusinessCard = ({ item }: { item: { id: string; name: string; specialty: string; rating: number; image: string; } }) => (
+  <TouchableOpacity style={styles.card}>
+    <Image source={{ uri: item.image }} style={styles.cardImage} />
+    <Text style={styles.name}>{item.name}</Text>
+    <Text style={styles.specialty}>{item.specialty}</Text>
+    <View style={styles.ratingContainer}>
+      <Icon name="star" size={16} color="#FFD700" />
+      <Text style={styles.ratingText}>{item.rating}</Text>
+    </View>
+  </TouchableOpacity>
+);
+  //  const renderNewsItem = ({ item }) => (
+  //   <View style={styles.cards}>
+  //   <View style={styles.cardImage}>
+  //     <TouchableOpacity onPress={() => navigation.navigate('News')}>
+  //     <Image source={{ uri: item.image_url }} style={styles.cardImage} />
+  //   </TouchableOpacity>
+  //   <Image source={{ uri: item.image_url }} style={styles.newsImage} />
+  //   </View>
+  //   <TouchableOpacity onPress={() => navigation.navigate('News')}>
+  //     <View style={styles.cardTextContainer}>
+  //       <Text style={styles.newsTitle}>{item.title}</Text>
+  //       <Text style={styles.newsContent}>{item.content}</Text>
+  //       <Text style={styles.newsDate}>{item.date}</Text>
+  //       <Icon name="add-shopping-cart" size={24} color="#007AFF" style={styles.cartIcon} />
+  //     </View>
+  //   </TouchableOpacity>
+  // </View>
+  // );
+
+  // const handleScroll = (event: any) => {
+  //   const index = Math.floor(event.nativeEvent.contentOffset.x / width);
+  //   setActiveIndex(index);
+  // };
+  
+
   return (
     <SafeAreaView style={styles.mainContainer}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
@@ -139,7 +188,32 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             onChangeText={setSearchQuery}
           />
         </View>
-        
+
+        {/* News */}
+        <View style={styles.container}>
+      <FlatList
+        data={news}
+        renderItem={renderCard}
+        keyExtractor={(item) => item.id}
+        horizontal
+        pagingEnabled
+        // onScroll={handleScroll}
+        showsHorizontalScrollIndicator={false}
+        scrollEventThrottle={16}
+      />
+      <View style={styles.pagination}>
+        {news.map((_, index) => (
+          <View
+            key={index}
+            style={[
+              styles.dot,
+              activeIndex === index && styles.activeDot,
+            ]}
+          />
+        ))}
+      </View>
+    </View>
+
         {/* Scrollable Banner */}
         {/* <FlatList
           data={categories}
@@ -175,10 +249,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Top Services</Text>
-
           <FlatList
             data={topServices}
-            renderItem={renderCard}
+            renderItem={renderServiceCard}
             keyExtractor={(item) => item.id}
             numColumns={2}
             showsVerticalScrollIndicator={false}
@@ -191,14 +264,15 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           <Text style={styles.sectionTitle}>Top Businesses</Text>
           <FlatList
             data={topBusinesses}
-            renderItem={renderCard}
+            renderItem={renderBusinessCard}
             keyExtractor={(item) => item.id}
             numColumns={2}
             showsVerticalScrollIndicator={false}
             columnWrapperStyle={styles.columnWrapper}
+
           />
         </View>
-
+         
         {/* Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
@@ -238,8 +312,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F2F2F2",
   },
+  seeAll: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#00796B',
+  },
   contentContainer: {
     paddingBottom: 60,
+  },
+  newsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  newsContainer: {
+    marginVertical: 10,
+    paddingLeft: 10,
   },
   header: {
     flexDirection: "row",
@@ -427,7 +514,72 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
   },
+  cardItem: {
+    marginRight: 10,
+  },  
+  cardImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  cardText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },  
+  cardContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },  
+  cardTextContainer: {
+    marginLeft: 10,
+  },
+  cards: {
+    flex: 1,
+    marginBottom: 10,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    elevation: 3,
+    padding: 60,
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  categories: {
+    marginHorizontal: 30,
+    marginVertical: 15,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 35,
+  },
+  cartIcon: {
+    marginTop: 10,
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#888',
+  },
+  newsText: {
+    fontSize: 16,
+    color: '#888',
+  },  
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },  
+  pagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+  },
+  activeDot: {
+    backgroundColor: '#00796B',
+  },  
 
 });
+
 
 export default Home;
