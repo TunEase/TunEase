@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import Home from "../my-app/screens/HomeScreen";
@@ -59,6 +60,12 @@ import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
 ServiceSettings;
 
+import AppointmentDetailsScreen from "./screens/reordering/AppointmentDetailsScreen";
+import ReorderingConfirmationScreen from "./screens/reordering/ReorderingConfirmationScreen";
+import AppointmentListScreen from "./screens/reordering/AppointmentListScreen";
+import CustomReorderingScreen from "./screens/reordering/CustomReorderingScreen";
+import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -94,6 +101,7 @@ export default function App() {
   }
 
   return (
+    <GestureHandlerRootView>
     <NavigationContainer>
       <AuthProvider>
         <Stack.Navigator initialRouteName="Onboarding">
@@ -252,6 +260,34 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="AppointmentListScreen"
+            component={AppointmentListScreen}
+            options={{ headerShown: false }}
+          />
+             <Stack.Screen
+            name="AutoReorderingScreen"
+            component={AutoReorderingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="CustomReorderingScreen"
+            component={CustomReorderingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ReorderingConfirmationScreen"
+            component={ReorderingConfirmationScreen}
+            options={{ headerShown: false }}
+          />
+          
+          <Stack.Screen
+            name="AppointmentDetailsScreen"
+            component={AppointmentDetailsScreen}
+            options={{ headerShown: false }}
+          />
+          
+       
+          <Stack.Screen
             name="CreateServiceScreen"
             component={CreateServiceScreen}
             options={{ headerShown: false }}
@@ -326,5 +362,6 @@ export default function App() {
       </AuthProvider>
       <StatusBar style="auto" />
     </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }

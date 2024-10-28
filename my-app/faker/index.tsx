@@ -43,14 +43,14 @@ const dropTablesExceptUsers = async () => {
 };
 // Main function to run all operations in order
 const runAllFunctions = async () => {
-  await createBusiness(); // Create businesses
-  await createService(); // Create services
+  // await createBusiness(); // Create businesses
+  // await createService(); // Create services
   await createAvailabilityData(); // Create availability data
-  await createComplaintsData(); // Create complaints data
-  await createReviewData(); // Create review data
-  await createEligibility(); // Create eligibility
-  await createFees(); // Create fees
-  await injectMedia(); // Inject media
+  // await createComplaintsData(); // Create complaints data
+  // await createReviewData(); // Create review data
+  // await createEligibility(); // Create eligibility
+  // await createFees(); // Create fees
+  // await injectMedia(); // Inject media
 };
 
 // Execute the main function

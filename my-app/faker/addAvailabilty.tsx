@@ -6,9 +6,11 @@ import { getAllServices } from "./Helpers/getAllServices";
 // Define types for the data structures
 interface Availability {
   service_id: string;
-  currentdate: string;
+  start_date: string;
+  end_date: string;
   start_time: string;
   end_time: string;
+  duration: number;
   days_of_week: number[];
 }
 
@@ -25,29 +27,27 @@ export const createAvailabilityData = async () => {
       serviceId: string,
       serviceStartTime: string,
       serviceEndTime: string,
-      duration: number
+      serviceDuration: number
     ) => {
       const startDate = new Date();
-      const endDate = addDays(
-        startDate,
-        faker.number.int({ min: 30, max: 90 })
-      );
+      const endDate = addDays(startDate, faker.number.int({ min: 30, max: 90 }));
 
       // Convert service start and end times to Date objects
       const [startHour, startMinute] = serviceStartTime.split(":").map(Number);
       const [endHour, endMinute] = serviceEndTime.split(":").map(Number);
 
       const startTime = new Date(startDate);
-      startTime.setHours(startHour, startMinute, 0); // Set start time to service start time
+      startTime.setHours(startHour, startMinute, 0);
 
       const endTime = new Date(startDate);
-      endTime.setHours(endHour, endMinute, 0); // Set end time to service end time
+      endTime.setHours(endHour, endMinute, 0);
 
       // Ensure availability times are within the service time range
-      const availabilityStartTime =
+      const availabilityStartTime = new Date(
         startTime.getTime() +
-        Math.random() * (endTime.getTime() - startTime.getTime());
-      const availabilityEndTime = availabilityStartTime + duration * 60 * 1000; // Add duration in milliseconds
+        Math.random() * (endTime.getTime() - startTime.getTime() - serviceDuration * 60 * 1000)
+      );
+      const availabilityEndTime = new Date(availabilityStartTime.getTime() + serviceDuration * 60 * 1000);
 
       const daysOfWeek = faker.helpers
         .shuffle([0, 1, 2, 3, 4, 5, 6])
@@ -56,9 +56,11 @@ export const createAvailabilityData = async () => {
 
       availabilityData.push({
         service_id: serviceId,
-        currentdate: format(startDate, "yyyy-MM-dd"),
-        start_time: format(new Date(availabilityStartTime), "HH:mm"), // Format start time to HH:mm
-        end_time: format(new Date(availabilityEndTime), "HH:mm"), // Format end time to HH:mm
+        start_date: format(startDate, "yyyy-MM-dd"),
+        end_date: format(endDate, "yyyy-MM-dd"),
+        start_time: format(availabilityStartTime, "HH:mm"),
+        end_time: format(availabilityEndTime, "HH:mm"),
+        duration: serviceDuration,
         days_of_week: daysOfWeek,
       });
     };
@@ -70,13 +72,17 @@ export const createAvailabilityData = async () => {
         service.start_time,
         service.end_time,
         service.duration
-      ); // Pass the service start time, end time, and duration
+      );
     });
 
     // Insert availability data into the database
     const { error } = await supabase
       .from("availability")
-      .insert(availabilityData);
+      .upsert(availabilityData, {
+        onConflict: 'service_id, start_date, end_date, start_time, end_time',
+        
+      });
+
     if (error) {
       console.error("Error inserting availability data:", error);
       return;
