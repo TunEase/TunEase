@@ -189,7 +189,7 @@ const renderBusinessCard = ({ item }: { item: { id: string; name: string; specia
           />
         </View>
 
-        {/* News */}
+        {/* News
         <View style={styles.container}>
       <FlatList
         data={news}
@@ -212,7 +212,7 @@ const renderBusinessCard = ({ item }: { item: { id: string; name: string; specia
           />
         ))}
       </View>
-    </View>
+    </View> */}
 
         {/* Scrollable Banner */}
         {/* <FlatList

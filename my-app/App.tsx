@@ -322,6 +322,11 @@ export default function App() {
             component={AppointmentBook}
             options={{ headerShown: false }}
           />
+          <Stack.Screen
+            name="News"
+            component={News}
+            options={{ headerShown: false }}
+          />
         </Stack.Navigator>
       </AuthProvider>
       <StatusBar style="auto" />
