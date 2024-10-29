@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 
 const CustomReorderingScreen = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-
+  const [isReordering, setIsReordering] = useState(false);
   useEffect(() => {
     fetchAppointments();
   }, []);
@@ -27,18 +27,34 @@ const CustomReorderingScreen = () => {
   };
 
   const handleReorder = async (data: Appointment[]) => {
-    // Update appointments based on new order
-    data.forEach(async (appointment, index) => {
-      await supabase
-        .from('appointments')
-        .update({ start_time: calculateNewStartTime(index) })
-        .eq('id', appointment.id);
-    });
+    try {
+      setIsReordering(true);
+      
+      // First update the local state for immediate UI feedback
+      setAppointments(data);
 
-    Alert.alert('Reorder Successful', 'Appointments have been reordered');
-    setAppointments(data);
+      // Update appointments sequentially
+      for (let index = 0; index < data.length; index++) {
+        const appointment = data[index];
+        const newStartTime = calculateNewStartTime(index);
+        
+        const { error } = await supabase
+          .from('appointments')
+          .update({ start_time: newStartTime })
+          .eq('id', appointment.id);
+
+        if (error) throw error;
+      }
+
+      Alert.alert('Success', 'Appointments have been reordered');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update appointments order');
+      // Revert to original order by re-fetching
+      await fetchAppointments();
+    } finally {
+      setIsReordering(false);
+    }
   };
-
   const calculateNewStartTime = (index: number) => {
     // Logic to calculate new start times based on index
     const baseTime = new Date(2000, 0, 1, 8, 0, 0); // Start at 8:00 AM
@@ -51,16 +67,25 @@ const CustomReorderingScreen = () => {
       <TouchableOpacity
         style={[styles.appointmentItem, isActive && styles.activeItem]}
         onLongPress={drag}
+        disabled={isReordering}
       >
-        <Ionicons name="reorder-three" size={24} color="#00796B" style={styles.dragIcon} />
+        <Ionicons 
+          name="reorder-three" 
+          size={24} 
+          color="#00796B" 
+          style={styles.dragIcon} 
+        />
         <View style={styles.appointmentInfo}>
-          <Text style={styles.appointmentDate}>{format(new Date(item.date), 'MMM dd, yyyy')}</Text>
-          <Text style={styles.appointmentTime}>{format(new Date(`2000-01-01T${item.start_time}`), 'h:mm a')}</Text>
+          <Text style={styles.appointmentDate}>
+            {format(new Date(item.date), 'MMM dd, yyyy')}
+          </Text>
+          <Text style={styles.appointmentTime}>
+            {format(new Date(`2000-01-01T${item.start_time}`), 'h:mm a')}
+          </Text>
         </View>
       </TouchableOpacity>
     );
   };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#00796B" barStyle="light-content" />
@@ -72,9 +97,10 @@ const CustomReorderingScreen = () => {
         <DraggableFlatList
           data={appointments}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           onDragEnd={({ data }) => handleReorder(data)}
           contentContainerStyle={styles.listContent}
+          dragItemOverflow={true}
         />
       </View>
     </SafeAreaView>
