@@ -8,9 +8,8 @@ import {
   View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
+import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
-import BookingCard from "./BookingCard";
-
 const BookNowScreen = ({
   route,
   navigation,
@@ -18,6 +17,9 @@ const BookNowScreen = ({
   route: any;
   navigation: any;
 }) => {
+  const { user, loading } = useAuth();
+  const userId = user?.id;
+
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const selectedBusiness = route?.params?.selectedBusiness || {};
 
@@ -271,11 +273,7 @@ const BookNowScreen = ({
       hour: "2-digit",
       minute: "2-digit",
     });
-    const hasAppointment = await checkExistingAppointment(
-      "004ea820-ac36-49bd-b519-cc0bc052bd98",
-      date,
-      time
-    ); // Replace with actual client ID
+    const hasAppointment = await checkExistingAppointment(userId, date, time); // Replace with actual client ID
 
     if (hasAppointment) {
       alert("You already have an appointment at this time.");
@@ -314,7 +312,7 @@ const BookNowScreen = ({
       console.log("Availability created:", data);
       await createAppointment(
         serviceId,
-        "004ea820-ac36-49bd-b519-cc0bc052bd98",
+        userId,
         date,
         time,
         endTime,
@@ -371,7 +369,7 @@ const BookNowScreen = ({
     }
     setSelectedTimeSlot(time);
   };
-  console.log("service 💀💀", service);
+  console.log("business 💀💀", selectedBusiness);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -420,15 +418,20 @@ const BookNowScreen = ({
       )}
 
       {/* Booking Card */}
-      <View>
-        {selectedDate && selectedTime && (
-          <BookingCard
-            date={selectedDate}
-            time={selectedTime}
-            serviceName={service.name}
-          />
-        )}
-      </View>
+      {/* <View>
+        {selectedDate &&
+          selectedTime &&
+          service.name &&
+          selectedBusiness.name && (
+            <BookingCard
+              date={selectedDate}
+              time={selectedTime}
+              serviceName={service.name}
+              businessName={selectedBusiness.name}
+              userName={user?.name || ""}
+            />
+          )}
+      </View> */}
 
       <TouchableOpacity style={styles.bookNowButton} onPress={handleBookNow}>
         <Text style={styles.buttonText}>Book Now</Text>

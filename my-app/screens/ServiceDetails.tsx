@@ -59,7 +59,7 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
           `
           *,
           media:media(*),
-          reviews:reviews(*, media:media(*), user_profile:user_profile(*))
+          reviews:reviews(*, media:media(*), user_profile:user_profile(*), business:business(name))
         `
         )
         .eq("id", serviceId)
@@ -158,7 +158,7 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
       </SafeAreaView>
     );
   }
-
+  console.log("service 💀💀", service);
   return (
     <SafeAreaView style={styles.container}>
       <FlatList

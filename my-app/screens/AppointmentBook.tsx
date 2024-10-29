@@ -11,10 +11,14 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
+import { Appointment } from "../types/Appointment";
 import BookingCard from "./BookingCard";
-
 const AppointmentBookingScreen = ({ route }) => {
+  const { user, loading } = useAuth();
+  const userId = user?.id;
+  // console.log("userId 😁😁", userId);
   const navigation = useNavigation<StackNavigationProp<any>>();
   const { selectedBusiness, service } = route.params || {}; // Extract selectedBusiness from route params
 
@@ -22,7 +26,7 @@ const AppointmentBookingScreen = ({ route }) => {
     return <Text>Loading...</Text>; // Display loading if selectedBusiness is not available
   }
   // const { service } = route.params || {};
-  const [appointments, setAppointments] = useState([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [markedDates, setMarkedDates] = useState({});
   const [showAll, setShowAll] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -32,17 +36,25 @@ const AppointmentBookingScreen = ({ route }) => {
 
   useEffect(() => {
     fetchAppointments();
-  }, []);
+  }, [userId]);
 
   const fetchAppointments = async () => {
-    const { data, error } = await supabase.from("appointments").select("*");
-    if (error) {
-      console.error("Error fetching appointments:", error.message);
-      return;
+    if (userId) {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select(
+          "*,services(name,media(media_url),business(name,media(media_url))),user_profile(name,media(media_url))"
+        )
+        .eq("client_id", userId);
+      console.log("appointments 😁😁", data);
+      if (error) {
+        console.error("Error fetching appointments:", error.message);
+        return;
+      }
+      //@ts-ignore
+      setAppointments(data);
+      markAppointmentDates(data);
     }
-    //@ts-ignore
-    setAppointments(data);
-    markAppointmentDates(data);
   };
 
   const markAppointmentDates = (appointments) => {
@@ -105,12 +117,13 @@ const AppointmentBookingScreen = ({ route }) => {
         renderItem={({ item }) => (
           <View style={styles.bookingContainer}>
             <BookingCard
-              //@ts-ignore
               date={item.date}
-              //@ts-ignore
               time={item.start_time}
-              //@ts-ignore
-              serviceName={service.name}
+              serviceName={item.services?.name || ""}
+              businessName={item.services?.business?.name || ""}
+              userName={item.user_profile?.name || ""}
+              media={item.services?.media[0]?.media_url || ""}
+              mediaBusiness={item.services?.business?.media[0]?.media_url || ""}
             />
             {!showAll && (
               <TouchableOpacity
@@ -148,12 +161,15 @@ const AppointmentBookingScreen = ({ route }) => {
               data={appointments}
               renderItem={({ item }) => (
                 <BookingCard
-                  //@ts-ignore
                   date={item.date}
-                  //@ts-ignore
                   time={item.start_time}
-                  //@ts-ignore
-                  serviceName={item.serviceName}
+                  serviceName={item.services?.name || ""}
+                  businessName={item.services?.business?.name || ""}
+                  userName={item.user_profile?.name || ""}
+                  media={item.services?.media[0]?.media_url || ""}
+                  mediaBusiness={
+                    item.services?.business?.media[0]?.media_url || ""
+                  }
                 />
               )}
               //@ts-ignore
@@ -162,15 +178,6 @@ const AppointmentBookingScreen = ({ route }) => {
           </View>
         </View>
       </Modal>
-
-      {/* Profile Service Card */}
-      {/* <TouchableOpacity
-        style={styles.profileCard}
-        onPress={handleProfileCardPress}
-      >
-        <Text style={styles.profileCardText}>View Business Profile</Text>
-        <Icon name="user" size={24} color="#00796B" />
-      </TouchableOpacity> */}
     </View>
   );
 };
@@ -234,14 +241,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   modalContainer: {
-    width: "90%", // Adjust width
+    width: "85%", // Adjust width
+    height: "80%",
     backgroundColor: "#f1f1f1",
-    borderRadius: 10,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    borderRadius: 15,
+    padding: 25,
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
     elevation: 5,
   },
   modalClose: {
