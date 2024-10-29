@@ -16,12 +16,12 @@ import BookingCard from "./BookingCard";
 
 const AppointmentBookingScreen = ({ route }) => {
   const navigation = useNavigation<StackNavigationProp<any>>();
-  const { selectedBusiness } = route.params || {}; // Extract selectedBusiness from route params
+  const { selectedBusiness, service } = route.params || {}; // Extract selectedBusiness from route params
 
   if (!selectedBusiness) {
     return <Text>Loading...</Text>; // Display loading if selectedBusiness is not available
   }
-  const { service } = route.params || {};
+  // const { service } = route.params || {};
   const [appointments, setAppointments] = useState([]);
   const [markedDates, setMarkedDates] = useState({});
   const [showAll, setShowAll] = useState(false);
