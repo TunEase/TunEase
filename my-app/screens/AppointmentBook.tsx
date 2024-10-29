@@ -26,6 +26,8 @@ const AppointmentBookingScreen = ({ route }) => {
   const [markedDates, setMarkedDates] = useState({});
   const [showAll, setShowAll] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
   const someBusinessId = selectedBusiness?.id || "defaultBusinessId"; // Use the passed business ID
 
   useEffect(() => {
@@ -58,6 +60,9 @@ const AppointmentBookingScreen = ({ route }) => {
       (appointment) => appointment.date === day.dateString
     );
     // Implement display logic for selected appointments
+    setSelectedDate(day.dateString);
+    //@ts-ignore
+    setSelectedTime(selectedAppointments[0].start_time);
   };
 
   const handleSeeAllPress = () => {
@@ -69,6 +74,16 @@ const AppointmentBookingScreen = ({ route }) => {
     setShowAll(false);
     setModalVisible(false);
   };
+  // const handleProfileCardPress = () => {
+  //   console.log("Navigating to StaticBusinessProfile");
+  //   navigation.navigate("staticBusinessProfile", {
+  //     selectedBusiness,
+  //     service,
+  //     selectedDate,
+  //     selectedTime,
+  //   });
+  // };
+  // console.log("service 😁😁", service);
 
   return (
     <View style={styles.container}>
@@ -88,27 +103,28 @@ const AppointmentBookingScreen = ({ route }) => {
       <FlatList
         data={showAll ? appointments : appointments.slice(0, 1)}
         renderItem={({ item }) => (
-          <BookingCard
-            //@ts-ignore
-            date={item.date}
-            //@ts-ignore
-            time={item.start_time}
-            //@ts-ignore
-            serviceName={item.serviceName}
-          />
+          <View style={styles.bookingContainer}>
+            <BookingCard
+              //@ts-ignore
+              date={item.date}
+              //@ts-ignore
+              time={item.start_time}
+              //@ts-ignore
+              serviceName={service.name}
+            />
+            {!showAll && (
+              <TouchableOpacity
+                onPress={handleSeeAllPress}
+                style={styles.seeAllButton}
+              >
+                <Text style={styles.seeAllText}>See All Bookings</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
         //@ts-ignore
         keyExtractor={(item) => item.id.toString()}
       />
-
-      {!showAll && (
-        <TouchableOpacity
-          style={styles.seeAllButton}
-          onPress={handleSeeAllPress}
-        >
-          <Text style={styles.seeAllText}>See All Bookings</Text>
-        </TouchableOpacity>
-      )}
 
       {/* Full-Screen Modal for All Appointments */}
       <Modal
@@ -148,19 +164,13 @@ const AppointmentBookingScreen = ({ route }) => {
       </Modal>
 
       {/* Profile Service Card */}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.profileCard}
-        onPress={() => {
-          console.log("Navigating to StaticBusinessProfile");
-          navigation.navigate("staticBusinessProfile", {
-            selectedBusiness,
-            service,
-          });
-        }}
+        onPress={handleProfileCardPress}
       >
         <Text style={styles.profileCardText}>View Business Profile</Text>
         <Icon name="user" size={24} color="#00796B" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
@@ -168,6 +178,13 @@ const AppointmentBookingScreen = ({ route }) => {
 export default AppointmentBookingScreen;
 
 const styles = StyleSheet.create({
+  seeAllButton: {
+    marginBottom: 8,
+    alignItems: "center",
+  },
+  bookingContainer: {
+    marginBottom: 20,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -192,18 +209,10 @@ const styles = StyleSheet.create({
     color: "#00796B",
     marginVertical: 10,
   },
-  seeAllButton: {
-    backgroundColor: "#00796B",
-    borderRadius: 8,
-    padding: 9,
-    alignItems: "center",
-    marginTop: 9,
-    marginBottom: 60,
-  },
+
   seeAllText: {
-    color: "#fff",
-    fontWeight: "bold",
     fontSize: 16,
+    color: "#00796B",
   },
   profileCard: {
     flexDirection: "row",
@@ -226,7 +235,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: "90%", // Adjust width
-    backgroundColor: "#fff",
+    backgroundColor: "#f1f1f1",
     borderRadius: 10,
     padding: 20,
     shadowColor: "#000",
@@ -240,7 +249,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#00796B",
     textAlign: "center",

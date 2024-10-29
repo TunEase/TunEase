@@ -13,12 +13,13 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { supabase } from "../../services/supabaseClient";
 import * as ImagePicker from "expo-image-picker";
 import { useSupabaseUpload } from "../../hooks/uploadFile";
-
+import { useMedia } from "../../hooks/useMedia";
 type SignupProps = {
   navigation: NativeStackNavigationProp<any>;
 };
 
 const Signup: React.FC<SignupProps> = ({ navigation }) => {
+  const { insertMediaRecord } = useMedia();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,26 +28,26 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
   const [error, setError] = useState<string | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const { uploading, error: uploadError, pickFile, uploadFile } = useSupabaseUpload("avatars");
+  const { uploading, error: uploadError, pickFile, uploadFile } = useSupabaseUpload("application");
   const [loading, setLoading] = useState(false);
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSignup = async () => {
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
+      if (password !== confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
 
-    if (!validateEmail(email)) {
-      setError("Invalid email format");
-      return;
-    }
+      if (!validateEmail(email)) {
+        setError("Invalid email format");
+        return;
+      }
 
-    if (!image) {
-      setError("Please select a profile image");
-      return;
-    }
+      if (!image) {
+        setError("Please select a profile image");
+        return;
+      }
 
     try {
       const { data: authData, error: signupError } = await supabase.auth.signUp({ email, password });
@@ -56,39 +57,51 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
       const userId = authData.user?.id;
       if (!userId) throw new Error("User ID not found after signup");
 
-      const { path: avatarPath, error: imageError } = await uploadFile(image, "image/jpeg", `profile/${userId}`);
-      if (imageError) throw new Error(imageError);
-
-      const { error: profileError } = await supabase
-        .from("user_profile")
-        .insert({
-          id: userId,
-          name,
-          email,
-          phone,
-          avatar_url: avatarPath,
-        });
-
-      if (profileError) throw profileError;
-
-      console.log("User signed up successfully");
-      navigation.navigate("Login");
+        const { error: profileError } = await supabase
+          .from("user_profile")
+          .insert({
+            id: userId,
+            name,
+            email,
+            phone,
+            // avatar_url: image,
+          });
+  
+        if (profileError) throw profileError;
+        
+        const { data: mediaRecord, error: mediaError } = await insertMediaRecord(
+          image,
+          'image/jpeg',
+          { user_profile_id: userId }
+        );
+  
+        if (mediaError) {
+          setError(mediaError);
+          return;
+        }
+        console.log("User signed up successfully");
+        navigation.navigate("Login");
+      
     } catch (error) {
       setError(error.message);
     }
   };
 
   const handleImagePick = async () => {
+  
     const result = await pickFile({
       mediaType: ImagePicker.MediaTypeOptions.Images,
-      folder: "profile",
-      width: 1,
-      height: 1,
-    });
-
+      folder: "uploads",
+      width: 150,
+      height: 150,
+   
+      });
+  
     if (result?.path) {
+
+      console.log("result",result);
       setFileUrl(result.path);
-      setImage(result.path);
+      setImage(result.url || result.path);
     }
   };
 

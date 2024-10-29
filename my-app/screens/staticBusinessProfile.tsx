@@ -26,7 +26,7 @@ type ProfileScreenNavigationProp = NativeStackNavigationProp<
 const Profile = () => {
   const route = useRoute<ProfileScreenRouteProp>();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
-  const { selectedBusiness } = route.params || {};
+  const { selectedBusiness } = route.params;
   const { services = [], media = [] } = selectedBusiness || {}; // Default to empty arrays
 
   if (!selectedBusiness) {

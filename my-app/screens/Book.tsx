@@ -220,6 +220,8 @@ const BookNowScreen = ({
     navigation.navigate("AppointmentBook", {
       selectedBusiness,
       service,
+      selectedDate, // Pass selectedDate
+      selectedTime, // Pass selectedTime
     });
   };
   const createAvailability = async (date: string, time: string) => {
@@ -369,6 +371,7 @@ const BookNowScreen = ({
     }
     setSelectedTimeSlot(time);
   };
+  console.log("service 💀💀", service);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -471,7 +474,12 @@ const BookNowScreen = ({
               style={styles.closeButton}
               onPress={() => {
                 setModalVisible(false);
-                navigation.navigate("AppointmentBook");
+                navigation.navigate("AppointmentBook", {
+                  selectedBusiness: selectedBusiness,
+                  service: service,
+                  selectedDate: selectedDate,
+                  selectedTime: selectedTime,
+                });
               }}
             >
               <Text style={styles.buttonText}>Close</Text>

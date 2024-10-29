@@ -135,7 +135,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         style={styles.headerImage}
       />
       <View style={styles.overlay}>
-        <Text style={styles.headerTitle}>Welcome</Text>
+        <Text style={styles.headerTitle}>TunEase</Text>
         <View style={styles.searchContainer}>
           <Icon name="search" size={24} color="#888" />
           <TextInput
