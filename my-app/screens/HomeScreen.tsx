@@ -17,7 +17,6 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
 import News from "./News";
-      
 
 interface HomeProps {
   navigation: any;
@@ -30,8 +29,8 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [recommendedServices, setRecommendedServices] = useState<any[]>([]);
   const [popularServices, setPopularServices] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
-const [loading, setLoading] = useState(false);
-const [Error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [Error, setError] = useState<string | null>(null);
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -90,7 +89,8 @@ const [Error, setError] = useState<string | null>(null);
       const { data, error } = await supabase.from("business").select(`
         *,
         media:media(business_id, media_url),
-        services:services(*)
+        services:services(*),
+        reviews:reviews(rating) 
       `);
       if (error) throw error;
       console.log("Fetched Businesses:", data); // Debugging log
@@ -98,37 +98,41 @@ const [Error, setError] = useState<string | null>(null);
     } catch (error) {
       console.error("Error fetching businesses:", error);
     }
-  }
- 
-    // const fetchNews = async () => {
-    //   try {
-    //     const { data, error } = await supabase
-    //       .from('news')
-    //       .select('*')
-    //       .order('published_at', { ascending: false });
+  };
 
-    //     // if (error) setError(error.message);
-    //     setNews(data || []);
-    //   } catch (error) {
-    //     console.error("Error fetching news:", error.message);
-    //   } finally {
-    //     console.log("Loading news completed.");
-    //   }
-    // };
+  // const fetchNews = async () => {
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from('news')
+  //       .select('*')
+  //       .order('published_at', { ascending: false });
 
-    const renderNewsItem = ({ item }) => (
-      <View style={styles.newsCard}>
-        <Image source={{ uri: item.image_url }} style={styles.newsImage} />
-        <View style={styles.textContainer}>
-          <Text style={styles.discountText}>25% off</Text>
-          <Text style={styles.withCodeText}>WITH CODE</Text>
-          <Text style={styles.shopNowButton}>Shop Now</Text>
-        </View>
-        <Icon name="add-shopping-cart" size={24} color="#007AFF" style={styles.cartIcon} />
-      </View>
-    );
-    
-  
+  //     // if (error) setError(error.message);
+  //     setNews(data || []);
+  //   } catch (error) {
+  //     console.error("Error fetching news:", error.message);
+  //   } finally {
+  //     console.log("Loading news completed.");
+  //   }
+  // };
+
+  // const renderNewsItem = ({ item }) => (
+  //   <View style={styles.newsCard}>
+  //     <Image source={{ uri: item.image_url }} style={styles.newsImage} />
+  //     <View style={styles.textContainer}>
+  //       <Text style={styles.discountText}>25% off</Text>
+  //       <Text style={styles.withCodeText}>WITH CODE</Text>
+  //       <Text style={styles.shopNowButton}>Shop Now</Text>
+  //     </View>
+  //     <Icon
+  //       name="add-shopping-cart"
+  //       size={24}
+  //       color="#007AFF"
+  //       style={styles.cartIcon}
+  //     />
+  //   </View>
+  // );
+
   const renderHeader = () => (
     <View style={styles.header}>
       <Image
@@ -136,7 +140,8 @@ const [Error, setError] = useState<string | null>(null);
         style={styles.headerImage}
       />
       <View style={styles.overlay}>
-        <Text style={styles.headerTitle}>TunEase</Text>
+        <Text style={styles.headerTitle}>ASAP</Text>
+        <Text style={styles.headerSubtitle}>As Soon As Possible Services</Text>
         <View style={styles.searchContainer}>
           <Icon name="search" size={24} color="#888" />
           <TextInput
@@ -146,31 +151,29 @@ const [Error, setError] = useState<string | null>(null);
             onChangeText={setSearchQuery}
           />
         </View>
-        {Error && <Text style={styles.errorText}>{Error}</Text>}
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : (
-        <FlatList
-          data={news}
-          renderItem={renderNewsItem}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          pagingEnabled
-        />
-      )}
-    </View>
-
-        <TouchableOpacity
-          style={styles.profileIcon}
-          onPress={() => navigation.navigate("BusinessProfileApp")}
-        >
-          <Icon name="person" size={30} color="#FFF" />
-        </TouchableOpacity>
+        {/* {Error && <Text style={styles.errorText}>{Error}</Text>}
+        {loading ? (
+          <Text>Loading...</Text>
+        ) : (
+          <FlatList
+            data={news}
+            // renderItem={renderNewsItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+          />
+        )} */}
       </View>
-    
+
+      <TouchableOpacity
+        style={styles.profileIcon}
+        onPress={() => navigation.navigate("BusinessProfileApp")}
+      >
+        <Icon name="person" size={30} color="#FFF" />
+      </TouchableOpacity>
+    </View>
   );
-  
 
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
@@ -195,6 +198,7 @@ const [Error, setError] = useState<string | null>(null);
             { useNativeDriver: true }
           )}
           renderItem={({ item, index }) => {
+            // console.log("item  ☢️☢️☢️☢️☢️☢️", item);
             const inputRange = [
               (index - 1) * 200,
               index * 200,
@@ -226,7 +230,7 @@ const [Error, setError] = useState<string | null>(null);
                   <Text style={styles.recommendedTitle}>{item.name}</Text>
                   <Text
                     style={styles.recommendedReview}
-                  >{`⭐ ${item.rating}`}</Text>
+                  >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
                 </TouchableOpacity>
               </Animated.View>
             );
@@ -311,8 +315,8 @@ const [Error, setError] = useState<string | null>(null);
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
-
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -333,8 +337,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // Center vertically
+    alignItems: "center", // Center horizontally
     backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
   headerTitle: {
@@ -359,6 +363,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "90%",
     marginTop: 10,
+    // Adjust the margin or padding to position it correctly
   },
   searchInput: {
     marginLeft: 10,
@@ -529,7 +534,11 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginLeft: 10,
-  },  
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: "#FFF",
+  },
 });
 
 export default Home;

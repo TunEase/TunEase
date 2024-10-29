@@ -6,12 +6,20 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import Modal from "react-native-modal";
 import { supabase } from "../services/supabaseClient";
 import { FontAwesome } from "@expo/vector-icons"; // Import FontAwesome from @expo/vector-icons
-
+import { Media } from "../types/business";
+import ImageView from "react-native-image-viewing";
+import Pdf from "react-native-pdf";
+import { Linking } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import { useSupabaseUpload } from "../hooks/uploadFile";
 const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
+  const { uploadMultipleFiles, fileUrls } = useSupabaseUpload("application");
   const { serviceId, serviceName } = route.params;
   const [fees, setFees] = useState<
     {
@@ -21,20 +29,27 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
       description: string;
       created_at: string;
       updated_at: string;
+      media: Media[];
     }[]
   >([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentFee, setCurrentFee] = useState<any>(null);
-
+  const [isImageViewVisible, setImageViewVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [images, setImages] = useState<{ uri: string }[]>([]);
   const handleUploadImage = (feeId: string) => {
     // Logic to handle image upload for the specific fee
+    uploadMultipleFiles({ quality: 0.5 });
+    console.log(fileUrls);
     console.log(`Upload image for fee with ID: ${feeId}`);
   };
 
   const fetchFees = async () => {
     const { data, error } = await supabase
       .from("fees")
-      .select("id, name, fee, description, created_at, updated_at") // Include created_at and updated_at
+      .select(
+        "id, name, fee, description, created_at, updated_at, media (media_url,media_type)"
+      )
       .eq("service_id", serviceId);
 
     if (error) {
@@ -99,6 +114,21 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
     setModalVisible(true);
   };
 
+  const openImageViewer = (media: Media[], index: number) => {
+    setImages(
+      media
+        .filter((m) => m.media_type === "image")
+        .map((m) => ({ uri: m.media_url }))
+    );
+    setSelectedImageIndex(index);
+    setImageViewVisible(true);
+  };
+
+  const openPDF = (url: string) => {
+    Linking.openURL(url).catch((err) =>
+      console.error("Failed to open PDF:", err)
+    );
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.serviceName}>{serviceName}</Text>
@@ -121,6 +151,36 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
               <Text style={styles.feeDate}>
                 Updated: {new Date(item.updated_at).toLocaleDateString()}
               </Text>
+              {item.media.length > 0 && (
+                <View style={styles.mediaContainer}>
+                  {item.media.map((mediaItem, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() =>
+                        mediaItem.media_type === "image"
+                          ? openImageViewer(item.media, index)
+                          : openPDF(mediaItem.media_url)
+                      }
+                    >
+                      {mediaItem.media_type === "image" ? (
+                        <Image
+                          source={{ uri: mediaItem.media_url }}
+                          style={styles.mediaImage}
+                        />
+                      ) : (
+                        <View style={styles.pdfThumbnail}>
+                          <Icon
+                            name="picture-as-pdf"
+                            size={40}
+                            color="#FF5252"
+                          />
+                          <Text style={styles.pdfText}>PDF</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
             <View style={styles.amountAndEditContainer}>
               <Text style={styles.feeAmount}>${item.fee.toFixed(2)}</Text>
@@ -324,6 +384,32 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  mediaContainer: {
+    marginTop: 10,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  mediaImage: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  pdfThumbnail: {
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+    backgroundColor: "#F0F0F0",
+  },
+  pdfText: {
+    fontSize: 10,
+    color: "#FF5252",
   },
 });
 
