@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     position: "absolute",
-    top: 0,
+    top: 36,
     left: 0,
     right: 0,
     bottom: 0,

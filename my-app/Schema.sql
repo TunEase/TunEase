@@ -2,7 +2,6 @@ CREATE TABLE user_profile (
     id uuid PRIMARY KEY REFERENCES auth.users(id),
     name VARCHAR(255),
     email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL DEFAULT 'CLIENT' CHECK (role IN ('ADMIN', 'CLIENT', 'BUSINESS_MANAGER')),
     phone VARCHAR(255),
     created_at TIMESTAMP DEFAULT now(),
