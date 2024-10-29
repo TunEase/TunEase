@@ -16,11 +16,9 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
-import News from "./News";
-      
 
 interface HomeProps {
-  navigation: any;
+navigation: any;
 }
 
 const Home: React.FC<HomeProps> = ({ navigation }) => {
@@ -30,8 +28,8 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [recommendedServices, setRecommendedServices] = useState<any[]>([]);
   const [popularServices, setPopularServices] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
-const [loading, setLoading] = useState(false);
-const [Error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -39,19 +37,18 @@ const [Error, setError] = useState<string | null>(null);
     const scrollAnimation = Animated.loop(
       Animated.timing(scrollX, {
         toValue: 1,
-        duration: 20000, // Adjust duration for speed
+        duration: 20000,
         useNativeDriver: true,
       })
     );
     scrollAnimation.start();
-
     return () => scrollAnimation.stop();
   }, [scrollX]);
 
   useEffect(() => {
     fetchBusinesses();
     fetchPopularServices();
-    // fetchNews()
+    fetchNews();
   }, []);
 
   const fetchPopularServices = async () => {
@@ -72,14 +69,12 @@ const [Error, setError] = useState<string | null>(null);
         return { ...service, averageRating };
       });
 
-      // Sort services by average rating and take the top 4
       const sortedServices = servicesWithAverageRating
         .filter((service) => service.averageRating !== null)
         .sort((a, b) => b.averageRating - a.averageRating)
         .slice(0, 4);
 
       setPopularServices(sortedServices);
-      console.log("Popular Services:", sortedServices);
     } catch (error) {
       console.error("Error fetching popular services:", error);
     }
@@ -93,42 +88,30 @@ const [Error, setError] = useState<string | null>(null);
         services:services(*)
       `);
       if (error) throw error;
-      console.log("Fetched Businesses:", data); // Debugging log
       setBusinesses(data);
     } catch (error) {
       console.error("Error fetching businesses:", error);
     }
-  }
- 
-    // const fetchNews = async () => {
-    //   try {
-    //     const { data, error } = await supabase
-    //       .from('news')
-    //       .select('*')
-    //       .order('published_at', { ascending: false });
+  };
 
-    //     // if (error) setError(error.message);
-    //     setNews(data || []);
-    //   } catch (error) {
-    //     console.error("Error fetching news:", error.message);
-    //   } finally {
-    //     console.log("Loading news completed.");
-    //   }
-    // };
+  const fetchNews = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    const renderNewsItem = ({ item }) => (
-      <View style={styles.newsCard}>
-        <Image source={{ uri: item.image_url }} style={styles.newsImage} />
-        <View style={styles.textContainer}>
-          <Text style={styles.discountText}>25% off</Text>
-          <Text style={styles.withCodeText}>WITH CODE</Text>
-          <Text style={styles.shopNowButton}>Shop Now</Text>
-        </View>
-        <Icon name="add-shopping-cart" size={24} color="#007AFF" style={styles.cartIcon} />
-      </View>
-    );
-    
-  
+      if (error) throw error;
+      setNews(data || []);
+    } catch (error) {
+      console.error("Error fetching news:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderHeader = () => (
     <View style={styles.header}>
       <Image
@@ -146,97 +129,94 @@ const [Error, setError] = useState<string | null>(null);
             onChangeText={setSearchQuery}
           />
         </View>
-        {Error && <Text style={styles.errorText}>{Error}</Text>}
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : (
-        <FlatList
-          data={news}
-          renderItem={renderNewsItem}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          pagingEnabled
-        />
-      )}
+      </View>
+      <TouchableOpacity
+        style={styles.profileIcon}
+        onPress={() => navigation.navigate("BusinessProfileApp")}
+      >
+        <Icon name="person" size={30} color="#FFF" />
+      </TouchableOpacity>
     </View>
+  );
+  <View style={styles.newsCardsContainer}>
+  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+    {news.map((newsGroup, groupIndex) => (
+      <View key={`group-${groupIndex}`} style={styles.mainNewsCard}>
+        {newsGroup.slice(0, 3).map((newsItem, index) => (
+          <TouchableOpacity
+            key={`news-${newsItem.id}`}
+            style={[
+              styles.subNewsCard,
+              index === 0 && styles.firstSubCard
+            ]}
+            onPress={() => navigation.navigate('NewsDetail', { newsId: newsItem.id })}
+          >
+            <Image
+              source={{ 
+                uri: newsItem.image_url || 'https://via.placeholder.com/150'
+              }}
+              style={[
+                styles.subNewsImage,
+                index === 0 && styles.firstSubNewsImage
+              ]}
+            />
+            <View style={[
+              styles.subContentContainer,
+              index === 0 && styles.firstSubContentContainer
+            ]}>
+              <Text style={[
+                styles.subNewsTitle,
+                index === 0 && styles.firstSubNewsTitle
+              ]} numberOfLines={2}>
+                {newsItem.title}
+              </Text>
+              <Text style={styles.dateText}>
+                {new Date(newsItem.created_at).toLocaleDateString()}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    ))}
+  </ScrollView>
+</View>
 
-        <TouchableOpacity
-          style={styles.profileIcon}
-          onPress={() => navigation.navigate("BusinessProfileApp")}
-        >
-          <Icon name="person" size={30} color="#FFF" />
+
+
+  const renderTopBusinesses = () => (
+    <View>
+      <View style={styles.sectionHeaderContainer}>
+        <Text style={styles.sectionHeader}>Top Businesses</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("AllBusinesses")}>
+          <Text style={styles.viewAllText}>View All</Text>
         </TouchableOpacity>
       </View>
-    
-  );
-  
-
-  const renderTopBusinesses = () => {
-    const scrollX = useRef(new Animated.Value(0)).current;
-
-    return (
-      <View>
-        <View style={styles.sectionHeaderContainer}>
-          <Text style={styles.sectionHeader}>Top Businesses</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {businesses.map((business) => (
           <TouchableOpacity
-            onPress={() => navigation.navigate("AllBusinesses")}
+            key={business.id}
+            style={styles.businessCard}
+            onPress={() =>
+              navigation.navigate("staticBusinessProfile", {
+                selectedBusiness: business,
+              })
+            }
           >
-            <Text style={styles.viewAllText}>View All</Text>
+            <Image
+              source={{
+                uri: business.media?.[0]?.media_url || "default-image-url",
+              }}
+              style={styles.businessImage}
+            />
+            <View style={styles.businessInfo}>
+              <Text style={styles.businessName}>{business.name}</Text>
+              <Text style={styles.businessRating}>⭐ {business.rating}</Text>
+            </View>
           </TouchableOpacity>
-        </View>
-        <Animated.FlatList
-          data={businesses}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id.toString()}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-            { useNativeDriver: true }
-          )}
-          renderItem={({ item, index }) => {
-            const inputRange = [
-              (index - 1) * 200,
-              index * 200,
-              (index + 1) * 200,
-            ];
-            const scale = scrollX.interpolate({
-              inputRange,
-              outputRange: [0.8, 1, 0.8],
-              extrapolate: "clamp",
-            });
-
-            return (
-              <Animated.View
-                style={[styles.recommendedCard, { transform: [{ scale }] }]}
-              >
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("staticBusinessProfile", {
-                      selectedBusiness: item,
-                    })
-                  }
-                >
-                  <Image
-                    source={{
-                      uri: item.media?.[0]?.media_url || "default-image-url",
-                    }}
-                    style={styles.recommendedImage}
-                  />
-                  <Text style={styles.recommendedTitle}>{item.name}</Text>
-                  <Text
-                    style={styles.recommendedReview}
-                  >{`⭐ ${item.rating}`}</Text>
-                </TouchableOpacity>
-              </Animated.View>
-            );
-          }}
-          snapToInterval={200}
-          decelerationRate="fast"
-        />
-      </View>
-    );
-  };
+        ))}
+      </ScrollView>
+    </View>
+  );
 
   const renderPopularServices = () => (
     <View>
@@ -246,34 +226,37 @@ const [Error, setError] = useState<string | null>(null);
           <Text style={styles.viewAllText}>View All</Text>
         </TouchableOpacity>
       </View>
-      <FlatList
-        data={popularServices.slice(0, 4)}
-        renderItem={({ item }) => (
+      <View style={styles.servicesGrid}>
+        {popularServices.map((service) => (
           <TouchableOpacity
+            key={service.id}
             style={styles.serviceCard}
             onPress={() =>
-              navigation.navigate("ServiceDetails", { serviceId: item.id })
+              navigation.navigate("ServiceDetails", { serviceId: service.id })
             }
           >
             <Image
               source={{
-                uri: item.media?.[0]?.media_url || "default-image-url",
+                uri: service.media?.[0]?.media_url || "default-image-url",
               }}
               style={styles.serviceImage}
             />
-            <Text style={styles.serviceName}>{item.name}</Text>
-            <Text style={styles.serviceDescription}>{item.description}</Text>
-            <Text
-              style={styles.serviceReview}
-            >{`⭐ ${item.reviews?.[0]?.rating}`}</Text>
+            <Text style={styles.serviceName}>{service.name}</Text>
+            <Text style={styles.serviceRating}>
+              ⭐ {service.averageRating.toFixed(1)}
+            </Text>
           </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-      />
+        ))}
+      </View>
     </View>
   );
+
+  const renderNews = () => {
+    if (!news || news.length === 0) {
+      return null;
+    }
+
+    
 
   const renderFooterButtons = () => (
     <View style={styles.buttonContainer}>
@@ -301,23 +284,27 @@ const [Error, setError] = useState<string | null>(null);
             {renderFooterButtons()}
             {renderTopBusinesses()}
             {renderPopularServices()}
+            {renderNews()}
           </>
         )}
         data={[]}
         renderItem={null}
-        keyExtractor={() => ""}
-        showsVerticalScrollIndicator={false}
+        keyExtractor={() => "key"}
       />
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
-
 };
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F8F8F8",
   },
+  newsCardsContainer: {
+    marginVertical: 10,
+    paddingHorizontal: 15,
+  },  
   header: {
     height: 250,
     position: "relative",
@@ -343,6 +330,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 15,
   },
+  searchContainer: {
+    flexDirection: "row",
+    backgroundColor: "#FFF",
+    padding: 10,
+    borderRadius: 25,
+    alignItems: "center",
+    width: "90%",
+  },
+  searchInput: {
+    marginLeft: 10,
+    fontSize: 16,
+    flex: 1,
+  },
   profileIcon: {
     position: "absolute",
     top: 30,
@@ -351,86 +351,88 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 50,
   },
-  searchContainer: {
+  buttonContainer: {
     flexDirection: "row",
+    justifyContent: "space-around",
+    marginVertical: 20,
+  },
+  availableButton: {
     backgroundColor: "#FFF",
-    padding: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     borderRadius: 25,
-    alignItems: "center",
-    width: "90%",
-    marginTop: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  searchInput: {
-    marginLeft: 10,
-    fontSize: 16,
-    flex: 1,
-  },
-  categoriesContainer: {
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-  },
-  categoryItem: {
-    marginRight: 10,
-    alignItems: "center",
-    width: 80,
-    height: 80,
-    justifyContent: "center",
-  },
-  categoryBackground: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 50,
-    overflow: "hidden",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Added background color for better visibility
-  },
-  categoryText: {
-    color: "#FFF",
-    marginTop: 5,
-    fontSize: 12,
-    textAlign: "center",
-  },
-  recommendedCard: {
-    width: 200,
-    marginRight: 10,
-    position: "relative",
-  },
-  recommendedImage: {
-    width: "100%",
-    height: 150,
-    borderRadius: 10,
-  },
-  heartIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 15,
-    padding: 5,
-  },
-  recommendedTitle: {
+  availableText: {
+    color: "#00796B",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  sectionHeaderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    marginVertical: 10,
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  viewAllText: {
+    color: "#00796B",
+    fontSize: 14,
+  },
+  businessCard: {
+    width: 200,
+    marginLeft: 15,
+    borderRadius: 10,
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  businessImage: {
+    width: "100%",
+    height: 150,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  businessInfo: {
+    padding: 10,
+  },
+  businessName: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  businessRating: {
+    fontSize: 14,
+    color: "#666",
     marginTop: 5,
   },
-  recommendedReview: {
-    fontSize: 14,
-    color: "#888",
+  servicesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+    paddingHorizontal: 10,
   },
   serviceCard: {
+    width: "45%",
     backgroundColor: "#FFF",
-    padding: 10,
     borderRadius: 10,
+    padding: 10,
     marginBottom: 15,
-    marginHorizontal: 5,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-    flex: 1,
-    maxWidth: "45%",
-    alignItems: "center",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   serviceImage: {
     width: "100%",
@@ -441,95 +443,75 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 16,
     fontWeight: "bold",
-  },
-  serviceDescription: {
-    fontSize: 14,
-    color: "#666",
     marginBottom: 5,
   },
-  serviceReview: {
+  serviceRating: {
     fontSize: 14,
-    color: "#888",
+    color: "#666",
   },
-  availableButton: {
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    marginHorizontal: 10,
-    alignItems: "center",
-    shadowColor: "#00796B",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  availableText: {
-    color: "#00796B",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginVertical: 20,
-  },
-  row: { justifyContent: "space-between" },
-  sectionHeader: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginVertical: 10,
-    marginLeft: 10,
-  },
-  sectionHeaderContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginHorizontal: 10,
+  newsContainer: {
     marginVertical: 10,
   },
-  viewAllText: {
-    fontSize: 16,
-    color: "#00796B",
+  scrollContainer: {
+    paddingHorizontal: 10,
   },
-  newsCard: {
-    width: 300,
-    marginRight: 10,
-    position: "relative",
+  mainNewsCard: {
+    width: 330,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    marginRight: 20,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.29,
+    shadowRadius: 4.65,
+    elevation: 7,
   },
-  newsImage: {
-    width: "100%",
-    height: 150,
+  subNewsCard: {
+    backgroundColor: '#f8f8f8',
     borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 10,
+    height: 100,
+    flexDirection: 'row',
   },
-  textContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  firstSubCard: {
+    height: 200,
+    flexDirection: 'column',
+    marginBottom: 15,
   },
-  discountText: {
-    fontSize: 20,
-    color: "#FFF",
+  subNewsImage: {
+    width: '40%',
+    height: '100%',
   },
-  withCodeText: {
+  firstSubNewsImage: {
+    width: '100%',
+    height: '60%',
+  },
+  subContentContainer: {
+    flex: 1,
+    padding: 10,
+    justifyContent: 'space-between',
+  },
+  firstSubContentContainer: {
+    padding: 12,
+  },
+  subNewsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  firstSubNewsTitle: {
     fontSize: 16,
-    color: "#FFF",
+    marginBottom: 8,
   },
-  shopNowButton: {
-    fontSize: 16,
-    color: "#FFF",
+  dateText: {
+    fontSize: 12,
+    color: '#666',
   },
-  cartIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-  },
-  errorText: {
-    color: "red",
-    marginLeft: 10,
-  },  
 });
 
 export default Home;
