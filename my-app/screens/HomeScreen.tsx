@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   FlatList,
   Image,
   SafeAreaView,
@@ -8,16 +9,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
-  ImageBackground,
-  Animated,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
-import News from "./News";
-      
 
 interface HomeProps {
   navigation: any;
@@ -30,8 +25,8 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [recommendedServices, setRecommendedServices] = useState<any[]>([]);
   const [popularServices, setPopularServices] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
-const [loading, setLoading] = useState(false);
-const [Error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [Error, setError] = useState<string | null>(null);
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -98,37 +93,41 @@ const [Error, setError] = useState<string | null>(null);
     } catch (error) {
       console.error("Error fetching businesses:", error);
     }
-  }
- 
-    // const fetchNews = async () => {
-    //   try {
-    //     const { data, error } = await supabase
-    //       .from('news')
-    //       .select('*')
-    //       .order('published_at', { ascending: false });
+  };
 
-    //     // if (error) setError(error.message);
-    //     setNews(data || []);
-    //   } catch (error) {
-    //     console.error("Error fetching news:", error.message);
-    //   } finally {
-    //     console.log("Loading news completed.");
-    //   }
-    // };
+  // const fetchNews = async () => {
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from('news')
+  //       .select('*')
+  //       .order('published_at', { ascending: false });
 
-    const renderNewsItem = ({ item }) => (
-      <View style={styles.newsCard}>
-        <Image source={{ uri: item.image_url }} style={styles.newsImage} />
-        <View style={styles.textContainer}>
-          <Text style={styles.discountText}>25% off</Text>
-          <Text style={styles.withCodeText}>WITH CODE</Text>
-          <Text style={styles.shopNowButton}>Shop Now</Text>
-        </View>
-        <Icon name="add-shopping-cart" size={24} color="#007AFF" style={styles.cartIcon} />
+  //     // if (error) setError(error.message);
+  //     setNews(data || []);
+  //   } catch (error) {
+  //     console.error("Error fetching news:", error.message);
+  //   } finally {
+  //     console.log("Loading news completed.");
+  //   }
+  // };
+
+  const renderNewsItem = ({ item }) => (
+    <View style={styles.newsCard}>
+      <Image source={{ uri: item.image_url }} style={styles.newsImage} />
+      <View style={styles.textContainer}>
+        <Text style={styles.discountText}>25% off</Text>
+        <Text style={styles.withCodeText}>WITH CODE</Text>
+        <Text style={styles.shopNowButton}>Shop Now</Text>
       </View>
-    );
-    
-  
+      <Icon
+        name="add-shopping-cart"
+        size={24}
+        color="#007AFF"
+        style={styles.cartIcon}
+      />
+    </View>
+  );
+
   const renderHeader = () => (
     <View style={styles.header}>
       <Image
@@ -147,30 +146,28 @@ const [Error, setError] = useState<string | null>(null);
           />
         </View>
         {Error && <Text style={styles.errorText}>{Error}</Text>}
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : (
-        <FlatList
-          data={news}
-          renderItem={renderNewsItem}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          pagingEnabled
-        />
-      )}
-    </View>
-
-        <TouchableOpacity
-          style={styles.profileIcon}
-          onPress={() => navigation.navigate("BusinessProfileApp")}
-        >
-          <Icon name="person" size={30} color="#FFF" />
-        </TouchableOpacity>
+        {loading ? (
+          <Text>Loading...</Text>
+        ) : (
+          <FlatList
+            data={news}
+            renderItem={renderNewsItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+          />
+        )}
       </View>
-    
+
+      <TouchableOpacity
+        style={styles.profileIcon}
+        onPress={() => navigation.navigate("BusinessProfileApp")}
+      >
+        <Icon name="person" size={30} color="#FFF" />
+      </TouchableOpacity>
+    </View>
   );
-  
 
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
@@ -311,7 +308,6 @@ const [Error, setError] = useState<string | null>(null);
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
-
 };
 const styles = StyleSheet.create({
   container: {
@@ -328,14 +324,14 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   overlay: {
-    position: "absolute",
-    top: 0,
+    top: 40,
     left: 0,
     right: 0,
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.3)",
+    position: "absolute",
   },
   headerTitle: {
     fontSize: 28,
@@ -529,7 +525,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginLeft: 10,
-  },  
+  },
 });
 
 export default Home;

@@ -217,6 +217,10 @@ const BookNowScreen = ({
     console.log("Booking confirmed");
     setConfirmationVisible(false); // Close modal after confirmation
     setModalVisible(true); // Show booking confirmation modal
+    navigation.navigate("AppointmentBook", {
+      selectedBusiness,
+      service,
+    });
   };
   const createAvailability = async (date: string, time: string) => {
     // Log the input values for debugging

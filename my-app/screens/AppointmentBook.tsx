@@ -14,13 +14,20 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { supabase } from "../services/supabaseClient";
 import BookingCard from "./BookingCard";
 
-const AppointmentBookingScreen = () => {
+const AppointmentBookingScreen = ({ route }) => {
   const navigation = useNavigation<StackNavigationProp<any>>();
+  const { selectedBusiness } = route.params || {}; // Extract selectedBusiness from route params
+
+  if (!selectedBusiness) {
+    return <Text>Loading...</Text>; // Display loading if selectedBusiness is not available
+  }
+  const { service } = route.params || {};
   const [appointments, setAppointments] = useState([]);
   const [markedDates, setMarkedDates] = useState({});
   const [showAll, setShowAll] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const someBusinessId = "yourBusinessId";
+  const someBusinessId = selectedBusiness?.id || "defaultBusinessId"; // Use the passed business ID
+
   useEffect(() => {
     fetchAppointments();
   }, []);
@@ -145,8 +152,9 @@ const AppointmentBookingScreen = () => {
         style={styles.profileCard}
         onPress={() => {
           console.log("Navigating to StaticBusinessProfile");
-          navigation.navigate("StaticBusinessProfile", {
-            businessId: someBusinessId,
+          navigation.navigate("staticBusinessProfile", {
+            selectedBusiness,
+            service,
           });
         }}
       >
