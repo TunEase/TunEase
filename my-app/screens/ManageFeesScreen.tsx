@@ -18,8 +18,11 @@ import Pdf from "react-native-pdf";
 import { Linking } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { useSupabaseUpload } from "../hooks/uploadFile";
+import { useMedia } from "../hooks/useMedia";
 const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
-  const { uploadMultipleFiles, fileUrls } = useSupabaseUpload("application");
+  const { insertMediaRecord, Mediaerror, MediaUploading } = useMedia();
+  const { uploadMultipleFiles, fileUrls, uploadPdfFiles, error, uploading } =
+    useSupabaseUpload("application");
   const { serviceId, serviceName } = route.params;
   const [fees, setFees] = useState<
     {
@@ -37,11 +40,21 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
   const [isImageViewVisible, setImageViewVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [images, setImages] = useState<{ uri: string }[]>([]);
-  const handleUploadImage = (feeId: string) => {
-    // Logic to handle image upload for the specific fee
-    uploadMultipleFiles({ quality: 0.5 });
-    console.log(fileUrls);
-    console.log(`Upload image for fee with ID: ${feeId}`);
+  const handleUploadImage = async (feeId: string) => {
+    // // Logic to handle image upload for the specific fee
+    // const { urls } = await uploadPdfFiles();
+    // console.log("urls", urls);
+
+    // console.log(`Upload image for fee with ID: ${feeId}`);
+    // insertMediaRecord(urls[0], "pdf", {
+    //   fee_id: feeId,
+    // });
+    const { urls } = await uploadMultipleFiles({ quality: 0.5 });
+    console.log("urls", urls);
+    insertMediaRecord(urls[0], "image", {
+      fee_id: feeId,
+    });
+    fetchFees();
   };
 
   const fetchFees = async () => {
@@ -169,11 +182,7 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
                         />
                       ) : (
                         <View style={styles.pdfThumbnail}>
-                          <Icon
-                            name="picture-as-pdf"
-                            size={40}
-                            color="#FF5252"
-                          />
+                          <Icon name="cloud-upload" size={40} color="#FF5252" />
                           <Text style={styles.pdfText}>PDF</Text>
                         </View>
                       )}
