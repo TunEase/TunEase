@@ -11,6 +11,7 @@ import {
   ScrollView,
   ImageBackground,
   Animated,
+  ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -18,7 +19,7 @@ import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
 
 interface HomeProps {
-navigation: any;
+  navigation: any;
 }
 
 const Home: React.FC<HomeProps> = ({ navigation }) => {
@@ -119,7 +120,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         style={styles.headerImage}
       />
       <View style={styles.overlay}>
-        <Text style={styles.headerTitle}>Welcome</Text>
+        <Text style={styles.headerTitle}>TunEase</Text>
         <View style={styles.searchContainer}>
           <Icon name="search" size={24} color="#888" />
           <TextInput
@@ -138,50 +139,65 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
-  <View style={styles.newsCardsContainer}>
-  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-    {news.map((newsGroup, groupIndex) => (
-      <View key={`group-${groupIndex}`} style={styles.mainNewsCard}>
-        {newsGroup.slice(0, 3).map((newsItem, index) => (
-          <TouchableOpacity
-            key={`news-${newsItem.id}`}
-            style={[
-              styles.subNewsCard,
-              index === 0 && styles.firstSubCard
-            ]}
-            onPress={() => navigation.navigate('NewsDetail', { newsId: newsItem.id })}
-          >
-            <Image
-              source={{ 
-                uri: newsItem.image_url || 'https://via.placeholder.com/150'
-              }}
-              style={[
-                styles.subNewsImage,
-                index === 0 && styles.firstSubNewsImage
-              ]}
-            />
-            <View style={[
-              styles.subContentContainer,
-              index === 0 && styles.firstSubContentContainer
-            ]}>
-              <Text style={[
-                styles.subNewsTitle,
-                index === 0 && styles.firstSubNewsTitle
-              ]} numberOfLines={2}>
-                {newsItem.title}
-              </Text>
-              <Text style={styles.dateText}>
-                {new Date(newsItem.created_at).toLocaleDateString()}
-              </Text>
-            </View>
+
+  const renderNews = () => {
+    if (loading) {
+      return <ActivityIndicator size="large" color="#00796B" />;
+    }
+
+    return (
+      <View style={styles.newsContainer}>
+        <View style={styles.sectionHeaderContainer}>
+          <Text style={styles.sectionHeader}>Latest News</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("AllNews")}>
+            <Text style={styles.viewAllText}>View All</Text>
           </TouchableOpacity>
-        ))}
+        </View>
+        <View style={styles.newsCardsContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {news.map((newsGroup, groupIndex) => (
+              <View key={`group-${groupIndex}`} style={styles.mainNewsCard}>
+                {newsGroup.slice(0, 3).map((newsItem, index) => (
+                  <TouchableOpacity
+                    key={`news-${newsItem.id}`}
+                    style={[
+                      styles.subNewsCard,
+                      index === 0 && styles.firstSubCard
+                    ]}
+                    onPress={() => navigation.navigate('NewsDetail', { newsId: newsItem.id })}
+                  >
+                    <Image
+                      source={{ 
+                        uri: newsItem.image_url || 'https://via.placeholder.com/150'
+                      }}
+                      style={[
+                        styles.subNewsImage,
+                        index === 0 && styles.firstSubNewsImage
+                      ]}
+                    />
+                    <View style={[
+                      styles.subContentContainer,
+                      index === 0 && styles.firstSubContentContainer
+                    ]}>
+                      <Text style={[
+                        styles.subNewsTitle,
+                        index === 0 && styles.firstSubNewsTitle
+                      ]} numberOfLines={2}>
+                        {newsItem.title}
+                      </Text>
+                      <Text style={styles.dateText}>
+                        {new Date(newsItem.created_at).toLocaleDateString()}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
       </View>
-    ))}
-  </ScrollView>
-</View>
-
-
+    );
+  };
 
   const renderTopBusinesses = () => (
     <View>
@@ -243,35 +259,11 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             />
             <Text style={styles.serviceName}>{service.name}</Text>
             <Text style={styles.serviceRating}>
-              ⭐ {service.averageRating.toFixed(1)}
+              ⭐ {service.averageRating?.toFixed(1)}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
-    </View>
-  );
-
-  const renderNews = () => {
-    if (!news || news.length === 0) {
-      return null;
-    }
-
-    
-
-  const renderFooterButtons = () => (
-    <View style={styles.buttonContainer}>
-      <TouchableOpacity
-        style={styles.availableButton}
-        onPress={() => navigation.navigate("AllBusinesses")}
-      >
-        <Text style={styles.availableText}>See All Businesses</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.availableButton}
-        onPress={() => navigation.navigate("AllService")}
-      >
-        <Text style={styles.availableText}>See All Services</Text>
-      </TouchableOpacity>
     </View>
   );
 
@@ -281,10 +273,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         ListHeaderComponent={() => (
           <>
             {renderHeader()}
-            {renderFooterButtons()}
+            {renderNews()}
             {renderTopBusinesses()}
             {renderPopularServices()}
-            {renderNews()}
           </>
         )}
         data={[]}
@@ -295,16 +286,16 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F8F8",
+    backgroundColor: "#F5F5F5",
   },
   newsCardsContainer: {
     marginVertical: 10,
     paddingHorizontal: 15,
-  },  
+  },
   header: {
     height: 250,
     position: "relative",
@@ -316,7 +307,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     position: "absolute",
-    top: 0,
+    top: 36,
     left: 0,
     right: 0,
     bottom: 0,
@@ -351,27 +342,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 50,
   },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 20,
-  },
-  availableButton: {
-    backgroundColor: "#FFF",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  availableText: {
-    color: "#00796B",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
   sectionHeaderContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -386,6 +356,66 @@ const styles = StyleSheet.create({
   viewAllText: {
     color: "#00796B",
     fontSize: 14,
+  },
+  newsContainer: {
+    marginVertical: 10,
+  },
+  mainNewsCard: {
+    width: 330,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    marginRight: 20,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.29,
+    shadowRadius: 4.65,
+    elevation: 7,
+  },
+  subNewsCard: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 10,
+    height: 100,
+    flexDirection: 'row',
+  },
+  firstSubCard: {
+    height: 200,
+    flexDirection: 'column',
+    marginBottom: 15,
+  },
+  subNewsImage: {
+    width: '40%',
+    height: '100%',
+  },
+  firstSubNewsImage: {
+    width: '100%',
+    height: '60%',
+  },
+  subContentContainer: {
+    flex: 1,
+    padding: 10,
+    justifyContent: 'space-between',
+  },
+  firstSubContentContainer: {
+    padding: 12,
+  },
+  subNewsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  firstSubNewsTitle: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  dateText: {
+    fontSize: 12,
+    color: '#666',
   },
   businessCard: {
     width: 200,
@@ -448,69 +478,6 @@ const styles = StyleSheet.create({
   serviceRating: {
     fontSize: 14,
     color: "#666",
-  },
-  newsContainer: {
-    marginVertical: 10,
-  },
-  scrollContainer: {
-    paddingHorizontal: 10,
-  },
-  mainNewsCard: {
-    width: 330,
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    marginRight: 20,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.29,
-    shadowRadius: 4.65,
-    elevation: 7,
-  },
-  subNewsCard: {
-    backgroundColor: '#f8f8f8',
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 10,
-    height: 100,
-    flexDirection: 'row',
-  },
-  firstSubCard: {
-    height: 200,
-    flexDirection: 'column',
-    marginBottom: 15,
-  },
-  subNewsImage: {
-    width: '40%',
-    height: '100%',
-  },
-  firstSubNewsImage: {
-    width: '100%',
-    height: '60%',
-  },
-  subContentContainer: {
-    flex: 1,
-    padding: 10,
-    justifyContent: 'space-between',
-  },
-  firstSubContentContainer: {
-    padding: 12,
-  },
-  subNewsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-  },
-  firstSubNewsTitle: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  dateText: {
-    fontSize: 12,
-    color: '#666',
   },
 });
 
