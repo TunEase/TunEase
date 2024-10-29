@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 
 type UploadOptions = {
   mediaType?: ImagePicker.MediaTypeOptions;
@@ -94,13 +95,58 @@ export function useSupabaseUpload(bucketName: string) {
       setUploading(true);
       setError(null);
       setFileUrls([]); // Reset file URLs
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
 
+      if (permissionResult.granted === false) {
+        alert("Permission to access media library is required!");
+        return;
+      }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: options.mediaTypes || ImagePicker.MediaTypeOptions.All, // Default to all media type
         quality: options.quality || 1, // Default quality,
         allowsMultipleSelection: true,
       });
 
+      if ((result.canceled && !result.assets) || result.assets.length === 0) {
+        console.log("User cancelled file picker.");
+        return;
+      }
+
+      const uploadPromises = result.assets.map(async (asset) => {
+        console.log(`Uploading file: ${asset.uri}`);
+        const response = await uploadFile(asset.uri, "image", "uploads");
+
+        if (response.error) {
+          console.error(`Error uploading file ${asset.uri}: ${response.error}`);
+        }
+        return response.url;
+      });
+
+      const urls = await Promise.all(uploadPromises);
+      return {
+        urls: urls,
+      }; // Filter out null URLs
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+  const uploadPdfFiles = async () => {
+    setUploading(true);
+    setError(null);
+    setFileUrls([]); // Reset file URLs
+    try {
+      const result: any = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf", // Specify PDF type
+        copyToCacheDirectory: true, // Optional: copy to cache directory
+        multiple: true,
+      });
       if ((result.canceled && !result.assets) || result.assets.length === 0) {
         console.log("User cancelled file picker.");
         return;
@@ -120,7 +166,10 @@ export function useSupabaseUpload(bucketName: string) {
       });
 
       const urls = await Promise.all(uploadPromises);
-      setFileUrls(urls.filter((url) => url !== null) as string[]); // Filter out null URLs
+      console.log("urls", urls);
+      return {
+        urls: urls,
+      }; // Filter out null URLs
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -131,7 +180,6 @@ export function useSupabaseUpload(bucketName: string) {
       setUploading(false);
     }
   };
-
   return {
     uploading,
     error,
@@ -139,5 +187,6 @@ export function useSupabaseUpload(bucketName: string) {
     uploadFile,
     fileUrls,
     uploadMultipleFiles,
+    uploadPdfFiles,
   };
 }
