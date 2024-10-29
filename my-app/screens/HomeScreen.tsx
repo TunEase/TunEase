@@ -89,7 +89,8 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       const { data, error } = await supabase.from("business").select(`
         *,
         media:media(business_id, media_url),
-        services:services(*)
+        services:services(*),
+        reviews:reviews(rating) 
       `);
       if (error) throw error;
       console.log("Fetched Businesses:", data); // Debugging log
@@ -197,6 +198,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             { useNativeDriver: true }
           )}
           renderItem={({ item, index }) => {
+            // console.log("item  ☢️☢️☢️☢️☢️☢️", item);
             const inputRange = [
               (index - 1) * 200,
               index * 200,
@@ -228,7 +230,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                   <Text style={styles.recommendedTitle}>{item.name}</Text>
                   <Text
                     style={styles.recommendedReview}
-                  >{`⭐ ${item.rating}`}</Text>
+                  >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
                 </TouchableOpacity>
               </Animated.View>
             );
