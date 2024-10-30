@@ -78,6 +78,11 @@ const AppointmentBookingScreen = ({ route }) => {
     setShowAll(false);
     setModalVisible(false);
   };
+  const handleRemoveAppointment = (appointmentId) => {
+    setAppointments((prevAppointments) =>
+      prevAppointments.filter((appointment) => appointment.id !== appointmentId)
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -141,6 +146,13 @@ const AppointmentBookingScreen = ({ route }) => {
                 mediaBusiness={
                   item.services?.business?.media[0]?.media_url || ""
                 }
+                icon={
+                  <TouchableOpacity
+                    onPress={() => handleRemoveAppointment(item.id)}
+                  >
+                    <Icon name="remove" size={24} color="#800000" />
+                  </TouchableOpacity>
+                }
               />
               {!showAll && (
                 <TouchableOpacity onPress={handleSeeAllPress}>
@@ -183,6 +195,7 @@ const AppointmentBookingScreen = ({ route }) => {
                   mediaBusiness={
                     item.services?.business?.media[0]?.media_url || ""
                   }
+                  icon={<Icon name="remove" size={24} color="#800000" />}
                 />
               )}
               keyExtractor={(item) => item.id.toString()}
@@ -251,7 +264,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: "90%",
-    height: "90%",
+    height: "80%",
     backgroundColor: "#FFF",
     borderRadius: 15,
     padding: 25,

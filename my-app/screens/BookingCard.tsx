@@ -1,6 +1,5 @@
 import React from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
 
 interface BookingCardProps {
   date: string;
@@ -10,6 +9,7 @@ interface BookingCardProps {
   userName: string;
   media: string;
   mediaBusiness: string;
+  icon: React.ReactNode;
 }
 
 const BookingCard: React.FC<BookingCardProps> = ({
@@ -20,6 +20,7 @@ const BookingCard: React.FC<BookingCardProps> = ({
   userName,
   media,
   mediaBusiness,
+  icon,
 }) => {
   // Format the date
   const formattedDate = new Intl.DateTimeFormat("fr-FR", {
@@ -32,7 +33,7 @@ const BookingCard: React.FC<BookingCardProps> = ({
     <View style={styles.card}>
       {/* Header Section */}
       <View style={styles.header}>
-        <Icon name="calendar" size={20} color="#00796B" />
+        {icon && <View>{icon}</View>}
         <Text style={styles.dateText}>{formattedDate}</Text>
         <Text style={styles.timeText}>{time}</Text>
       </View>
