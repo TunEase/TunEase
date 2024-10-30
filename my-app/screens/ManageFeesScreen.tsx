@@ -40,15 +40,8 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
   const [isImageViewVisible, setImageViewVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [images, setImages] = useState<{ uri: string }[]>([]);
-  const handleUploadImage = async (feeId: string) => {
-    // // Logic to handle image upload for the specific fee
-    // const { urls } = await uploadPdfFiles();
-    // console.log("urls", urls);
 
-    // console.log(`Upload image for fee with ID: ${feeId}`);
-    // insertMediaRecord(urls[0], "pdf", {
-    //   fee_id: feeId,
-    // });
+  const handleUploadImage = async (feeId: string) => {
     const { urls } = await uploadMultipleFiles({ quality: 0.5 });
     console.log("urls", urls);
     insertMediaRecord(urls[0], "image", {
@@ -217,10 +210,11 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
           <Text style={styles.modalTitle}>
             {currentFee?.id ? "Edit Fee" : "Add Fee"}
           </Text>
+
           <TextInput
             style={styles.input}
             placeholder="Fee Name"
-            value={currentFee?.name}
+            value={currentFee?.name || ""} // Use optional chaining and provide a default value
             onChangeText={(text) =>
               setCurrentFee({ ...currentFee, name: text })
             }
@@ -228,7 +222,7 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
           <TextInput
             style={styles.input}
             placeholder="Fee Amount"
-            value={currentFee?.fee.toString()}
+            value={currentFee?.fee?.toString() || ""} // Use optional chaining and provide a default value
             onChangeText={(text) => {
               const feeValue = parseFloat(text);
               setCurrentFee({
@@ -241,11 +235,12 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
           <TextInput
             style={styles.input}
             placeholder="Description"
-            value={currentFee?.description}
+            value={currentFee?.description || ""} // Use optional chaining and provide a default value
             onChangeText={(text) =>
               setCurrentFee({ ...currentFee, description: text })
             }
           />
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.modalButton, styles.saveButton]}

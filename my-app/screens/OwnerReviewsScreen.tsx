@@ -109,7 +109,7 @@ const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
             {new Date(item.created_at).toLocaleDateString()}
           </Text>
           <Text style={styles.userName}>
-            {item.user_profile.name
+            {item.user_profile?.name
               ? `Reviewed by: ${item.user_profile.name}`
               : "Anonymous"}
           </Text>

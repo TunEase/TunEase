@@ -14,9 +14,9 @@ import {
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
 import { Service } from "../types/business";
-import FAQs from "./FAQs";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 const { width } = Dimensions.get("window");
 
@@ -25,6 +25,7 @@ type RootStackParamList = {
   ServiceDetails: { serviceId: string };
   Book: { serviceId: string };
   ComplaintsScreen: undefined;
+  FAQsScreen: undefined; // Add FAQsScreen to the navigation stack
 };
 
 // Define the navigation and route props
@@ -45,7 +46,6 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
   const [activeTab, setActiveTab] = React.useState("About Me");
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const [modalVisible, setModalVisible] = useState(false);
   const { user } = useAuth();
   useEffect(() => {
     const fetchServiceDetails = async () => {
@@ -117,9 +117,15 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
           <View style={styles.contentContainer}>
             {fees && fees.length > 0 ? (
               fees.map((fee, index) => (
-                <View key={index} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{fee.name}</Text>
-                  <Text style={styles.tableCell}>{`$${fee.fee}`}</Text>
+                <View key={index} style={styles.feeCard}>
+                  <Image
+                    source={{ uri: fee.image_url }}
+                    style={styles.feeImage}
+                  />
+                  <View style={styles.feeDetails}>
+                    <Text style={styles.feeName}>{fee.name}</Text>
+                    <Text style={styles.feePrice}>{`$${fee.fee}`}</Text>
+                  </View>
                 </View>
               ))
             ) : (
@@ -134,8 +140,14 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
           <View style={styles.contentContainer}>
             {eligibility && eligibility.length > 0 ? (
               eligibility.map((criteria, index) => (
-                <View key={index} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{criteria.description}</Text>
+                <View key={index} style={styles.eligibilityCard}>
+                  <Image
+                    source={{ uri: criteria.image_url }}
+                    style={styles.eligibilityImage}
+                  />
+                  <Text style={styles.eligibilityDescription}>
+                    {criteria.description}
+                  </Text>
                 </View>
               ))
             ) : (
@@ -145,10 +157,6 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
             )}
           </View>
         );
-      case "FAQs":
-        return <FAQs />;
-      default:
-        return null;
     }
   };
 
@@ -159,6 +167,21 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
       </SafeAreaView>
     );
   }
+
+  const tabIcons = {
+    "About Me": "user",
+    Fees: "dollar",
+    Eligibility: "check-circle",
+    FAQs: "question-circle",
+  };
+
+  const handleTabPress = (tab: string) => {
+    if (tab === "FAQs") {
+      navigation.navigate("FAQsScreen");
+    } else {
+      setActiveTab(tab);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -196,21 +219,18 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
           <TouchableOpacity
             key={tab}
             style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => setActiveTab(tab)}
+            onPress={() => handleTabPress(tab)}
           >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === tab && styles.activeTabText,
-              ]}
-            >
-              {tab}
-            </Text>
+            <FontAwesome
+              name={tabIcons[tab]}
+              size={24}
+              color={activeTab === tab ? "#007AFF" : "#666"}
+            />
           </TouchableOpacity>
         ))}
       </View>
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        {renderTabContent()}
+        {activeTab !== "FAQs" && renderTabContent()}
       </ScrollView>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -319,14 +339,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 10,
-    borderBottomWidth: 1, // Added border for better separation
+    borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
   },
   tableCell: {
     fontSize: 16,
     color: "#333",
-    flex: 1, // Ensures cells take equal space
-    textAlign: "center", // Centers text within each cell
+    flex: 1,
+    textAlign: "center",
   },
   buttonContainer: {
     flexDirection: "row",
@@ -347,6 +367,58 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  feeCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  feeImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  feeDetails: {
+    flex: 1,
+  },
+  feeName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  feePrice: {
+    fontSize: 14,
+    color: "#00796B",
+  },
+  eligibilityCard: {
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  eligibilityDescription: {
+    fontSize: 16,
+    color: "#333",
+  },
+  eligibilityImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
   },
 });
 

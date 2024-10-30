@@ -6,13 +6,23 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  Image,
+  Alert,
 } from "react-native";
 import Modal from "react-native-modal";
 import { supabase } from "../services/supabaseClient";
-import { FontAwesome } from "@expo/vector-icons"; // Import FontAwesome from @expo/vector-icons
+import { FontAwesome } from "@expo/vector-icons";
+import ImageView from "react-native-image-viewing";
+import { Linking } from "react-native";
+import { useSupabaseUpload } from "../hooks/uploadFile";
+import { useMedia } from "../hooks/useMedia";
 
 const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
+  const { insertMediaRecord } = useMedia();
+  const { uploadMultipleFiles } = useSupabaseUpload("application");
   const { serviceId } = route.params;
+
+  // Hooks should be declared at the top level
   const [eligibilities, setEligibilities] = useState<
     {
       id: string;
@@ -20,11 +30,14 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
       description: string;
       created_at: string;
       updated_at: string;
+      media: { media_url: string; media_type: string }[];
     }[]
   >([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentEligibility, setCurrentEligibility] = useState<any>(null);
-  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [isImageViewVisible, setImageViewVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [images, setImages] = useState<{ uri: string }[]>([]);
 
   useEffect(() => {
     fetchEligibilities();
@@ -33,7 +46,9 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
   const fetchEligibilities = async () => {
     const { data, error } = await supabase
       .from("eligibility")
-      .select("id, name, description, created_at, updated_at") // Include created_at and updated_at
+      .select(
+        "id, name, description, created_at, updated_at, media (media_url, media_type)"
+      )
       .eq("service_id", serviceId);
 
     if (error) {
@@ -55,7 +70,6 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
 
   const handleSaveEligibility = async () => {
     if (currentEligibility.id) {
-      // Update existing eligibility
       const { error } = await supabase
         .from("eligibility")
         .update({
@@ -68,7 +82,6 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
         console.error("Error updating eligibility:", error);
       }
     } else {
-      // Add new eligibility
       const { error } = await supabase.from("eligibility").insert([
         {
           name: currentEligibility.name,
@@ -86,9 +99,53 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
     fetchEligibilities();
   };
 
-  const handleUploadImage = (eligibilityId: string) => {
-    // Toggle the expanded state of the card
-    setExpandedCardId(expandedCardId === eligibilityId ? null : eligibilityId);
+  const handleUploadImage = async (eligibilityId: string) => {
+    try {
+      console.log("Starting file upload...");
+      const { urls, error } = await uploadMultipleFiles({ quality: 0.5 });
+      if (error) {
+        console.error("Error during file upload:", error);
+        return;
+      }
+
+      if (urls.length > 0) {
+        console.log("File uploaded successfully, inserting media record...");
+        const { data, error: insertError } = await insertMediaRecord(
+          urls[0],
+          "image",
+          { eligibility_id: eligibilityId }
+        );
+        if (insertError) {
+          console.error("Error inserting media record:", insertError);
+        } else {
+          console.log("Media record inserted successfully:", data);
+          fetchEligibilities();
+        }
+      } else {
+        console.log("No URLs returned from upload.");
+      }
+    } catch (err) {
+      console.error("Unexpected error during upload:", err);
+    }
+  };
+
+  const openImageViewer = (
+    media: { media_url: string; media_type: string }[],
+    index: number
+  ) => {
+    setImages(
+      media
+        .filter((m) => m.media_type === "image")
+        .map((m) => ({ uri: m.media_url }))
+    );
+    setSelectedImageIndex(index);
+    setImageViewVisible(true);
+  };
+
+  const openPDF = (url: string) => {
+    Linking.openURL(url).catch((err) =>
+      console.error("Failed to open PDF:", err)
+    );
   };
 
   return (
@@ -115,10 +172,34 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
               <Text style={styles.eligibilityDate}>
                 Updated: {new Date(item.updated_at).toLocaleDateString()}
               </Text>
-              {expandedCardId === item.id && (
-                <View style={styles.imageUploadSection}>
-                  <Text style={styles.uploadText}>Upload Image Section</Text>
-                  {/* Add your image upload logic here */}
+              {item.media.length > 0 && (
+                <View style={styles.mediaContainer}>
+                  {item.media.map((mediaItem, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() =>
+                        mediaItem.media_type === "image"
+                          ? openImageViewer(item.media, index)
+                          : openPDF(mediaItem.media_url)
+                      }
+                    >
+                      {mediaItem.media_type === "image" ? (
+                        <Image
+                          source={{ uri: mediaItem.media_url }}
+                          style={styles.mediaImage}
+                        />
+                      ) : (
+                        <View style={styles.pdfThumbnail}>
+                          <FontAwesome
+                            name="file-pdf-o"
+                            size={40}
+                            color="#FF5252"
+                          />
+                          <Text style={styles.pdfText}>PDF</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  ))}
                 </View>
               )}
             </View>
@@ -180,6 +261,14 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
           </View>
         </View>
       </Modal>
+
+      <ImageView
+        images={images}
+        imageIndex={selectedImageIndex}
+        visible={isImageViewVisible}
+        onRequestClose={() => setImageViewVisible(false)}
+        backgroundColor="#ffffff"
+      />
     </View>
   );
 };
@@ -232,15 +321,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#888",
   },
-  imageUploadSection: {
+  mediaContainer: {
     marginTop: 10,
-    padding: 10,
-    backgroundColor: "#f0f0f0",
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  mediaImage: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+    marginBottom: 10,
     borderRadius: 5,
   },
-  uploadText: {
-    fontSize: 14,
-    color: "#333",
+  pdfThumbnail: {
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+    backgroundColor: "#F0F0F0",
+  },
+  pdfText: {
+    fontSize: 10,
+    color: "#FF5252",
   },
   addButton: {
     position: "absolute",

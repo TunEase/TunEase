@@ -7,6 +7,7 @@ type MediaOptions = {
   complaint_id?: string;
   review_id?: string;
   fee_id?: string;
+  eligibility_id?: string;
 };
 
 type MediaRecord = {

@@ -55,8 +55,8 @@ const OwnerComplaintsScreen: React.FC<{ route: any; navigation: any }> = ({
       } else {
         const formattedData = data.map((complaint: any) => ({
           ...complaint,
-          user_name: complaint.user_profile.name,
-          user_email: complaint.user_profile.email,
+          user_name: complaint.user_profile?.name,
+          user_email: complaint.user_profile?.email,
           user_image_url: complaint.media ? complaint.media.media_url : null,
         }));
         setComplaints(formattedData);
