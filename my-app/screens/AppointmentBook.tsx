@@ -15,24 +15,24 @@ import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
 import { Appointment } from "../types/Appointment";
 import BookingCard from "./BookingCard";
+
 const AppointmentBookingScreen = ({ route }) => {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const userId = user?.id;
-  // console.log("userId 😁😁", userId);
   const navigation = useNavigation<StackNavigationProp<any>>();
-  const { selectedBusiness, service } = route.params || {}; // Extract selectedBusiness from route params
+  const { selectedBusiness, service } = route.params || {};
 
   if (!selectedBusiness) {
-    return <Text>Loading...</Text>; // Display loading if selectedBusiness is not available
+    return <Text>Loading...</Text>;
   }
-  // const { service } = route.params || {};
+
+  const [calendarVisible, setCalendarVisible] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [markedDates, setMarkedDates] = useState({});
   const [showAll, setShowAll] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
-  const someBusinessId = selectedBusiness?.id || "defaultBusinessId"; // Use the passed business ID
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAppointments();
@@ -46,12 +46,10 @@ const AppointmentBookingScreen = ({ route }) => {
           "*,services(name,media(media_url),business(name,media(media_url))),user_profile(name,media(media_url))"
         )
         .eq("client_id", userId);
-      console.log("appointments 😁😁", data);
       if (error) {
         console.error("Error fetching appointments:", error.message);
         return;
       }
-      //@ts-ignore
       setAppointments(data);
       markAppointmentDates(data);
     }
@@ -68,13 +66,10 @@ const AppointmentBookingScreen = ({ route }) => {
 
   const handleDayPress = (day) => {
     const selectedAppointments = appointments.filter(
-      //@ts-ignore
       (appointment) => appointment.date === day.dateString
     );
-    // Implement display logic for selected appointments
     setSelectedDate(day.dateString);
-    //@ts-ignore
-    setSelectedTime(selectedAppointments[0].start_time);
+    setSelectedTime(selectedAppointments[0]?.start_time);
   };
 
   const handleSeeAllPress = () => {
@@ -86,78 +81,92 @@ const AppointmentBookingScreen = ({ route }) => {
     setShowAll(false);
     setModalVisible(false);
   };
-  // const handleProfileCardPress = () => {
-  //   console.log("Navigating to StaticBusinessProfile");
-  //   navigation.navigate("staticBusinessProfile", {
-  //     selectedBusiness,
-  //     service,
-  //     selectedDate,
-  //     selectedTime,
-  //   });
-  // };
-  // console.log("service 😁😁", service);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Appointment Book</Text>
-      <Calendar
-        onDayPress={handleDayPress}
-        markedDates={markedDates}
-        theme={{
-          selectedDayBackgroundColor: "#00796B",
-          arrowColor: "#00796B",
-          todayTextColor: "#00796B",
-        }}
-      />
-
-      {/* Display Upcoming Appointments */}
-      {/* <Text style={styles.subtitle}>Upcoming Appointments</Text> */}
-      <FlatList
-        data={showAll ? appointments : appointments.slice(0, 1)}
-        renderItem={({ item }) => (
-          <View style={styles.bookingContainer}>
-            <BookingCard
-              date={item.date}
-              time={item.start_time}
-              serviceName={item.services?.name || ""}
-              businessName={item.services?.business?.name || ""}
-              userName={item.user_profile?.name || ""}
-              media={item.services?.media[0]?.media_url || ""}
-              mediaBusiness={item.services?.business?.media[0]?.media_url || ""}
-            />
-            {!showAll && (
-              <TouchableOpacity
-                onPress={handleSeeAllPress}
-                style={styles.seeAllButton}
-              >
-                <Text style={styles.seeAllText}>See All Bookings</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-        //@ts-ignore
-        keyExtractor={(item) => item.id.toString()}
-      />
-
-      {/* Full-Screen Modal for All Appointments */}
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>Appointment Book</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.calendarButton}
+        onPress={() => setCalendarVisible(true)}
+      >
+        <Text style={styles.calendarText}>Calendar</Text>
+        <Icon name="calendar" size={35} color="#00796B" />
+      </TouchableOpacity>
       <Modal
         animationType="slide"
-        transparent={true} // Change to true for overlay effect
+        transparent={true}
+        visible={calendarVisible}
+        onRequestClose={() => setCalendarVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.calendarContainer}>
+            <TouchableOpacity
+              style={styles.modalClose}
+              onPress={() => setCalendarVisible(false)}
+            >
+              <Icon name="close" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Calendar
+              onDayPress={handleDayPress}
+              markedDates={markedDates}
+              theme={{
+                selectedDayBackgroundColor: "#00796B",
+                arrowColor: "#00796B",
+                todayTextColor: "#00796B",
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      <View style={styles.serviceContainer}>
+        <FlatList
+          data={showAll ? appointments : appointments.slice(0, 1)}
+          renderItem={({ item }) => (
+            <View>
+              <BookingCard
+                date={item.date}
+                time={item.start_time}
+                serviceName={item.services?.name || ""}
+                businessName={item.services?.business?.name || ""}
+                userName={item.user_profile?.name || ""}
+                media={item.services?.media[0]?.media_url || ""}
+                mediaBusiness={
+                  item.services?.business?.media[0]?.media_url || ""
+                }
+              />
+              {!showAll && (
+                <TouchableOpacity onPress={handleSeeAllPress}>
+                  <Text>See All Bookings</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      </View>
+
+      {/* All Bookings Modal */}
+
+      <Modal
+        animationType="slide"
+        transparent={true}
         visible={modalVisible}
         onRequestClose={handleCloseModal}
       >
-        <View style={styles.modalOverlay}>
-          {/* New overlay style */}
-          <View style={styles.modalContainer}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
             <TouchableOpacity
               style={styles.modalClose}
               onPress={handleCloseModal}
             >
-              <Icon name="close" size={24} color="#fff" />
-              {/* Change icon color */}
+              <Icon name="close" size={24} color="#00796B" />
             </TouchableOpacity>
             <Text style={styles.modalTitle}>All Bookings</Text>
             <FlatList
+              style={{ width: "100%" }}
               data={appointments}
               renderItem={({ item }) => (
                 <BookingCard
@@ -172,7 +181,6 @@ const AppointmentBookingScreen = ({ route }) => {
                   }
                 />
               )}
-              //@ts-ignore
               keyExtractor={(item) => item.id.toString()}
             />
           </View>
@@ -185,82 +193,91 @@ const AppointmentBookingScreen = ({ route }) => {
 export default AppointmentBookingScreen;
 
 const styles = StyleSheet.create({
-  seeAllButton: {
-    marginBottom: 8,
-    alignItems: "center",
-  },
-  bookingContainer: {
-    marginBottom: 20,
+  serviceContainer: {
+    top: 100,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    // marginTop: 50,
+    // top: 50,
+  },
+  calendarContainer: {
+    width: "85%",
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 15,
+    elevation: 3,
+    // marginTop: 10,
   },
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#f1f1f1",
+    backgroundColor: "#fff",
+  },
+  titleContainer: {
+    width: "100%", // Full-width background
+    backgroundColor: "#00796B", // Use your desired background color
+    paddingVertical: 15, // Adds padding around title for a bolder effect
+    alignItems: "center", // Centers the title text
+    top: 15,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#00796B",
-    textAlign: "center",
-    marginVertical: 20,
-  },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#00796B",
-    marginVertical: 10,
-  },
-
-  seeAllText: {
-    fontSize: 16,
-    color: "#00796B",
-  },
-  profileCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-    marginVertical: 15,
-  },
-  profileCardText: {
-    fontSize: 18,
-    color: "#00796B",
-    fontWeight: "bold",
+    color: "#fff", // Set title color to white
   },
   modalContainer: {
-    width: "85%", // Adjust width
-    height: "80%",
-    backgroundColor: "#f1f1f1",
-    borderRadius: 15,
-    padding: 25,
-    // shadowColor: "#000",
-    // shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 5,
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent overlay background
+    // top: 50,
   },
-  modalClose: {
-    alignSelf: "flex-end",
-    marginBottom: 20,
+  modalContent: {
+    width: "90%",
+    maxHeight: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 25,
+    padding: 15,
+    elevation: 3,
+    alignItems: "center",
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#00796B",
-    textAlign: "center",
     marginBottom: 20,
+    marginTop: 10,
+  },
+  bookingItem: {
+    backgroundColor: "#f1f1f1",
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 10,
+    width: "100%",
+  },
+  bookingText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  modalClose: {
+    alignSelf: "flex-end",
+    marginBottom: 10,
+  },
+  calendarText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#00796B",
+    marginRight: 85,
+    marginTop: 5,
+    marginLeft: 30,
+  },
+  calendarButton: {
+    top: 30,
+    right: 10,
+    alignItems: "center",
+    flexDirection: "row",
   },
 });

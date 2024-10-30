@@ -27,58 +27,33 @@ const BookingCard: React.FC<BookingCardProps> = ({
     month: "long",
     year: "numeric",
   }).format(new Date(date));
-  console.log("💀💀", businessName);
+
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Booking Details</Text>
-      <View style={styles.rows}>
-        <Icon name="user" size={20} color="#333" />
-        <Text style={styles.detail}> {userName}</Text>
-      </View>
-      <View style={styles.row}>
-        <Image source={{ uri: media }} style={styles.circularImage} />
-        <Text style={styles.detail}>{serviceName}</Text>
-      </View>
-      <View style={styles.row}>
-        <Image source={{ uri: mediaBusiness }} style={styles.circularImage} />
-        <Text style={styles.detail}>{businessName}</Text>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <Icon name="calendar" size={20} color="#00796B" />
+        <Text style={styles.dateText}>{formattedDate}</Text>
+        <Text style={styles.timeText}>{time}</Text>
       </View>
 
-      <Text style={styles.detail}>Date: le {formattedDate}</Text>
-      <Text style={styles.detail}>Time: {time}</Text>
+      {/* Main Content */}
+      <View style={styles.row}>
+        <Image source={{ uri: media }} style={styles.circularImage} />
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailTitle}>{serviceName}</Text>
+          <Text style={styles.detailSubtitle}>{businessName}</Text>
+          <Text style={styles.clientText}>Client: {userName}</Text>
+        </View>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  rows: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-    justifyContent: "center",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  circularImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25, // Half of the width/height to make it circular
-    marginRight: 10,
-  },
-  media: {
-    width: 100,
-    height: 100,
-  },
-  mediaBusiness: {
-    width: 100,
-    height: 100,
-  },
   card: {
     backgroundColor: "#fff",
-    padding: 20,
+    padding: 15,
     borderRadius: 10,
     shadowColor: "#000",
     shadowOpacity: 0.1,
@@ -87,22 +62,47 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginVertical: 10,
   },
-  title: {
-    fontSize: 20, // Increased font size for better visibility
-    fontWeight: "bold",
-    color: "#333", // Darker color for better contrast
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
-  detail: {
+  dateText: {
     fontSize: 16,
-    color: "#555", // Slightly darker color for better readability
-    // marginBottom: 5,
-    fontWeight: "normal",
-    // marginLeft: 10,
+    fontWeight: "600",
+    color: "#00796B",
+  },
+  timeText: {
+    fontSize: 14,
+    color: "#555",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  circularImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     marginRight: 10,
-    marginTop: 10,
-    textAlign: "center",
-    justifyContent: "center",
+  },
+  detailsContainer: {
+    flex: 1,
+  },
+  detailTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  detailSubtitle: {
+    fontSize: 14,
+    color: "#555",
+    marginVertical: 5,
+  },
+  clientText: {
+    fontSize: 12,
+    color: "#777",
   },
 });
 
