@@ -5,9 +5,13 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import ImageView from "react-native-image-viewing";
+
+import { Media, User_profile } from "../types/business";
 
 type Review = {
   id: string;
@@ -15,25 +19,46 @@ type Review = {
   comment: string;
   created_at: string;
   isVisible: boolean;
+  user_profile: User_profile;
+  media: Media[];
 };
 
 const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
   const { serviceId } = route.params;
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [isImageViewVisible, setImageViewVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [images, setImages] = useState<{ uri: string }[]>([]);
 
   useEffect(() => {
     const fetchReviews = async () => {
       const { data, error } = await supabase
         .from("reviews")
-        .select("id, rating, comment, created_at")
+        .select(
+          `
+          id,
+          rating,
+          comment,
+          created_at,
+          user_profile (
+            name,
+            media (
+              media_url,
+              media_type
+            )
+          )
+        `
+        )
         .eq("service_id", serviceId);
-
+      console.log("reviews", data);
       if (error) {
         console.error("Error fetching reviews:", error);
       } else {
         const initializedData = data.map((review: any) => ({
           ...review,
           isVisible: true,
+          user_name: review.user_profile?.name || null,
+          media: review.user_profile?.media || [],
         }));
         setReviews(initializedData);
       }
@@ -48,6 +73,12 @@ const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
         review.id === id ? { ...review, isVisible: !review.isVisible } : review
       )
     );
+  };
+
+  const openImageViewer = (media: Media[], index: number) => {
+    setImages(media.map((m) => ({ uri: m.media_url })));
+    setSelectedImageIndex(index);
+    setImageViewVisible(true);
   };
 
   const renderReview = ({ item }: { item: Review }) => (
@@ -77,6 +108,26 @@ const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
           <Text style={styles.date}>
             {new Date(item.created_at).toLocaleDateString()}
           </Text>
+          <Text style={styles.userName}>
+            {item.user_profile.name
+              ? `Reviewed by: ${item.user_profile.name}`
+              : "Anonymous"}
+          </Text>
+          {item.media.length > 0 && (
+            <View style={styles.mediaContainer}>
+              {item.media.map((mediaItem, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => openImageViewer(item.media, index)}
+                >
+                  <Image
+                    source={{ uri: mediaItem.media_url }}
+                    style={styles.mediaImage}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </>
       )}
     </View>
@@ -90,6 +141,12 @@ const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
         keyExtractor={(item) => item.id}
         renderItem={renderReview}
         contentContainerStyle={styles.listContent}
+      />
+      <ImageView
+        images={images}
+        imageIndex={selectedImageIndex}
+        visible={isImageViewVisible}
+        onRequestClose={() => setImageViewVisible(false)}
       />
     </View>
   );
@@ -140,6 +197,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#888",
     textAlign: "right",
+  },
+  userName: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 10,
+  },
+  mediaContainer: {
+    marginTop: 10,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  mediaImage: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+    marginBottom: 10,
+    borderRadius: 5,
   },
 });
 

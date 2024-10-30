@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/FontAwesome";
+import Header from "../components/Form/header";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
 import { Appointment } from "../types/Appointment";
@@ -21,10 +22,6 @@ const AppointmentBookingScreen = ({ route }) => {
   const userId = user?.id;
   const navigation = useNavigation<StackNavigationProp<any>>();
   const { selectedBusiness, service } = route.params || {};
-
-  if (!selectedBusiness) {
-    return <Text>Loading...</Text>;
-  }
 
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -84,18 +81,20 @@ const AppointmentBookingScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>Appointment Book</Text>
-      </View>
+      <Header
+        title="Appointment Book"
+        backgroundColor="#00796B"
+        showBackButton={false}
+      />
       <TouchableOpacity
         style={styles.calendarButton}
         onPress={() => setCalendarVisible(true)}
       >
-        <Text style={styles.calendarText}>Calendar</Text>
-        <Icon name="calendar" size={35} color="#00796B" />
+        <Text style={styles.calendarText}>View Calendar</Text>
+        <Icon name="calendar" size={30} color="#00796B" />
       </TouchableOpacity>
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={calendarVisible}
         onRequestClose={() => setCalendarVisible(false)}
@@ -112,9 +111,15 @@ const AppointmentBookingScreen = ({ route }) => {
               onDayPress={handleDayPress}
               markedDates={markedDates}
               theme={{
+                calendarBackground: "#F5F5F5",
                 selectedDayBackgroundColor: "#00796B",
                 arrowColor: "#00796B",
                 todayTextColor: "#00796B",
+                dayTextColor: "#333",
+                monthTextColor: "#00796B",
+                textDayFontWeight: "600",
+                textMonthFontWeight: "bold",
+                textDayHeaderFontWeight: "600",
               }}
             />
           </View>
@@ -125,7 +130,7 @@ const AppointmentBookingScreen = ({ route }) => {
         <FlatList
           data={showAll ? appointments : appointments.slice(0, 1)}
           renderItem={({ item }) => (
-            <View>
+            <View style={styles.bookingCardWrapper}>
               <BookingCard
                 date={item.date}
                 time={item.start_time}
@@ -139,7 +144,7 @@ const AppointmentBookingScreen = ({ route }) => {
               />
               {!showAll && (
                 <TouchableOpacity onPress={handleSeeAllPress}>
-                  <Text>See All Bookings</Text>
+                  <Text style={styles.seeAllText}>See All Bookings</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -149,7 +154,6 @@ const AppointmentBookingScreen = ({ route }) => {
       </View>
 
       {/* All Bookings Modal */}
-
       <Modal
         animationType="slide"
         transparent={true}
@@ -193,91 +197,70 @@ const AppointmentBookingScreen = ({ route }) => {
 export default AppointmentBookingScreen;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
+  },
   serviceContainer: {
-    top: 100,
+    paddingTop: 20,
+  },
+  calendarButton: {
+    alignItems: "center",
+    flexDirection: "row",
+    marginVertical: 20,
+    marginLeft: 20,
+    padding: 10,
+    borderRadius: 15,
+  },
+  calendarText: {
+    fontSize: 18,
+    color: "#00796B",
+    marginRight: 150,
   },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
-    // marginTop: 50,
-    // top: 50,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
   },
   calendarContainer: {
-    width: "85%",
-    backgroundColor: "#fff",
+    width: "90%",
+    backgroundColor: "#FFF",
     borderRadius: 15,
-    padding: 15,
-    elevation: 3,
-    // marginTop: 10,
+    padding: 20,
+    elevation: 5,
   },
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
+  modalClose: {
+    alignSelf: "flex-end",
   },
-  titleContainer: {
-    width: "100%", // Full-width background
-    backgroundColor: "#00796B", // Use your desired background color
-    paddingVertical: 15, // Adds padding around title for a bolder effect
-    alignItems: "center", // Centers the title text
-    top: 15,
+  bookingCardWrapper: {
+    marginVertical: 10,
+    marginHorizontal: 15,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff", // Set title color to white
+  seeAllText: {
+    textAlign: "center",
+    color: "#00796B",
+    fontSize: 16,
+    marginTop: 8,
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent overlay background
-    // top: 50,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     width: "90%",
-    maxHeight: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 25,
-    padding: 15,
-    elevation: 3,
+    height: "90%",
+    backgroundColor: "#FFF",
+    borderRadius: 15,
+    padding: 25,
     alignItems: "center",
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: "bold",
     color: "#00796B",
-    marginBottom: 20,
-    marginTop: 10,
-  },
-  bookingItem: {
-    backgroundColor: "#f1f1f1",
-    borderRadius: 10,
-    padding: 15,
-    marginVertical: 10,
-    width: "100%",
-  },
-  bookingText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  modalClose: {
-    alignSelf: "flex-end",
-    marginBottom: 10,
-  },
-  calendarText: {
-    fontSize: 16,
     fontWeight: "bold",
-    color: "#00796B",
-    marginRight: 85,
-    marginTop: 5,
-    marginLeft: 30,
-  },
-  calendarButton: {
-    top: 30,
-    right: 10,
-    alignItems: "center",
-    flexDirection: "row",
+    marginBottom: 15,
   },
 });

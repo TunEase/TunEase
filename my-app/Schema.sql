@@ -156,6 +156,7 @@ CREATE TABLE media (
     media_url TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now() -- New field for tracking updates
+    eligibility_id uuid REFERENCES eligibility(id) ON DELETE CASCADE;
 );
 create table
   favorites (
@@ -164,7 +165,25 @@ create table
     service_id uuid not null references services (id) on delete cascade,
     created_at timestamp default now(),
     unique (user_profile_id, service_id) -- Ensure that a user can only favorite a service once
+
   );
+  CREATE TABLE news (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    business_id uuid REFERENCES business(id) ON DELETE CASCADE,
+    title TEXT NOT NULL, -- News content, like a tweet or post
+    content TEXT NOT NULL, -- News content, like a tweet or post
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE news_tag (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    news_id uuid REFERENCES news(id) ON DELETE CASCADE,
+    tag_name VARCHAR(255) NOT NULL, -- Tags associated with the news post
+    UNIQUE (news_id, tag_name) -- Ensures each tag is unique per news post
+);
+
+
 
 
 

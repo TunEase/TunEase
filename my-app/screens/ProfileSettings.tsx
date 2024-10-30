@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
+  
 interface ProfileSettingsProps {
   route: any;
   navigation: any;
@@ -17,7 +17,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({
   navigation,
 }) => {
   const { userInfo } = route.params;
-
+   
   const [name, setName] = useState(userInfo.name);
   const [email, setEmail] = useState(userInfo.email);
   const [phone, setPhone] = useState(userInfo.phone);
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 8,
   },
-  input: {
+  input:{
     borderWidth: 1,
     borderColor: "#ccc",
     padding: 10,
@@ -87,13 +87,13 @@ const styles = StyleSheet.create({
   //   color: "#555",
   //   marginBottom: 16,
   // },
-  saveButton: {
+  saveButton:{
     backgroundColor: "#32CD32",
     paddingVertical: 12,
     alignItems: "center",
     borderRadius: 5,
   },
-  saveButtonText: {
+  saveButtonText:{
     color: "#fff",
     fontSize: 18,
   },

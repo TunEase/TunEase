@@ -7,6 +7,7 @@ import { createFees } from "./createFees";
 import { injectMedia } from "./createImages";
 import { createReviewData } from "./createReviews";
 import { createService } from "./createServices";
+import { addNews } from "./addNews";
 const dropTablesExceptUsers = async () => {
   const tablesToDrop = [
     "media",
@@ -45,7 +46,8 @@ const dropTablesExceptUsers = async () => {
 const runAllFunctions = async () => {
   // await createBusiness(); // Create businesses
   // await createService(); // Create services
-  await createAvailabilityData(); // Create availability data
+  // await createAvailabilityData(); // Create availability data
+  await addNews();
   // await createComplaintsData(); // Create complaints data
   // await createReviewData(); // Create review data
   // await createEligibility(); // Create eligibility

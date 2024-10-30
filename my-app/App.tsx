@@ -22,6 +22,7 @@ import Review from "./screens/Review";
 import ManageFeesScreen from "./screens/ManageFeesScreen";
 import ManageEligibilityScreen from "./screens/ManageEligibilityScreen";
 
+
 import Onboarding from "./screens/OnBoarding";
 
 // import { insertFakeData } from "./services/supabaseClient";
@@ -42,12 +43,16 @@ import { useAuth } from "./hooks/useAuth";
 import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
 import AddAvailabilityTimeScreen from "./screens/AddAvailabilityTimeScreen";
 import AddService from "./screens/AddService";
+import UploadMedia from './screens/UploadMedia'; 
+
+// Ensure this import is correct
+import CreateServiceScreen from "./screens/createServiceScreen/CreateServiceScreen";
 import AllService from "./screens/AllService";
 import AppointmentBook from "./screens/AppointmentBook";
 import AvailabilityScreen from "./screens/AvailabilityScreen";
 import Book from "./screens/Book";
 import ComplaintsScreen from "./screens/ComplaintsScreen";
-import CreateServiceScreen from "./screens/CreateServiceScreen";
+import MainFooter from "./components/HomePage/MainFooter";
 import OneServices from "./screens/OneServices";
 import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
 import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
@@ -58,6 +63,7 @@ import StaticBusinessProfile from "./screens/staticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
+import News from "./screens/News";
 ServiceSettings;
 
 import AppointmentDetailsScreen from "./screens/reordering/AppointmentDetailsScreen";
@@ -69,6 +75,7 @@ import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
   const { user } = useAuth();
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<
     boolean | null
@@ -144,6 +151,7 @@ export default function App() {
             component={CategoryDetails}
             options={{ headerShown: false }}
           />
+
           <Stack.Screen
             name="AllBusinesses"
             component={AllBusinesses}
@@ -152,6 +160,11 @@ export default function App() {
           <Stack.Screen
             name="AllService"
             component={AllService}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="MainFooter"
+            component={MainFooter}
             options={{ headerShown: false }}
           />
           <Stack.Screen
@@ -313,6 +326,11 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="UploadMedia"
+            component={UploadMedia}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
             name="EditServiceScreen"
             component={EditServiceScreen}
             options={{ headerShown: false }}
@@ -356,6 +374,11 @@ export default function App() {
           <Stack.Screen
             name="AppointmentBook"
             component={AppointmentBook}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="News"
+            component={News}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
