@@ -46,7 +46,7 @@ import AddService from "./screens/AddService";
 import UploadMedia from './screens/UploadMedia'; 
 
 // Ensure this import is correct
-import CreateServiceScreen from "./screens/CreateServiceScreen";
+import CreateServiceScreen from "./screens/createServiceScreen/CreateServiceScreen";
 import AllService from "./screens/AllService";
 import AppointmentBook from "./screens/AppointmentBook";
 import AvailabilityScreen from "./screens/AvailabilityScreen";

@@ -53,10 +53,6 @@ const Profile = () => {
     return () => clearInterval(interval);
   }, [services.length]);
 
-  if (!selectedBusiness) {
-    return <Text>Loading...</Text>;
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -91,21 +87,6 @@ const Profile = () => {
           </View>
         </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>122</Text>
-            <Text style={styles.statLabel}>followers</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>67</Text>
-            <Text style={styles.statLabel}>following</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>37K</Text>
-            <Text style={styles.statLabel}>likes</Text>
-          </View>
-        </View>
-
         <View style={styles.servicesContainer}>
           <Text style={styles.sectionTitle}>Services</Text>
           {services.length > 0 ? (
@@ -124,7 +105,7 @@ const Profile = () => {
                     })
                   }
                 >
-                  {service.media?.length > 0 && (
+                  {service.media?.length > 0 ? (
                     <Image
                       source={{
                         uri:
@@ -132,6 +113,11 @@ const Profile = () => {
                             Math.floor(Math.random() * service.media.length)
                           ]?.media_url || "default-image-url",
                       }}
+                      style={styles.serviceImage}
+                    />
+                  ) : (
+                    <Image
+                      source={{ uri: "default-image-url" }}
                       style={styles.serviceImage}
                     />
                   )}
