@@ -1,107 +1,299 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from "react-native";
-import { supabase } from "../../services/supabaseClient"; // Ensure supabaseClient is properly configured
-// import { useAuth } from "../hooks/useAuth";
-import { launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
+import React, { useState,useEffect } from "react";
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Alert,
+  ScrollView,
+} from "react-native";
+import { supabase } from "../../services/supabaseClient";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from "../../components/Form/header";
-const CreateServiceScreen: React.FC<{ route: any; navigation: any }> = ({ route, navigation }) =>{
-  const { businessId,id} = route.params || {};
+interface Category {
+  id: string;
+  name: string;
+}
+const CreateServiceScreen: React.FC<{ route: any; navigation: any }> = ({ 
+  route, 
+  navigation 
+}) => {
+  const { businessId, id } = route.params || {};
 
-  // const { user } = useAuth();  // Use the user hook to get the user's details
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [duration, setDuration] = useState("");
-  const [mediaUrl, setMediaUrl] = useState(""); // State for media URL
-  const [serviceType, setServiceType] = useState("PUBLIC");
-  const [reordering, setReordering] = useState("CUSTOM");
-  const isFormValid = name !== "" && price !== "" && duration !== "";
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    duration: "",
+    service_type: "PUBLIC",
+    processing_time: "",
+    category_id: "",
+  });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const serviceTypes = [
+    { label: "Public", value: "PUBLIC" },
+    { label: "Private", value: "PRIVATE" },
+  ];
+
+  const processingTimeOptions = [
+    "15 minutes",
+    "30 minutes",
+    "1 hour",
+    "2 hours",
+    "Same day",
+    "Next day",
+    "2-3 business days",
+    "Custom"
+  ];
+
+  const updateField = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ""
+      }));
+    }
+  };
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setCategories(data);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch categories');
+    }
+  };
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Service name is required";
+    }
+    if (!formData.category_id) {
+      newErrors.category = "Category is required";
+    }
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    }
+
+    if (!formData.price.trim()) {
+      newErrors.price = "Price is required";
+    } else if (isNaN(parseFloat(formData.price))) {
+      newErrors.price = "Price must be a valid number";
+    }
+
+    if (!formData.duration.trim()) {
+      newErrors.duration = "Duration is required";
+    } else if (isNaN(parseInt(formData.duration))) {
+      newErrors.duration = "Duration must be a valid number";
+    }
+
+    if (!formData.processing_time) {
+      newErrors.processing_time = "Processing time is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const addNewService = async () => {
-    if (!name || !price || !duration) {
-      Alert.alert("All fields are required!");
+    if (!validateForm()) {
       return;
     }
-    const { data, error } = await supabase
-      .from("services")
-      .insert({
-        name,
-        description,
-        price: parseFloat(price),
-        duration: parseInt(duration, 10),
-        media_url: mediaUrl, // Include media URL in the data
-        reordering,
-        service_type: serviceType,
-        business_id: businessId,
-      });
 
-    if (error) {
-      Alert.alert("Error adding service:", error.message);
-    } else {
-      Alert.alert("Service added successfully!"); 
-      navigation.navigate('AddService');  // Go back to the AddService screen
+    try {
+      const { data, error } = await supabase
+        .from("services")
+        .insert({
+          name: formData.name,
+          description: formData.description,
+          price: parseFloat(formData.price),
+          duration: parseInt(formData.duration),
+          service_type: formData.service_type,
+          processing_time: formData.processing_time,
+          business_id: businessId,
+        })
+        .select("*")
+        .single();
+
+      if (error) throw error;
+
+      navigation.navigate('UploadMedia', { 
+        businessId, 
+        id,
+        serviceId: data.id
+      });
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
     }
   };
-
-  
-  const handleNext = () => {
-    // Define what should happen when the "Next" button is pressed
- if (isFormValid) {
-  navigation.navigate('UploadMedia', { businessId, id });
- } else {
-  Alert.alert("Please fill all required fields.");
- }
-    // You can add navigation or other logic here
-  };
-  
+    // Add category selection handler
+    const handleCategorySelect = (categoryId: string) => {
+      updateField("category_id", categoryId);
+      setSelectedCategory(categoryId);
+    };
 
   return (
     <View style={styles.container}>
-    
-    <Header
+      <Header
         title="Create Service"
         subtitle="Basic Information"
         onBack={() => navigation.goBack()}
       />
-      <View style={styles.contentContainer}>
-        <TextInput
-          style={styles.fullScreenInput}
-          placeholder="Service Name"
-          value={name}
-          onChangeText={setName}
-        />
-        
-        <TextInput
-          style={styles.fullScreenInput}
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
-          multiline={true}
-          numberOfLines={4}
-        />
-        <TextInput
-          style={styles.fullScreenInput}
-          placeholder="Price"
-          keyboardType="numeric"
-          value={price}
-          onChangeText={setPrice}
-        />
-        <TextInput
-          style={styles.fullScreenInput}
-          placeholder="Duration (minutes)"
-          keyboardType="numeric"
-          value={duration}
-          onChangeText={setDuration}
-        />
-      </View>
+
+      <ScrollView style={styles.contentContainer}>
+        {/* Service Name */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Service Name *</Text>
+          <TextInput
+            style={errors.name ? styles.inputError : styles.input}
+            placeholder="Enter service name"
+            value={formData.name}
+            onChangeText={(value) => updateField("name", value)}
+          />
+          {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+        </View>
+
+        {/* Description */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Description *</Text>
+          <TextInput
+            style={errors.description ? styles.inputError : styles.input}
+            placeholder="Enter service description"
+            value={formData.description}
+            onChangeText={(value) => updateField("description", value)}
+            multiline
+            numberOfLines={4}
+          />
+          {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
+        </View>
+
+        {/* Price */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Price *</Text>
+          <TextInput
+            style={errors.price ? styles.inputError : styles.input}
+            placeholder="Enter price"
+            value={formData.price}
+            onChangeText={(value) => updateField("price", value)}
+            keyboardType="decimal-pad"
+          />
+          {errors.price && <Text style={styles.errorText}>{errors.price}</Text>}
+        </View>
+
+        {/* Duration */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Duration (minutes) *</Text>
+          <TextInput
+            style={errors.duration ? styles.inputError : styles.input}
+            placeholder="Enter duration in minutes"
+            value={formData.duration}
+            onChangeText={(value) => updateField("duration", value)}
+            keyboardType="number-pad"
+          />
+          {errors.duration && <Text style={styles.errorText}>{errors.duration}</Text>}
+        </View>
+
+        {/* Service Type */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Service Type *</Text>
+          <View style={styles.typeContainer}>
+            {serviceTypes.map((type) => (
+              <TouchableOpacity
+                key={type.value}
+                style={[
+                  styles.typeButton,
+                  formData.service_type === type.value && styles.typeButtonActive
+                ]}
+                onPress={() => updateField("service_type", type.value)}
+              >
+                <Text style={[
+                  styles.typeButtonText,
+                  formData.service_type === type.value && styles.typeButtonTextActive
+                ]}>
+                  {type.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Processing Time */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>Processing Time *</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.processingTimeScroll}
+          >
+            {processingTimeOptions.map((time) => (
+              <TouchableOpacity
+                key={time}
+                style={[
+                  styles.timeButton,
+                  formData.processing_time === time && styles.timeButtonActive
+                ]}
+                onPress={() => updateField("processing_time", time)}
+              >
+                <Text style={[
+                  styles.timeButtonText,
+                  formData.processing_time === time && styles.timeButtonTextActive
+                ]}>
+                  {time}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {errors.processing_time && (
+            <Text style={styles.errorText}>{errors.processing_time}</Text>
+          )}
+            {/* Categories */}
+  <View style={styles.inputGroup}>
+    <Text style={styles.label}>Service Category *</Text>
+    <View style={styles.categoryContainer}>
+      {categories.map((category) => (
+        <TouchableOpacity
+          key={category.id}
+          style={[
+            styles.categoryChip,
+            formData.category_id === category.id && styles.categoryChipActive
+          ]}
+          onPress={() => handleCategorySelect(category.id)}
+        >
+          <Text style={[
+            styles.categoryChipText,
+            formData.category_id === category.id && styles.categoryChipTextActive
+          ]}>
+            {category.name}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+    {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
+  </View>
+        </View>
+      </ScrollView>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[styles.nextButton, !isFormValid && styles.nextButtonDisabled]}
-          onPress={handleNext}
-          disabled={!isFormValid}
+          style={styles.nextButton}
+          onPress={addNewService}
         >
           <Text style={styles.nextButtonText}>Next</Text>
         </TouchableOpacity>
@@ -109,56 +301,89 @@ const CreateServiceScreen: React.FC<{ route: any; navigation: any }> = ({ route,
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
   },
-  headerContainer: {
-    backgroundColor: "#004D40",
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
   contentContainer: {
     flex: 1,
-    paddingHorizontal: 20, // Same padding as button container
+    padding: 20,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#FFFFFF",
-    marginBottom: 5,
+  inputGroup: {
+    marginBottom: 20,
   },
-  headerSubtitle: {
-    fontSize: 18,
-    color: "#FFFFFF",
-    opacity: 0.9,
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 8,
   },
-  backButton: {
-    marginBottom: 10,
-  },
-  fullScreenInput: {
-    width: '100%',
+  input: {
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#BDBDBD",
-    padding: 15,
-    marginBottom: 20,
     borderRadius: 10,
-    backgroundColor: "#FFFFFF",
+    padding: 15,
     fontSize: 16,
+  },
+  inputError: {
+    borderColor: "#D32F2F",
+  },
+  errorText: {
+    color: "#D32F2F",
+    fontSize: 12,
+    marginTop: 4,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  typeContainer: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  typeButton: {
+    flex: 1,
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#004D40",
+    alignItems: 'center',
+  },
+  typeButtonActive: {
+    backgroundColor: "#004D40",
+  },
+  typeButtonText: {
+    color: "#004D40",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  typeButtonTextActive: {
+    color: "#FFFFFF",
+  },
+  processingTimeScroll: {
+    flexGrow: 0,
+    marginBottom: 10,
+  },
+  timeButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#004D40",
+    marginRight: 10,
+  },
+  timeButtonActive: {
+    backgroundColor: "#004D40",
+  },
+  timeButtonText: {
+    color: "#004D40",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  timeButtonTextActive: {
+    color: "#FFFFFF",
   },
   buttonContainer: {
     padding: 20,
@@ -175,9 +400,59 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  nextButtonDisabled: {
-    backgroundColor: "#B0BEC5",
+  categoryScroll: {
+    flexGrow: 0,
+    marginBottom: 10,
+  },
+  categoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "#004D40",
+    marginRight: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  categoryButtonActive: {
+    backgroundColor: "#004D40",
+    borderColor: "#004D40",
+  },
+  categoryButtonText: {
+    color: "#004D40",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  categoryButtonTextActive: {
+    color: "#FFFFFF",
+  },
+  categoryContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 5,
+  },
+  categoryChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#004D40",
+    backgroundColor: '#FFFFFF',
+  },
+  categoryChipActive: {
+    backgroundColor: "#004D40",
+    borderColor: "#004D40",
+  },
+  categoryChipText: {
+    color: "#004D40",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  categoryChipTextActive: {
+    color: "#FFFFFF",
   },
 });
 export default CreateServiceScreen;
-
