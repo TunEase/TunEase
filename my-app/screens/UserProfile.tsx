@@ -16,7 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { fetchUserProfile, updateUserProfile, deactivateAccount } from '../services/userProfileService';
 import { useAuth } from '../hooks/useAuth';
 import * as ImagePicker from 'expo-image-picker';
-
+import { useSupabaseUpload } from '../hooks/uploadFile';
 interface UserProfile {
   id: string;
   name: string;
@@ -41,7 +41,7 @@ const UserProfile: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
+  const { handleProfilePicture } = useSupabaseUpload('application');
   const userId = user?.id;
 
   useEffect(() => {
@@ -87,6 +87,7 @@ const UserProfile: React.FC = () => {
     }
     setIsModalVisible(false);
   };
+  
 
   const handleCameraPicker = async () => {
     const result = await ImagePicker.launchCameraAsync({
@@ -116,20 +117,29 @@ const UserProfile: React.FC = () => {
       return;
     }
 
-    const updatedProfile = {
-      name,
-      email,
-      phone: phone || undefined,
-      avatarUrl: newImage !== undefined ? newImage : image,
-    };
-
     try {
+      let avatarUrl = image;
+      if (newImage !== undefined) {
+        const result = await handleProfilePicture(userId, newImage);
+        if (result.error) {
+          throw new Error(result.error);
+        }
+        
+        setImage(result.url || result.path || null);
+      }
+
+      const updatedProfile = {
+        name,
+        email,
+        phone: phone || undefined,
+        // avatarUrl,
+      };
+
       const success = await updateUserProfile(userId, updatedProfile as Partial<UserProfile>);
       if (success) {
+        setImage(avatarUrl);
         Alert.alert('Profile updated successfully!');
         setProfile(prevProfile => ({ ...prevProfile, ...updatedProfile } as UserProfile));
-      } else {
-        Alert.alert('Failed to update profile.');
       }
     } catch (error) {
       console.error('Error updating profile:', error);

@@ -18,6 +18,11 @@ type UploadFileResponse = {
   url?: string;
 };
 
+type ProfilePicResponse = {
+  url?: string;
+  error?: string;
+  path?: string;
+};
 export function useSupabaseUpload(bucketName: string) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -128,5 +133,34 @@ export function useSupabaseUpload(bucketName: string) {
     }
   };
 
-  return { uploading, error, pickFile, uploadFile, fileUrls, uploadMultipleFiles };
+  const handleProfilePicture = async (
+    userId: string,
+    imageUri?: string | null
+  ): Promise<ProfilePicResponse> => {
+    if (!imageUri) {
+      // Handle image removal
+      return { url: undefined };
+    }
+
+    try {
+      // Upload new image
+      const uploadResult = await uploadFile(
+        imageUri,
+        'image/jpeg',
+        `profiles/${userId}`
+      );
+
+      if (uploadResult.error) {
+        return { error: uploadResult.error };
+      }
+
+      return { url: uploadResult.url };
+    } catch (error) {
+      console.error('Profile picture update error:', error);
+      return { error: 'Failed to update profile picture' };
+    }
+  };
+
+
+  return { uploading, error, pickFile, uploadFile, fileUrls, uploadMultipleFiles, handleProfilePicture };
 }

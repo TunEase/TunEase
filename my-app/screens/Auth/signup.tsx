@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ActivityIndicator
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -48,43 +49,79 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
         setError("Please select a profile image");
         return;
       }
-
+      if (!name.trim()) {
+        setError("Name is required");
+        return;
+      }
+  
+      if (!phone.trim()) {
+        setError("Phone is required");
+        return;
+      }
+  
     try {
-      const { data: authData, error: signupError } = await supabase.auth.signUp({ email, password });
+      setLoading(true);
+      const { data: authData, error: signupError } = await supabase.auth.signUp({ email, password,
+        options: {
+          data: {
+            name: name.trim(),
+            phone: phone.trim(),
+            role: 'CLIENT',
+          },
+        },
+       });
 
       if (signupError) throw signupError;
 
       const userId = authData.user?.id;
       if (!userId) throw new Error("User ID not found after signup");
 
-        const { error: profileError } = await supabase
-          .from("user_profile")
-          .insert({
-            id: userId,
-            name,
-            email,
-            phone,
-            // avatar_url: image,
-          });
-  
-        if (profileError) throw profileError;
+      const profileData = {
+        id: userId,
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        role: 'CLIENT',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      console.log("Inserting profile data:", profileData);
+      const { data: profile, error: profileError } = await supabase
+      .from("user_profile")
+      .insert(profileData)
+      .select()
+      .single();
+
+    if (profileError) {
+      console.error("Profile Error:", profileError);
+      throw profileError;
+    }
+
+    console.log("Created profile:", profile);
         
-        const { data: mediaRecord, error: mediaError } = await insertMediaRecord(
-          image,
-          'image/jpeg',
-          { user_profile_id: userId }
-        );
+        if (image) {
+          const { data: mediaRecord, error: mediaError } = await insertMediaRecord(
+            image,
+            'image/jpeg',
+            { user_profile_id: userId }
+          );
   
-        if (mediaError) {
-          setError(mediaError);
-          return;
+          if (mediaError) {
+            console.error("Media Error:", mediaError);
+            setError(mediaError);
+            return;
+          }
         }
+  
         console.log("User signed up successfully");
         navigation.navigate("Login");
-      
-    } catch (error) {
-      setError(error.message);
-    }
+        
+      } catch (error) {
+        console.error("Signup Error:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
   };
 
   const handleImagePick = async () => {
@@ -107,23 +144,27 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
 
   return (
     <ImageBackground source={require("../../assets/background.jpg")} style={styles.background}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.container}>
-        <TouchableOpacity onPress={handleImagePick}>
+    <View style={styles.container}>
+      <TouchableOpacity onPress={handleImagePick}>
+        <View style={styles.imageContainer}>
           <Image
             source={image ? { uri: image } : require("../../assets/camera2.jpg")}
-            style={uploading ? [styles.image, styles.imageLoading] : styles.image}
+            style={styles.image}
           />
-        </TouchableOpacity>
-        <Text style={styles.title}>Signup</Text>
-        <Text style={styles.subtitle}>Please create your account to continue with us.</Text>
-        {error && <Text style={styles.errorText}>{error}</Text>}
+          {uploading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#00796B" />
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+
+      <Text style={styles.title}>Signup</Text>
+      <Text style={styles.subtitle}>Please create your account to continue with us.</Text>
+      {error && <Text style={styles.errorText}>{error}</Text>}
 
         <TextInput placeholder="Username" style={styles.input} value={name} onChangeText={setName} placeholderTextColor="#888" />
+        <TextInput placeholder="Phone" style={styles.input} value={phone} onChangeText={setPhone} placeholderTextColor="#888" />
         <TextInput placeholder="Email" style={styles.input} value={email} onChangeText={setEmail} placeholderTextColor="#888" />
         <TextInput placeholder="Password" secureTextEntry style={styles.input} value={password} onChangeText={setPassword} placeholderTextColor="#888" />
         <TextInput placeholder="Confirm Password" secureTextEntry style={styles.input} value={confirmPassword} onChangeText={setConfirmPassword} placeholderTextColor="#888" />
@@ -152,6 +193,22 @@ const styles = StyleSheet.create({
   linkText: { marginTop: 15, color: "#fff", textAlign: "center" },
   errorText: { color: "red", textAlign: "center", marginBottom: 10 },
   imageLoading: { opacity: 0.7 },
+  imageContainer: {
+    position: 'relative',
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 60,
+  },
 });
 
 export default Signup;

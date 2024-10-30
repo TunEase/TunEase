@@ -45,6 +45,7 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
   return true;
 };
 
+
 // Update password
 export const updatePassword = async (userId: string, newPassword: string): Promise<boolean> => {
   const { error } = await supabase.auth.updateUser({

@@ -8,6 +8,11 @@ export type Appointment = {
     start_time: string;      // Start time of the appointment (e.g., '10:00:00')
     end_time: string;  
     notes?: string;      // End time of the appointment (optional)
+    service?: {
+      duration: number;
+      start_time: string;
+      end_time: string;
+    };
   status: "pending" | "confirmed" | "canceled"; // Status of the appointment
   created_at: string; // Timestamp when the appointment was created
   updated_at?: string; // Timestamp when the appointment was last updated (optional)

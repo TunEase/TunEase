@@ -48,11 +48,7 @@ const Login: React.FC<LoginProps> = ({ navigation }) => {
       source={require("../../assets/background.jpg")}
       style={styles.background}
     >
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
+     
       <View style={styles.container}>
         <Text style={styles.title}>Login</Text>
         <Text style={styles.subtitle}>Enter your credentials to connect</Text>
