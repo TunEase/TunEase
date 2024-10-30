@@ -16,9 +16,9 @@ const News = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+
   const renderNewsItem = ({ item }: { item: NewsItem }) => (
   <View style={styles.newsCard}>
-
     <Image source={{ uri: item.image_url }} style={styles.newsImage} />
     <View style={styles.textContainer}>
       <Text style={styles.discountText}>25% off</Text>
