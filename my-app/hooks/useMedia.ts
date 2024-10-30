@@ -22,36 +22,41 @@ type MediaRecord = {
 };
 
 export function useMedia() {
+  const [Mediaerror, setMediaError] = useState<string | null>(null);
+  const [MediaUploading, setMediaUploading] = useState(false);
   const insertMediaRecord = async (
     url: string,
     mimeType: string,
     options: MediaOptions
-  ): Promise<{ data?: MediaRecord; error?: string }> => {
+  ) => {
+    setMediaError(null);
+    setMediaUploading(true);
     try {
       const { data, error } = await supabase
-        .from('media')
+        .from("media")
         .insert({
           media_url: url,
-          media_type: mimeType.startsWith('image/') ? 'image' : 'file',
+          media_type: mimeType,
           user_profile_id: options.user_profile_id,
           business_id: options.business_id,
           service_id: options.service_id,
           complaint_id: options.complaint_id,
           review_id: options.review_id,
-          fee_id: options.fee_id
+          fee_id: options.fee_id,
         })
-        .select('*')
+        .select("*")
         .single();
-
+      setMediaUploading(false);
       if (error) {
-        return { error: error.message };
+        setMediaError(error.message);
       }
 
       return { data };
     } catch (error) {
-      return { error: 'Failed to insert media record' };
+      setMediaUploading(false);
+      setMediaError("Failed to insert media record");
     }
   };
 
-  return { insertMediaRecord };
+  return { insertMediaRecord, Mediaerror, MediaUploading };
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 
 type UploadOptions = {
   mediaType?: ImagePicker.MediaTypeOptions;
@@ -47,6 +48,7 @@ export function useSupabaseUpload(bucketName: string) {
         });
 
       if (uploadError) {
+        console.log("Upload error:", uploadError);
         setError(uploadError.message);
         return { error: uploadError.message };
       }
@@ -56,9 +58,9 @@ export function useSupabaseUpload(bucketName: string) {
         .from(bucketName)
         .getPublicUrl(data.path);
 
-      return { 
+      return {
         path: data.path,
-        url: publicUrlData.publicUrl 
+        url: publicUrlData.publicUrl,
       };
     } catch (uploadError) {
       console.error("Upload error:", uploadError);
@@ -70,58 +72,66 @@ export function useSupabaseUpload(bucketName: string) {
   };
 
   const pickFile = async (options: UploadOptions = {}) => {
-    const { 
-      mediaType = ImagePicker.MediaTypeOptions.Images, 
-      folder = "uploads", 
-      width, 
-      height 
+    const {
+      mediaType = ImagePicker.MediaTypeOptions.Images,
+      folder = "uploads",
+      width,
+      height,
     } = options;
-  
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: mediaType,
       allowsEditing: true,
       aspect: width && height ? [width, height] : undefined,
       quality: 1,
     });
-  
+
     if (result.canceled) return;
-  
+
     const fileUri = result.assets[0].uri;
     const mimeType = result.assets[0].type || "application/octet-stream";
     const uploadResult = await uploadFile(fileUri, mimeType, folder);
-  
+
     return { ...uploadResult, uri: fileUri };
   };
-
 
   const uploadMultipleFiles = async (options: UploadOptions = {}) => {
     try {
       setUploading(true);
       setError(null);
       setFileUrls([]); // Reset file URLs
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
 
+      if (permissionResult.granted === false) {
+        alert("Permission to access media library is required!");
+        return;
+      }
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: options.mediaTypes || ImagePicker.MediaTypeOptions.All, // Default to all media types
-        allowsEditing: options.allowsEditing || false, // Default to no editing
-        quality: options.quality || 1, // Default quality
+        mediaTypes: options.mediaTypes || ImagePicker.MediaTypeOptions.All, // Default to all media type
+        quality: options.quality || 1, // Default quality,
+        allowsMultipleSelection: true,
       });
 
-      if (result.canceled && !result.assets || result.assets.length === 0) {
+      if ((result.canceled && !result.assets) || result.assets.length === 0) {
         console.log("User cancelled file picker.");
         return;
       }
 
-      const uploadPromises = result.assets.map(
-        (asset) =>
-          uploadFile(
-            asset.uri,
-            asset.type || "application/octet-stream",
-            "uploads"
-          ) // Specify the folder
-      ); // Upload each file
-      const urls = await Promise.all(uploadPromises); // Wait for all uploads to complete
+      const uploadPromises = result.assets.map(async (asset) => {
+        console.log(`Uploading file: ${asset.uri}`);
+        const response = await uploadFile(asset.uri, "image", "uploads");
 
-      setFileUrls(urls.filter((url) => url !== null) as string[]); // Filter out null URLs
+        if (response.error) {
+          console.error(`Error uploading file ${asset.uri}: ${response.error}`);
+        }
+        return response.url;
+      });
+
+      const urls = await Promise.all(uploadPromises);
+      return {
+        urls: urls,
+      }; // Filter out null URLs
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -132,6 +142,20 @@ export function useSupabaseUpload(bucketName: string) {
       setUploading(false);
     }
   };
+  const uploadPdfFiles = async () => {
+    setUploading(true);
+    setError(null);
+    setFileUrls([]); // Reset file URLs
+    try {
+      const result: any = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf", // Specify PDF type
+        copyToCacheDirectory: true, // Optional: copy to cache directory
+        multiple: true,
+      });
+      if ((result.canceled && !result.assets) || result.assets.length === 0) {
+        console.log("User cancelled file picker.");
+        return;
+      }
 
   const handleProfilePicture = async (
     userId: string,
@@ -163,4 +187,41 @@ export function useSupabaseUpload(bucketName: string) {
 
 
   return { uploading, error, pickFile, uploadFile, fileUrls, uploadMultipleFiles, handleProfilePicture };
+      const uploadPromises = result.assets.map(async (asset) => {
+        console.log(`Uploading file: ${asset.uri}`);
+        const response = await uploadFile(
+          asset.uri,
+          asset.type || "application/octet-stream",
+          "uploads"
+        );
+        if (response.error) {
+          console.error(`Error uploading file ${asset.uri}: ${response.error}`);
+        }
+        return response.url;
+      });
+
+      const urls = await Promise.all(uploadPromises);
+      console.log("urls", urls);
+      return {
+        urls: urls,
+      }; // Filter out null URLs
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred.");
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+  return {
+    uploading,
+    error,
+    pickFile,
+    uploadFile,
+    fileUrls,
+    uploadMultipleFiles,
+    uploadPdfFiles,
+  };
 }

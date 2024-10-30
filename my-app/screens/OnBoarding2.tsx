@@ -168,6 +168,8 @@ const OnBoardingScreen3: React.FC = () => {
   const [description, setDescription] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [latitude, setLatitude] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Get the business data from the previous screen
@@ -201,7 +203,9 @@ const OnBoardingScreen3: React.FC = () => {
             business_type: businessType,
             manager_id: user?.id,
             phone: phone.trim(),
-            email: email.trim()
+            email: email.trim(),
+            longitude: parseFloat(longitude) || null,
+            latitude: parseFloat(latitude) || null
           }
         ])
         .select()
@@ -251,7 +255,27 @@ const OnBoardingScreen3: React.FC = () => {
             textAlignVertical="top"
           />
         </View>
-
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Business Location (Optional)</Text>
+          <View style={styles.locationContainer}>
+            <TextInput
+              style={[styles.input, styles.locationInput]}
+              placeholder="Longitude"
+              placeholderTextColor="rgba(255,255,255,0.6)"
+              value={longitude}
+              onChangeText={setLongitude}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={[styles.input, styles.locationInput]}
+              placeholder="Latitude"
+              placeholderTextColor="rgba(255,255,255,0.6)"
+              value={latitude}
+              onChangeText={setLatitude}
+              keyboardType="numeric"
+            />
+          </View>
+        </View>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Phone Number</Text>
           <View style={styles.phoneInputContainer}>
@@ -628,6 +652,14 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#fff',
     padding: 15,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  locationInput: {
+    flex: 1,
   },
 });
 

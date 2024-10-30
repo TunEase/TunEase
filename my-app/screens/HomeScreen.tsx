@@ -17,7 +17,6 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
 import News from "./News";
-      
 
 interface HomeProps {
   navigation: any;
@@ -30,8 +29,8 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [recommendedServices, setRecommendedServices] = useState<any[]>([]);
   const [popularServices, setPopularServices] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
-const [loading, setLoading] = useState(false);
-const [Error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [Error, setError] = useState<string | null>(null);
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -51,7 +50,7 @@ const [Error, setError] = useState<string | null>(null);
   useEffect(() => {
     fetchBusinesses();
     fetchPopularServices();
-    // fetchNews()
+    fetchNews()
   }, []);
 
   const fetchPopularServices = async () => {
@@ -90,7 +89,8 @@ const [Error, setError] = useState<string | null>(null);
       const { data, error } = await supabase.from("business").select(`
         *,
         media:media(business_id, media_url),
-        services:services(*)
+        services:services(*),
+        reviews:reviews(rating) 
       `);
       if (error) throw error;
       console.log("Fetched Businesses:", data); // Debugging log
@@ -98,37 +98,115 @@ const [Error, setError] = useState<string | null>(null);
     } catch (error) {
       console.error("Error fetching businesses:", error);
     }
-  }
- 
-    // const fetchNews = async () => {
-    //   try {
-    //     const { data, error } = await supabase
-    //       .from('news')
-    //       .select('*')
-    //       .order('published_at', { ascending: false });
+  };
 
-    //     // if (error) setError(error.message);
-    //     setNews(data || []);
-    //   } catch (error) {
-    //     console.error("Error fetching news:", error.message);
-    //   } finally {
-    //     console.log("Loading news completed.");
-    //   }
-    // };
-
-    const renderNewsItem = ({ item }) => (
-      <View style={styles.newsCard}>
-        <Image source={{ uri: item.image_url }} style={styles.newsImage} />
-        <View style={styles.textContainer}>
-          <Text style={styles.discountText}>25% off</Text>
-          <Text style={styles.withCodeText}>WITH CODE</Text>
-          <Text style={styles.shopNowButton}>Shop Now</Text>
-        </View>
-        <Icon name="add-shopping-cart" size={24} color="#007AFF" style={styles.cartIcon} />
-      </View>
-    );
-    
+  const fetchNews = async () => {
+    try {
+      const { data: newsData, error: newsError } = await supabase
+        .from('news')
+        .select(`
+          *,
+          business:business_id(
+            id,
+            name
+            
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(10); // Limite optionnelle pour la performance
   
+      if (newsError) throw newsError;
+  
+      if (newsData) {
+        // Deuxième requête pour obtenir les médias
+        const { data: mediaData, error: mediaError } = await supabase
+          .from('media')
+          .select('*')
+          .in('news_id', newsData.map(news => news.id));
+  
+        if (mediaError) throw mediaError;
+  
+        // Troisième requête pour obtenir les tags
+        const { data: tagData, error: tagError } = await supabase
+          .from('news_tag')
+          .select('*')
+          .in('news_id', newsData.map(news => news.id));
+  
+        if (tagError) throw tagError;
+  
+        // Combiner toutes les données
+        const newsWithMediaAndTags = newsData.map(news => ({
+          ...news,
+          media_url: mediaData?.find(media => media.news_id === news.id)?.media_url,
+          tags: tagData?.filter(tag => tag.news_id === news.id) || []
+        }));
+  
+        setNews(newsWithMediaAndTags);
+        console.log("News fetched successfully:", newsWithMediaAndTags);
+      }
+    } catch (error) {
+      console.error("Error fetching news:", error.message);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderNewsCards = () => (
+    <View style={styles.newsSection}>
+      <View style={styles.sectionHeaderContainer}>
+        <Text style={styles.sectionHeader}>Latest News</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("AllNews")}>
+          <Text style={styles.viewAllText}>View All</Text>
+        </TouchableOpacity>
+      </View>
+  
+      <View style={styles.newsCard}>
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          style={styles.newsScrollView}
+        >
+          {news.map((item, index) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                styles.newsItem,
+                index < news.length - 1 && styles.newsItemBorder
+              ]}
+              onPress={() => navigation.navigate("NewsDetail", { newsId: item.id })}
+            >
+              <Image
+                source={{ 
+                  uri: item.media_url || 'https://via.placeholder.com/80'
+                }}
+                style={styles.newsItemImage}
+              />
+              
+              <View style={styles.newsItemContent}>
+                <View>
+                  <Text style={styles.newsItemTitle} numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.newsItemDescription} numberOfLines={2}>
+                    {item.content}
+                  </Text>
+                </View>
+  
+                <View style={styles.newsItemFooter}>
+                  <Text style={styles.businessName}>
+                    {item.business?.name || 'Business Name'}
+                  </Text>
+                  <Text style={styles.newsDate}>
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    </View>
+  );
   const renderHeader = () => (
     <View style={styles.header}>
       <Image
@@ -136,7 +214,8 @@ const [Error, setError] = useState<string | null>(null);
         style={styles.headerImage}
       />
       <View style={styles.overlay}>
-        <Text style={styles.headerTitle}>TunEase</Text>
+        <Text style={styles.headerTitle}>ASAP</Text>
+        <Text style={styles.headerSubtitle}>As Soon As Possible Services</Text>
         <View style={styles.searchContainer}>
           <Icon name="search" size={24} color="#888" />
           <TextInput
@@ -146,31 +225,29 @@ const [Error, setError] = useState<string | null>(null);
             onChangeText={setSearchQuery}
           />
         </View>
-        {Error && <Text style={styles.errorText}>{Error}</Text>}
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : (
-        <FlatList
-          data={news}
-          renderItem={renderNewsItem}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          pagingEnabled
-        />
-      )}
-    </View>
-
-        <TouchableOpacity
-          style={styles.profileIcon}
-          onPress={() => navigation.navigate("BusinessProfileApp")}
-        >
-          <Icon name="person" size={30} color="#FFF" />
-        </TouchableOpacity>
+        {/* {Error && <Text style={styles.errorText}>{Error}</Text>}
+        {loading ? (
+          <Text>Loading...</Text>
+        ) : (
+          <FlatList
+            data={news}
+            // renderItem={renderNewsItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+          />
+        )} */}
       </View>
-    
+
+      <TouchableOpacity
+        style={styles.profileIcon}
+        onPress={() => navigation.navigate("BusinessProfileApp")}
+      >
+        <Icon name="person" size={30} color="#FFF" />
+      </TouchableOpacity>
+    </View>
   );
-  
 
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
@@ -195,6 +272,7 @@ const [Error, setError] = useState<string | null>(null);
             { useNativeDriver: true }
           )}
           renderItem={({ item, index }) => {
+            // console.log("item  ☢️☢️☢️☢️☢️☢️", item);
             const inputRange = [
               (index - 1) * 200,
               index * 200,
@@ -226,7 +304,7 @@ const [Error, setError] = useState<string | null>(null);
                   <Text style={styles.recommendedTitle}>{item.name}</Text>
                   <Text
                     style={styles.recommendedReview}
-                  >{`⭐ ${item.rating}`}</Text>
+                  >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
                 </TouchableOpacity>
               </Animated.View>
             );
@@ -275,6 +353,7 @@ const [Error, setError] = useState<string | null>(null);
     </View>
   );
 
+
   const renderFooterButtons = () => (
     <View style={styles.buttonContainer}>
       <TouchableOpacity
@@ -301,6 +380,7 @@ const [Error, setError] = useState<string | null>(null);
             {renderFooterButtons()}
             {renderTopBusinesses()}
             {renderPopularServices()}
+            {renderNewsCards()}
           </>
         )}
         data={[]}
@@ -311,8 +391,8 @@ const [Error, setError] = useState<string | null>(null);
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
-
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -333,8 +413,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "center", // Center vertically
+    alignItems: "center", // Center horizontally
     backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
   headerTitle: {
@@ -351,6 +431,40 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 50,
   },
+  newsItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  newsItemImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  newsItemContent: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  newsItemTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  newsItemDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 5,
+  },
+  newsItemFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  newsItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#DDD",
+    paddingBottom: 10,
+  },
+  
   searchContainer: {
     flexDirection: "row",
     backgroundColor: "#FFF",
@@ -359,6 +473,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "90%",
     marginTop: 10,
+    // Adjust the margin or padding to position it correctly
   },
   searchInput: {
     marginLeft: 10,
@@ -529,7 +644,75 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginLeft: 10,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    color: "#FFF",
+  },
+  newsSection: {
+    marginHorizontal: 10,
+  },
+  newsCardImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 10,
+  },
+  newsCardContent: {
+    padding: 10,
+  },
+  newsCardTags: {
+    flexDirection: "row",
+    marginBottom: 5,
   },  
+  tagContainer: {
+    backgroundColor: '#00796B',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  tagText: {
+    color: "#FFF",
+    fontSize: 12,
+  },
+  newsCardTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+    color: "#FFF",
+  },
+  newsCardDescription: {
+    fontSize: 14,
+    color: "#FFF",
+  },
+  newsCardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  newsDate: {
+    fontSize: 12,
+    color: "#FFF",
+  },
+  businessName: {
+    fontSize: 14,
+    color: "#FFF",
+  },
+  readMoreButton: {
+    backgroundColor: "#00796B",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+  readMoreText: {
+    color: "#FFF",
+    fontSize: 16,
+  },
+  newsScrollView: {
+    marginHorizontal: 10,
+  },
+
 });
+
 
 export default Home;

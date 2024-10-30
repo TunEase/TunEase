@@ -12,6 +12,7 @@ const AppNavigator = () => {
         component={Home}
         options={{ headerShown: false }}
       />
+  
     </Stack.Navigator>
   );
 };
