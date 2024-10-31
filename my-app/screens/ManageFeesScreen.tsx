@@ -19,7 +19,10 @@ import { Linking } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { useSupabaseUpload } from "../hooks/uploadFile";
 import { useMedia } from "../hooks/useMedia";
+import Header from "../components/Form/header";
+import { useNavigation } from "@react-navigation/native";
 const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
+  const navigation = useNavigation();
   const { insertMediaRecord, Mediaerror, MediaUploading } = useMedia();
   const { uploadMultipleFiles, fileUrls, uploadPdfFiles, error, uploading } =
     useSupabaseUpload("application");
@@ -137,7 +140,11 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
   };
   return (
     <View style={styles.container}>
-      <Text style={styles.serviceName}>{serviceName}</Text>
+      <Header
+        title={serviceName}
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
+      />
       <FlatList
         data={fees}
         keyExtractor={(item) => item.id}

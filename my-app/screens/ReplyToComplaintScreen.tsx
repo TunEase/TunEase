@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
 import * as Animatable from "react-native-animatable";
-
+import Header from "../components/Form/header";
 const { width, height } = Dimensions.get("window");
 
 const ReplyToComplaintScreen: React.FC<{ route: any; navigation: any }> = ({
@@ -47,52 +47,52 @@ const ReplyToComplaintScreen: React.FC<{ route: any; navigation: any }> = ({
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Reply to Complaint</Text>
-      <View style={styles.complaintDetails}>
-        <Text style={styles.complaintText}>Description:</Text>
-        <Text style={styles.complaintDescription}>{description}</Text>
-        <Text style={styles.complaintDate}>
-          Created At: {new Date(created_at).toLocaleString()}
-        </Text>
-      </View>
-      <TextInput
-        style={styles.input}
-        placeholder="Type your reply here..."
-        value={reply}
-        onChangeText={setReply}
-        multiline
+    <>
+      <Header
+        title="Reply to Complaint"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
       />
-      <TouchableOpacity style={styles.button} onPress={handleReplySubmit}>
-        <Text style={styles.buttonText}>Submit Reply</Text>
-      </TouchableOpacity>
-      {animationVisible && (
-        <Animatable.View
-          animation="bounceIn"
-          duration={1500}
-          style={styles.animation}
-        >
-          <Text style={styles.animationText}>Resolved!</Text>
-        </Animatable.View>
-      )}
-    </View>
+      <View style={styles.container}>
+        <View style={styles.complaintDetails}>
+          <Text style={styles.complaintText}>Description:</Text>
+          <Text style={styles.complaintDescription}>{description}</Text>
+          <Text style={styles.complaintDate}>
+            Created At: {new Date(created_at).toLocaleString()}
+          </Text>
+        </View>
+        <TextInput
+          style={styles.input}
+          placeholder="Type your reply here..."
+          value={reply}
+          onChangeText={setReply}
+          multiline
+        />
+        <TouchableOpacity style={styles.button} onPress={handleReplySubmit}>
+          <Text style={styles.buttonText}>Submit Reply</Text>
+        </TouchableOpacity>
+        {animationVisible && (
+          <Animatable.View
+            animation="bounceIn"
+            duration={1500}
+            style={styles.animation}
+          >
+            <Text style={styles.animationText}>Resolved!</Text>
+          </Animatable.View>
+        )}
+      </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingTop: 40, // Add padding to accommodate the header
+    paddingHorizontal: 20,
     backgroundColor: "#E8F5E9",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  header: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#2E7D32",
-    marginBottom: 20,
-    textAlign: "center",
+    justifyContent: "flex-start",
+    alignItems: "stretch",
   },
   complaintDetails: {
     marginBottom: 20,
@@ -172,7 +172,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 24,
     fontWeight: "bold",
-    //
   },
 });
 

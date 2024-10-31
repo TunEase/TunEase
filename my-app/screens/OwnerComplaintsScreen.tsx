@@ -4,6 +4,8 @@ import { SwipeListView } from "react-native-swipe-list-view";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { supabase } from "../services/supabaseClient";
 import * as Animatable from "react-native-animatable";
+import Header from "../components/Form/header";
+import { useNavigation } from "@react-navigation/native";
 
 type Complaint = {
   id: string;
@@ -89,7 +91,11 @@ const OwnerComplaintsScreen: React.FC<{ route: any; navigation: any }> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Complaints</Text>
+      <Header
+        title="Complaints"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
+      />
       <SwipeListView
         data={complaints}
         keyExtractor={(item) => item.id}

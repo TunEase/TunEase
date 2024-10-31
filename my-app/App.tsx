@@ -24,6 +24,7 @@ import ManageEligibilityScreen from "./screens/ManageEligibilityScreen";
 import MediaGalleryScreen from "./screens/MediaGalleryScreen";
 import FAQsScreen from "./screens/FAQsScreen";
 
+
 import Onboarding from "./screens/OnBoarding";
 
 // import { insertFakeData } from "./services/supabaseClient";
@@ -44,12 +45,16 @@ import { useAuth } from "./hooks/useAuth";
 import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
 import AddAvailabilityTimeScreen from "./screens/AddAvailabilityTimeScreen";
 import AddService from "./screens/AddService";
+import UploadMedia from './screens/UploadMedia'; 
+
+// Ensure this import is correct
+import CreateServiceScreen from "./screens/createServiceScreen/CreateServiceScreen";
 import AllService from "./screens/AllService";
 import AppointmentBook from "./screens/AppointmentBook";
 import AvailabilityScreen from "./screens/AvailabilityScreen";
 import Book from "./screens/Book";
 import ComplaintsScreen from "./screens/ComplaintsScreen";
-import CreateServiceScreen from "./screens/CreateServiceScreen";
+import MainFooter from "./components/HomePage/MainFooter";
 import OneServices from "./screens/OneServices";
 import OwnerComplaintsScreen from "./screens/OwnerComplaintsScreen";
 import OwnerReviewsScreen from "./screens/OwnerReviewsScreen";
@@ -60,6 +65,7 @@ import StaticBusinessProfile from "./screens/staticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
+import News from "./screens/News";
 ServiceSettings;
 
 import AppointmentDetailsScreen from "./screens/reordering/AppointmentDetailsScreen";
@@ -71,6 +77,7 @@ import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
   const { user } = useAuth();
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<
     boolean | null

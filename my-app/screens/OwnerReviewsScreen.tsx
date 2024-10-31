@@ -10,7 +10,8 @@ import {
 import { supabase } from "../services/supabaseClient";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import ImageView from "react-native-image-viewing";
-
+import Header from "../components/Form/header"; // Import the Header component
+import { useNavigation } from "@react-navigation/native";
 import { Media, User_profile } from "../types/business";
 
 type Review = {
@@ -24,6 +25,7 @@ type Review = {
 };
 
 const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
+  const navigation = useNavigation();
   const { serviceId } = route.params;
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isImageViewVisible, setImageViewVisible] = useState(false);
@@ -135,7 +137,11 @@ const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Service Reviews</Text>
+      <Header
+        title="Service Reviews"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
+      />
       <FlatList
         data={reviews}
         keyExtractor={(item) => item.id}
