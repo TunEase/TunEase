@@ -68,6 +68,7 @@ import ReorderingConfirmationScreen from "./screens/reordering/ReorderingConfirm
 import AppointmentListScreen from "./screens/reordering/AppointmentListScreen";
 import CustomReorderingScreen from "./screens/reordering/CustomReorderingScreen";
 import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
+import  NotificationScreen  from "./screens/NotificationSystem/NotificationScreen";
 import ServiceOnboardingScreen from "./screens/createServiceScreen/ServiceOnboardingScreen";
 import ServiceSetupScreen from "./screens/createServiceScreen/ServiceSetupScreen";
 import ValidateServiceScreen from "./screens/createServiceScreen/ValidateServiceScreen";
@@ -279,6 +280,11 @@ export default function App() {
              <Stack.Screen
             name="AutoReorderingScreen"
             component={AutoReorderingScreen}
+            options={{ headerShown: false }}
+          />
+              <Stack.Screen
+            name="NotificationScreen"
+            component={NotificationScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen

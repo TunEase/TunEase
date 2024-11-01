@@ -11,6 +11,7 @@ import {
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { supabase } from "../services/supabaseClient";
+import Header from "../components/Form/header"
 
 interface Availability {
   id: string;
@@ -103,9 +104,11 @@ const AvailabilityScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Service Availability</Text>
-      </View>
+        <Header 
+        title="Service Availability"
+        onBack={() => navigation.goBack()}
+        backgroundColor="#00796B"
+      />
       <Calendar
         current={selectedDate}
         onDayPress={(day) => setSelectedDate(day.dateString)}

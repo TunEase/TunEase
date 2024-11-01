@@ -5,7 +5,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { supabase } from '../services/supabaseClient';
 import { format } from 'date-fns';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
+import Header from '../components/Form/header';
 interface Service {
   id: string;
   name: string;
@@ -76,13 +76,11 @@ const AddAvailabilityScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Update Availability (1/2)</Text>
-        <View style={{ width: 24 }} />
-      </View>
+         <Header 
+        title="Update Availability (1/2)"
+        onBack={() => navigation.goBack()}
+        backgroundColor="#00796B"
+      />
       <ScrollView style={styles.content}>
         {/* <View style={styles.pickerContainer}>
           <Picker

@@ -4,6 +4,7 @@ import { supabase } from '../../services/supabaseClient';
 import { Appointment } from '../../types/Appointment';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { format } from 'date-fns';
+import Header from '../../components/Form/header';
 const AppointmentListScreen = ({navigation}:{navigation:any}) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -35,6 +36,7 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
         console.log('No business found for this manager');
         return;
       }
+      
   
       // Fetch appointments for services associated with the business
       const { data: appointmentsData, error: appointmentsError } = await supabase
@@ -132,23 +134,13 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#00796B" barStyle="light-content" />
-      <View style={styles.headerContainer}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Appointment List</Text>
-        <Text style={styles.headerSubtitle}>Manage your schedule</Text>
-      </View>
-      <View style={styles.serviceContainer}>
-      <Text style={styles.serviceLabel}>Current Service:</Text>
-      <Text style={styles.serviceName}>
-        {selectedService || 'All Services'}
-      </Text>
-    </View>
-  
+      <Header 
+        title="Appointment List"
+        subtitle="Manage your schedule"
+        onBack={() => navigation.goBack()}
+        backgroundColor="#00796B"
+      />
+   
       {isLoading ? (
         <View style={styles.emptyContainer}>
           <ActivityIndicator size="large" color="#00796B" />
@@ -204,37 +196,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 20,
     // paddingBottom: 20,
-  },
-  headerContainer: {
-    backgroundColor: "#00796B",
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#FFFFFF",
-    marginBottom: 5,
-  },
-  headerSubtitle: {
-    fontSize: 18,
-    color: "#FFFFFF",
-    opacity: 0.9,
-  },
-  backButton: {
-    marginBottom: 10,
   },
   appointmentItem: {
     flexDirection: 'row',
@@ -351,34 +312,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginTop: 16,
-  },
-  serviceContainer: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 15,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 2,
-  },
-  serviceLabel: {
-    fontSize: 16,
-    color: '#666',
-    marginRight: 10,
-  },
-  serviceName: {
-    fontSize: 16,
-    color: '#00796B',
-    fontWeight: 'bold',
-    flex: 1,
   },
 });
 export default AppointmentListScreen;

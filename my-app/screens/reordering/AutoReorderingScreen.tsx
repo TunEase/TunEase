@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet, SafeAreaView, StatusBar,Animated } from 'react-native';
 import { supabase } from '../../services/supabaseClient';
+import { NotificationService } from '../../services/NotificationService';
 import { Ionicons } from '@expo/vector-icons';
 import { Appointment } from '../../types/Appointment';
+import Header from '../../components/Form/header';
 
-const AutoReorderingScreen = () => {
+const AutoReorderingScreen = ({ navigation }: { navigation: any }) => {
   const [isReordering, setIsReordering] = useState(false);
   const [isReordered, setIsReordered] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -69,10 +71,11 @@ const AutoReorderingScreen = () => {
           date: appointmentDate.toISOString().split('T')[0],
           start_time: formatTime(appointmentDate),
           end_time: formatTime(endTime),
-          status: 'confirmed' as const,
+          status: 'PENDING_CONFIRMATION' as const,
           updated_at: new Date().toISOString()
         };
       });
+   
   
      // Animate the reordering
     Animated.sequence([
@@ -88,27 +91,28 @@ const AutoReorderingScreen = () => {
       ),
       Animated.delay(500),
     ]).start(async () => {
-      // After animation, update the database
-      for (const appointment of reorderedAppointments) {
-        const { error: updateError } = await supabase
-          .from('appointments')
-          .update({
-            date: appointment.date,
-            start_time: appointment.start_time,
-            end_time: appointment.end_time,
-            status: appointment.status,
-            updated_at: appointment.updated_at
-          })
-          .eq('id', appointment.id);
+          // Update appointments and send notifications
+    for (const appointment of reorderedAppointments) {
+      const { error: updateError } = await supabase
+        .from('appointments')
+        .update({
+          date: appointment.date,
+          start_time: appointment.start_time,
+          end_time: appointment.end_time,
+          status: appointment.status,
+          updated_at: appointment.updated_at
+        })
+        .eq('id', appointment.id);
 
-        if (updateError) throw updateError;
+      if (updateError) throw updateError;
 
-        const message = createNotificationMessage(
-          appointment.date,
-          appointment.start_time
-        );
-        await notifyUser(appointment.id, message);
-      }
+      // Send notification to client about rescheduling
+      await NotificationService.sendReschedulingNotification(
+        appointment,
+        appointment.date,
+        appointment.start_time
+      );
+    }
 
       // Update UI with reordered appointments
       setAppointments(reorderedAppointments);
@@ -218,9 +222,12 @@ const formatDate = (dateStr: string): string => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#00796B" barStyle="light-content" />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Automatic Reordering</Text>
-      </View>
+      <Header 
+        title="Automatic Reordering"
+        onBack={() => navigation.goBack()}
+        backgroundColor="#00796B"
+      />
+   
       <View style={styles.content}>
         <Text style={styles.description}>
           This feature will automatically reorder appointments based on availability and priority.
@@ -272,16 +279,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F2F2F2',
-  },
-  header: {
-    backgroundColor: '#00796B',
-    padding: 20,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
   },
   content: {
     flex: 1,

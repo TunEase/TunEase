@@ -5,8 +5,8 @@ import { supabase } from '../../services/supabaseClient';
 import { Appointment } from '../../types/Appointment';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
-
-const CustomReorderingScreen = () => {
+import Header from '../../components/Form/header';
+const CustomReorderingScreen = ({ navigation }: { navigation: any }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isReordering, setIsReordering] = useState(false);
   useEffect(() => {
@@ -89,9 +89,11 @@ const CustomReorderingScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#00796B" barStyle="light-content" />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Custom Reordering</Text>
-      </View>
+      <Header 
+        title="Custom Reordering"
+        onBack={() => navigation.goBack()}
+        backgroundColor="#00796B"
+      />
       <View style={styles.content}>
         <Text style={styles.instructions}>Long press and drag to reorder appointments</Text>
         <DraggableFlatList
