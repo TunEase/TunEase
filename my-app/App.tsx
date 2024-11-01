@@ -21,7 +21,7 @@ import Feedback from "./screens/Feedback";
 import Review from "./screens/Review";
 import ManageFeesScreen from "./screens/ManageFeesScreen";
 import ManageEligibilityScreen from "./screens/ManageEligibilityScreen";
-
+import NewsCommentScreen from "./screens/news/NewsCommentScreen";
 
 import Onboarding from "./screens/OnBoarding";
 
@@ -63,7 +63,6 @@ import StaticBusinessProfile from "./screens/staticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
-import News from "./screens/News";
 import AppointmentDetailsScreen from "./screens/reordering/AppointmentDetailsScreen";
 import ReorderingConfirmationScreen from "./screens/reordering/ReorderingConfirmationScreen";
 import AppointmentListScreen from "./screens/reordering/AppointmentListScreen";
@@ -72,6 +71,7 @@ import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
 import ServiceOnboardingScreen from "./screens/createServiceScreen/ServiceOnboardingScreen";
 import ServiceSetupScreen from "./screens/createServiceScreen/ServiceSetupScreen";
 import ValidateServiceScreen from "./screens/createServiceScreen/ValidateServiceScreen";
+import NewsScreen from "./screens/news/NewsScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -375,11 +375,6 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="News"
-            component={News}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
             name="ServiceOnboardingScreen"
             component={ServiceOnboardingScreen}
             options={{ headerShown: false }}
@@ -394,6 +389,16 @@ export default function App() {
             component={ValidateServiceScreen}
             options={{ headerShown: false }}
           />
+          <Stack.Screen
+            name="NewsScreen"
+            component={NewsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="NewsCommentScreen"
+            component={NewsCommentScreen}
+            options={{ headerShown: false }}
+          />  
         </Stack.Navigator>
       </AuthProvider>
       <StatusBar style="auto" />
