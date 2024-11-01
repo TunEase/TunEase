@@ -64,7 +64,6 @@ import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
 import News from "./screens/News";
-import AppointmentDetailsScreen from "./screens/reordering/AppointmentDetailsScreen";
 import ReorderingConfirmationScreen from "./screens/reordering/ReorderingConfirmationScreen";
 import AppointmentListScreen from "./screens/reordering/AppointmentListScreen";
 import CustomReorderingScreen from "./screens/reordering/CustomReorderingScreen";
@@ -292,12 +291,7 @@ export default function App() {
             component={ReorderingConfirmationScreen}
             options={{ headerShown: false }}
           />
-          
-          <Stack.Screen
-            name="AppointmentDetailsScreen"
-            component={AppointmentDetailsScreen}
-            options={{ headerShown: false }}
-          />
+       
           <Stack.Screen
             name="CreateServiceScreen"
             component={CreateServiceScreen}
