@@ -4,6 +4,7 @@ export interface Appointment {
   id: string;
   date: string;
   start_time: string;
+  end_time: string;
   user_profile?: {
     name: string;
     phone: string;
@@ -11,6 +12,7 @@ export interface Appointment {
   service?: {
     id: string;
     name: string;
+    duration: number;
   };
 }
 

@@ -8,6 +8,7 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true); 
+  const [selectedService, setSelectedService] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAppointments();
@@ -67,7 +68,7 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
         service: apt.service?.[0] || { id: '', name: 'Unknown' }
       })) || [];
   
-      setAppointments(transformedData);
+      setAppointments(transformedData as Appointment[]);
     } catch (error) {
       Alert.alert('Unexpected error', error.message);
     } finally {
@@ -76,14 +77,22 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
   };
 
   const checkUserRole = async () => {
-    const { data, error } = await supabase
-      .from('user_profile')
-      .select('name')
-      .eq('id', (await supabase.auth.getUser()).data.user?.id);
-    if (error) {
-      Alert.alert('Error fetching user role', error.message);
-    } else {
-      setUserRole(data[0].name);
+    try {
+      const { data, error } = await supabase
+        .from('user_profile')
+        .select('role')  // Make sure your table has a 'role' column
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+  
+      if (error) {
+        console.error('Error fetching user role:', error);
+        Alert.alert('Error fetching user role', error.message);
+      } else {
+        setUserRole(data?.role || null);
+        console.log('User role:', data?.role); // Add this to debug
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
     }
   };
 
@@ -122,32 +131,49 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-    <StatusBar backgroundColor="#00796B" barStyle="light-content" />
-    <View style={styles.header}>
-      <Text style={styles.headerTitle}>Appointment List</Text>
+      <StatusBar backgroundColor="#00796B" barStyle="light-content" />
+      <View style={styles.headerContainer}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Appointment List</Text>
+        <Text style={styles.headerSubtitle}>Manage your schedule</Text>
+      </View>
+      <View style={styles.serviceContainer}>
+      <Text style={styles.serviceLabel}>Current Service:</Text>
+      <Text style={styles.serviceName}>
+        {selectedService || 'All Services'}
+      </Text>
     </View>
-
-    {isLoading ? (
-      <View style={styles.emptyContainer}>
-        <ActivityIndicator size="large" color="#00796B" />
-        <Text style={styles.loadingText }>Loading appointments...</Text>
-      </View>
-    ) : appointments.length === 0 ? (
-      <View style={styles.emptyContainer}>
-        <Ionicons name="calendar-outline" size={64} color="#00796B" />
-        <Text style={styles.emptyText}>No appointments found</Text>
-        <Text style={styles.emptySubText}>Your upcoming appointments will appear here</Text>
-      </View>
-    ) : (
-      <FlatList
-        data={appointments}
-        renderItem={renderAppointmentItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        refreshing={isLoading}
-        onRefresh={fetchAppointments}
-      />
-    )}
+  
+      {isLoading ? (
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator size="large" color="#00796B" />
+          <Text style={styles.loadingText}>Loading appointments...</Text>
+        </View>
+      ) : appointments.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="calendar-outline" size={64} color="#00796B" />
+          <Text style={styles.emptyText}>No appointments found</Text>
+          <Text style={styles.emptySubText}>Your upcoming appointments will appear here</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={appointments}
+          renderItem={renderAppointmentItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: userRole === 'BUSINESS_MANAGER' ? 100 : 20 } // Add extra padding when buttons are shown
+          ]}
+          refreshing={isLoading}
+          onRefresh={fetchAppointments}
+        />
+      )}
+  
       {userRole === 'BUSINESS_MANAGER' && (
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
@@ -175,19 +201,40 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F2F2F2",
   },
-  header: {
-    backgroundColor: "#00796B",
-    padding: 20,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
   listContent: {
     paddingHorizontal: 20,
+    // paddingBottom: 20,
+  },
+  headerContainer: {
+    backgroundColor: "#00796B",
+    paddingTop: 60,
     paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginBottom: 5,
+  },
+  headerSubtitle: {
+    fontSize: 18,
+    color: "#FFFFFF",
+    opacity: 0.9,
+  },
+  backButton: {
+    marginBottom: 10,
   },
   appointmentItem: {
     flexDirection: 'row',
@@ -213,28 +260,53 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingVertical: 15,
+    backgroundColor: '#F2F2F2',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   reorderButton: {
     backgroundColor: "#00796B",
     borderRadius: 25,
-    paddingVertical: 15,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     alignItems: 'center',
     flexDirection: 'row',
     flex: 1,
     marginHorizontal: 5,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   reorderButtonText: {
     fontSize: 16,
     color: "#FFFFFF",
     fontWeight: 'bold',
+    textAlign: 'center',
+    flex: 1,
   },
   buttonIcon: {
-    marginRight: 10,
+    marginRight: 8,
   },
     clientInfoContainer: {
     marginTop: 8,
@@ -252,11 +324,11 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
   },
-  serviceName: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
+  // serviceName: {
+  //   fontSize: 14,
+  //   color: '#666',
+  //   marginTop: 2,
+  // },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -279,6 +351,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginTop: 16,
+  },
+  serviceContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    padding: 15,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 2,
+  },
+  serviceLabel: {
+    fontSize: 16,
+    color: '#666',
+    marginRight: 10,
+  },
+  serviceName: {
+    fontSize: 16,
+    color: '#00796B',
+    fontWeight: 'bold',
+    flex: 1,
   },
 });
 export default AppointmentListScreen;

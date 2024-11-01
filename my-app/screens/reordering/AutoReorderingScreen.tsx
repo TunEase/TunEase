@@ -22,12 +22,12 @@ const AutoReorderingScreen = () => {
           *,
           service:services(*)
         `)
-        .eq('status', 'pending')
+        .eq('status', 'CANCELLED')
         .order('created_at', { ascending: true });
   
       if (fetchError) throw fetchError;
       if (!fetchedAppointments || fetchedAppointments.length === 0) {
-        Alert.alert('No Appointments', 'There are no pending appointments to reorder.');
+        Alert.alert('No Appointments', 'There are no cancelled appointments to reorder.');
         return;
       }
   
