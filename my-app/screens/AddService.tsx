@@ -175,6 +175,10 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
         onPress={() =>
           navigation.navigate("CreateServiceScreen", { businessId: id })
         }
+        style={styles.addButton}
+        onPress={() =>
+          navigation.navigate("ServiceOnboardingScreen", { businessId: id })
+        }
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>

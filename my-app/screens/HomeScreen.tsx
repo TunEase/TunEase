@@ -1,8 +1,10 @@
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   FlatList,
   Image,
+  ImageBackground,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -161,60 +163,148 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const renderNewsCards = () => (
     <View style={styles.newsSection}>
       <View style={styles.sectionHeaderContainer}>
-        <Text style={styles.sectionHeader}>Latest News</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("AllNews")}>
+        <View style={styles.headerLeft}>
+          <View style={styles.headerAccent} />
+          <Text style={styles.sectionHeader}>Trending News</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.viewAllButton}
+          onPress={() => navigation.navigate("AllNews")}
+        >
           <Text style={styles.viewAllText}>View All</Text>
+          <Icon name="arrow-forward" size={20} color="#00796B" />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.newsCard}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={styles.newsScrollView}
+      {/* Main News Card */}
+      <TouchableOpacity
+        style={styles.newsCard}
+        onPress={() =>
+          navigation.navigate("NewsDetail", { newsId: news[0]?.id })
+        }
+      >
+        <ImageBackground
+          source={{
+            uri: news[0]?.media_url || "https://via.placeholder.com/300",
+          }}
+          style={styles.newsCardImage}
+          imageStyle={{ borderRadius: 20 }}
         >
-          {news.map((item, index) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.newsItem,
-                index < news.length - 1 && styles.newsItemBorder,
-              ]}
-              onPress={() =>
-                navigation.navigate("NewsDetail", { newsId: item.id })
-              }
-            >
-              <Image
-                source={{
-                  uri: item.media_url || "https://via.placeholder.com/80",
-                }}
-                style={styles.newsItemImage}
-              />
-
-              <View style={styles.newsItemContent}>
-                <View>
-                  <Text style={styles.newsItemTitle} numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.newsItemDescription} numberOfLines={2}>
-                    {item.content}
-                  </Text>
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.9)"]}
+            style={styles.newsGradient}
+          >
+            <View style={styles.newsCardContent}>
+              <View style={styles.tagRow}>
+                <View style={styles.tagContainer}>
+                  <Icon name="trending-up" size={14} color="#FFF" />
+                  <Text style={styles.tagText}>TRENDING</Text>
                 </View>
-
-                <View style={styles.newsItemFooter}>
-                  <Text style={styles.businessName}>
-                    {item.business?.name || "Business Name"}
-                  </Text>
-                  <Text style={styles.newsDate}>
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </Text>
+                <View style={styles.navigationContainer}>
+                  <TouchableOpacity style={styles.navButton}>
+                    <Icon name="chevron-left" size={24} color="#FFF" />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.navButton}>
+                    <Icon name="chevron-right" size={24} color="#FFF" />
+                  </TouchableOpacity>
                 </View>
               </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+              <Text style={styles.newsCardTitle} numberOfLines={2}>
+                {news[0]?.title}
+              </Text>
+              <View style={styles.newsCardFooter}>
+                <View style={styles.businessInfo}>
+                  <Image
+                    source={{
+                      uri:
+                        news[0]?.business?.logo ||
+                        "https://via.placeholder.com/30",
+                    }}
+                    style={styles.businessLogo}
+                  />
+                  <Text style={styles.businessName}>
+                    {news[0]?.business?.name}
+                  </Text>
+                </View>
+                <TouchableOpacity style={styles.readMoreButton}>
+                  <Text style={styles.readMoreText}>Read More</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </LinearGradient>
+        </ImageBackground>
+      </TouchableOpacity>
+
+      {/* Secondary News Cards */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.newsScrollView}
+      >
+        {news.slice(1, 3).map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            style={[styles.newsCard, styles.newsCardSecondary]}
+            onPress={() =>
+              navigation.navigate("NewsDetail", { newsId: item.id })
+            }
+          >
+            <ImageBackground
+              source={{
+                uri: item.media_url || "https://via.placeholder.com/300",
+              }}
+              style={styles.newsCardImage}
+              imageStyle={{ borderRadius: 20 }}
+            >
+              <LinearGradient
+                colors={["transparent", "rgba(0,0,0,0.9)"]}
+                style={styles.newsGradient}
+              >
+                <View style={styles.newsCardContent}>
+                  <View style={styles.tagRow}>
+                    <View style={styles.tagContainer}>
+                      <Icon name="fiber-new" size={14} color="#FFF" />
+                      <Text style={styles.tagText}>NEW</Text>
+                    </View>
+                    <View style={styles.navigationContainer}>
+                      <TouchableOpacity style={styles.navButton}>
+                        <Icon name="chevron-left" size={24} color="#FFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.navButton}>
+                        <Icon name="chevron-right" size={24} color="#FFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <Text style={styles.newsCardTitle} numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  <View style={styles.newsCardFooter}>
+                    <View style={styles.businessInfo}>
+                      <Image
+                        source={{
+                          uri:
+                            item.business?.logo ||
+                            "https://via.placeholder.com/30",
+                        }}
+                        style={styles.businessLogo}
+                      />
+                      <Text style={styles.businessName}>
+                        {item.business?.name}
+                      </Text>
+                    </View>
+                    <TouchableOpacity style={styles.readMoreButton}>
+                      <Text style={styles.readMoreText}>Read More</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </LinearGradient>
+            </ImageBackground>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
+
   const renderHeader = () => (
     <View style={styles.header}>
       <Image
@@ -401,10 +491,13 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  // Container
   container: {
     flex: 1,
     backgroundColor: "#F8F8F8",
   },
+
+  // Header Styles
   header: {
     height: 250,
     position: "relative",
@@ -419,8 +512,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: "center", // Center vertically
-    alignItems: "center", // Center horizontally
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.3)",
     position: "absolute",
   },
@@ -430,6 +523,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 15,
   },
+  headerSubtitle: {
+    fontSize: 16,
+    color: "#FFF",
+    marginBottom: 20,
+  },
   profileIcon: {
     position: "absolute",
     top: 30,
@@ -438,40 +536,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 50,
   },
-  newsItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  newsItemImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-  },
-  newsItemContent: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  newsItemTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  newsItemDescription: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 5,
-  },
-  newsItemFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  newsItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#DDD",
-    paddingBottom: 10,
-  },
 
+  // Search Styles
   searchContainer: {
     flexDirection: "row",
     backgroundColor: "#FFF",
@@ -480,105 +546,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "90%",
     marginTop: 10,
-    // Adjust the margin or padding to position it correctly
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   searchInput: {
     marginLeft: 10,
     fontSize: 16,
     flex: 1,
   },
-  categoriesContainer: {
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-  },
-  categoryItem: {
-    marginRight: 10,
-    alignItems: "center",
-    width: 80,
-    height: 80,
+
+  // Button Container Styles
+  buttonContainer: {
+    flexDirection: "row",
     justifyContent: "center",
-  },
-  categoryBackground: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 50,
-    overflow: "hidden",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Added background color for better visibility
-  },
-  categoryText: {
-    color: "#FFF",
-    marginTop: 5,
-    fontSize: 12,
-    textAlign: "center",
-  },
-  recommendedCard: {
-    width: 200,
-    marginRight: 10,
-    position: "relative",
-  },
-  recommendedImage: {
-    width: "100%",
-    height: 150,
-    borderRadius: 10,
-  },
-  heartIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 15,
-    padding: 5,
-  },
-  recommendedTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 5,
-  },
-  recommendedReview: {
-    fontSize: 14,
-    color: "#888",
-  },
-  serviceCard: {
-    backgroundColor: "#FFF",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 15,
-    marginHorizontal: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-    flex: 1,
-    maxWidth: "45%",
-    alignItems: "center",
-  },
-  serviceImage: {
-    width: "100%",
-    height: 120,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  serviceName: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  serviceDescription: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 5,
-  },
-  serviceReview: {
-    fontSize: 14,
-    color: "#888",
+    marginVertical: 20,
+    gap: 15,
   },
   availableButton: {
     backgroundColor: "#FFFFFF",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
-    marginHorizontal: 10,
     alignItems: "center",
     shadowColor: "#00796B",
     shadowOpacity: 0.2,
@@ -591,132 +582,219 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginVertical: 20,
-  },
-  row: { justifyContent: "space-between" },
-  sectionHeader: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginVertical: 10,
-    marginLeft: 10,
+
+  // News Section Styles
+  newsSection: {
+    margin: 15,
   },
   sectionHeaderContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginHorizontal: 10,
-    marginVertical: 10,
+    marginBottom: 20,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerAccent: {
+    width: 4,
+    height: 24,
+    backgroundColor: "#00796B",
+    marginRight: 10,
+    borderRadius: 2,
+  },
+  sectionHeader: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  viewAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
   },
   viewAllText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#00796B",
+    fontWeight: "600",
+  },
+  newsScrollView: {
+    paddingLeft: 15,
   },
   newsCard: {
     width: 300,
-    marginRight: 10,
-    position: "relative",
-  },
-  newsImage: {
-    width: "100%",
-    height: 150,
-    borderRadius: 10,
-  },
-  textContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  discountText: {
-    fontSize: 20,
-    color: "#FFF",
-  },
-  withCodeText: {
-    fontSize: 16,
-    color: "#FFF",
-  },
-  shopNowButton: {
-    fontSize: 16,
-    color: "#FFF",
-  },
-  cartIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-  },
-  errorText: {
-    color: "red",
-    marginLeft: 10,
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "#FFF",
-  },
-  newsSection: {
-    marginHorizontal: 10,
+    height: 380,
+    marginRight: 20,
+    borderRadius: 20,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.44,
+    shadowRadius: 10.32,
+    elevation: 16,
   },
   newsCardImage: {
     width: "100%",
-    height: 150,
-    borderRadius: 10,
+    height: "100%",
+  },
+  newsGradient: {
+    flex: 1,
+    justifyContent: "flex-end",
+    padding: 20,
   },
   newsCardContent: {
-    padding: 10,
+    gap: 15,
   },
-  newsCardTags: {
+  tagRow: {
     flexDirection: "row",
-    marginBottom: 5,
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
   tagContainer: {
     backgroundColor: "#00796B",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 5,
+  },
+  dateContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
   },
   tagText: {
     color: "#FFF",
     fontSize: 12,
+    fontWeight: "bold",
+  },
+  dateText: {
+    color: "#FFF",
+    fontSize: 12,
   },
   newsCardTitle: {
-    fontSize: 16,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 5,
     color: "#FFF",
-  },
-  newsCardDescription: {
-    fontSize: 14,
-    color: "#FFF",
+    lineHeight: 28,
   },
   newsCardFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginTop: 10,
   },
-  newsDate: {
-    fontSize: 12,
-    color: "#FFF",
+  businessInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  businessLogo: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: "#FFF",
   },
   businessName: {
-    fontSize: 14,
     color: "#FFF",
+    fontSize: 14,
+    fontWeight: "600",
   },
   readMoreButton: {
-    backgroundColor: "#00796B",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
+    backgroundColor: "#FFF",
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   readMoreText: {
-    color: "#FFF",
-    fontSize: 16,
+    color: "#00796B",
+    fontSize: 13,
+    fontWeight: "bold",
   },
-  newsScrollView: {
-    marginHorizontal: 10,
+
+  // Service Card Styles
+  serviceCard: {
+    backgroundColor: "#FFF",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 15,
+    marginHorizontal: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+    flex: 1,
+    maxWidth: "45%",
+  },
+  serviceImage: {
+    width: "100%",
+    height: 120,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  serviceName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  serviceDescription: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 5,
+  },
+  serviceReview: {
+    fontSize: 14,
+    color: "#888",
+  },
+
+  // Business Card Styles
+  recommendedCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 15,
+    padding: 10,
+    marginRight: 15,
+    width: 200,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  recommendedImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  recommendedTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  recommendedReview: {
+    fontSize: 14,
+    color: "#888",
+  },
+
+  // Utility Styles
+  row: {
+    justifyContent: "space-between",
+    paddingHorizontal: 10,
+  },
+  errorText: {
+    color: "red",
+    marginTop: 10,
+    textAlign: "center",
   },
 });
 

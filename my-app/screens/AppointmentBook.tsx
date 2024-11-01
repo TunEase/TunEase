@@ -88,8 +88,9 @@ const AppointmentBookingScreen = ({ route }) => {
     <View style={styles.container}>
       <Header
         title="Appointment Book"
-        backgroundColor="#00796B"
-        showBackButton={false}
+        // backgroundColor="#00796B"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
       />
       <TouchableOpacity
         style={styles.calendarButton}

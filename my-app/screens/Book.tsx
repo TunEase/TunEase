@@ -374,6 +374,11 @@ const BookNowScreen = ({
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerContainer}>
+        {/* <Header
+          title="Book Now"
+          showBackButton={true}
+          onBack={() => navigation.goBack()}
+        /> */}
         <Text style={styles.headerText}>{serviceName}</Text>
       </View>
 

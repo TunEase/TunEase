@@ -43,7 +43,7 @@ import { useAuth } from "./hooks/useAuth";
 import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
 import AddAvailabilityTimeScreen from "./screens/AddAvailabilityTimeScreen";
 import AddService from "./screens/AddService";
-import UploadMedia from './screens/UploadMedia'; 
+import UploadMedia from './screens/createServiceScreen/UploadMedia'; 
 
 // Ensure this import is correct
 import CreateServiceScreen from "./screens/createServiceScreen/CreateServiceScreen";
@@ -64,14 +64,14 @@ import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
 import News from "./screens/News";
-ServiceSettings;
-
 import AppointmentDetailsScreen from "./screens/reordering/AppointmentDetailsScreen";
 import ReorderingConfirmationScreen from "./screens/reordering/ReorderingConfirmationScreen";
 import AppointmentListScreen from "./screens/reordering/AppointmentListScreen";
 import CustomReorderingScreen from "./screens/reordering/CustomReorderingScreen";
 import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
-
+import ServiceOnboardingScreen from "./screens/createServiceScreen/ServiceOnboardingScreen";
+import ServiceSetupScreen from "./screens/createServiceScreen/ServiceSetupScreen";
+import ValidateServiceScreen from "./screens/createServiceScreen/ValidateServiceScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -298,8 +298,6 @@ export default function App() {
             component={AppointmentDetailsScreen}
             options={{ headerShown: false }}
           />
-          
-       
           <Stack.Screen
             name="CreateServiceScreen"
             component={CreateServiceScreen}
@@ -379,6 +377,21 @@ export default function App() {
           <Stack.Screen
             name="News"
             component={News}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ServiceOnboardingScreen"
+            component={ServiceOnboardingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ServiceSetupScreen"
+            component={ServiceSetupScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ValidateServiceScreen"
+            component={ValidateServiceScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
