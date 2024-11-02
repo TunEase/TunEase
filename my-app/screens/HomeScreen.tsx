@@ -229,7 +229,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     >
       <TouchableOpacity
         style={styles.adCard}
-        onPress={() => navigation.navigate("NewsDetail", { newsId: ad.id })}
+        onPress={() => navigation.navigate("NewsDetailScreen", { newsId: ad.id })}
       >
                 <ImageBackground
                   source={{ 
@@ -238,7 +238,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                          'https://via.placeholder.com/400'
                   }}
                   style={styles.adImage}
-                  imageStyle={{ borderRadius: 15 }}
+                  imageStyle={{ borderRadius: 20 }}
                 >
                   <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0.9)']}
@@ -272,10 +272,12 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                             {new Date(ad.created_at).toLocaleDateString()}
                           </Text>
                         </View>
-                        <TouchableOpacity style={styles.detailsButton}>
-                          <Text style={styles.detailsButtonText}>See Details</Text>
-                          <Icon name="arrow-forward" size={16} color="#FFF" />
-                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.detailsButton} onPress={() => {
+                                  navigation.navigate('NewsDetailScreen', { newsId: ad.id });
+                         }}>
+                             <Text style={styles.detailsButtonText}>See Details</Text>
+   <Icon name="arrow-forward" size={16} color="#FFF" />
+</TouchableOpacity>
                       </View>
                     </View>
                   </LinearGradient>
@@ -335,15 +337,21 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     const scrollX = useRef(new Animated.Value(0)).current;
 
     return (
-      <View>
-        <View style={styles.sectionHeaderContainer}>
+      <View style={styles.adSection}>
+      <View style={styles.sectionHeaderContainer}>
+        <View style={styles.headerLeft}>
+          <View style={styles.headerAccent} />
           <Text style={styles.sectionHeader}>Top Businesses</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("AllBusinesses")}
-          >
-            <Text style={styles.viewAllText}>View All</Text>
-          </TouchableOpacity>
+          
         </View>
+        <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={() => navigation.navigate("AllBusinesses")}
+        >
+          <Text style={styles.viewAllText}>View All</Text>
+          <Icon name="arrow-forward" size={16} color="#00796B" />
+        </TouchableOpacity>
+      </View>
         <Animated.FlatList
           data={businesses}
           horizontal
@@ -372,7 +380,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
               >
                 <TouchableOpacity
                   onPress={() =>
-                    navigation.navigate("staticBusinessProfile", {
+                    navigation.navigate("Profile", {
                       selectedBusiness: item,
                     })
                   }
@@ -400,13 +408,20 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
 
   const renderPopularServices = () => (
-    <View>
-      <View style={styles.sectionHeaderContainer}>
-        <Text style={styles.sectionHeader}>Popular Services</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("AllService")}>
+    <View style={styles.adSection}>
+        <View style={styles.sectionHeaderContainer}>
+          <View style={styles.headerLeft}>
+            <View style={styles.headerAccent} />
+            <Text style={styles.sectionHeader}>Popular Services</Text>
+          </View>
+          <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={() => navigation.navigate("AllService")}
+        >
           <Text style={styles.viewAllText}>View All</Text>
+          <Icon name="arrow-forward" size={16} color="#00796B" />
         </TouchableOpacity>
-      </View>
+        </View>
       <FlatList
         data={popularServices.slice(0, 4)}
         renderItem={({ item }) => (
@@ -480,7 +495,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   sectionHeaderContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     marginBottom: 15,
@@ -488,13 +503,13 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap:8,
   },
-  headerAccent: {
-    width: 4,
-    height: 20,
-    backgroundColor: '#00796B',
-    borderRadius: 2,
+  headerAccent:{
+    width:4,
+    height:20,
+    backgroundColor:'#00796B',
+    borderRadius:2,
   },
   viewAllButton: {
     flexDirection: 'row',
@@ -506,7 +521,7 @@ const styles = StyleSheet.create({
   viewAllText: {
     color: '#00796B',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   adScrollView: {
     height: 400,
@@ -542,7 +557,6 @@ adCard: {
   borderRadius: 20,
   overflow: 'hidden',
   backgroundColor: '#FFF',
-  elevation: 5,
   shadowColor: '#000',
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.25,
@@ -633,7 +647,6 @@ adCard: {
     fontSize: 16,
     flex: 1,
   },
-
   // Button Container Styles
   buttonContainer: {
     flexDirection: "row",
@@ -663,18 +676,6 @@ adCard: {
   newsSection: {
     margin: 15,
   },
-
-  // headerLeft: {
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  // },
-  // headerAccent: {
-  //   width: 4,
-  //   height: 24,
-  //   backgroundColor: '#00796B',
-  //   marginRight: 10,
-  //   borderRadius: 2,
-  // },
   sectionHeader: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -723,8 +724,8 @@ adCard: {
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
-    gap: 5,
+    borderRadius:20,
+    gap:5,
   },
   dateContainer: {
     flexDirection: 'row',
@@ -780,7 +781,6 @@ adCard: {
     fontSize: 13,
     fontWeight: 'bold',
   },
-
   // Service Card Styles
   serviceCard: {
     backgroundColor: "#FFF",
@@ -974,7 +974,10 @@ dateText: {
   color: 'rgba(255,255,255,0.8)',
   fontSize: 12,
 },
-
+viewAll:{
+  color: '#00796B',
+  fontWeight: '600',
+}
 });
 
 

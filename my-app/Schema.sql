@@ -166,7 +166,6 @@ create table
     service_id uuid not null references services (id) on delete cascade,
     created_at timestamp default now(),
     unique (user_profile_id, service_id) -- Ensure that a user can only favorite a service once
-
   );
   CREATE TABLE news (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -185,6 +184,7 @@ CREATE TABLE news_tag (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     news_id uuid REFERENCES news(id) ON DELETE CASCADE,
     tag_name VARCHAR(255) NOT NULL, -- Tags associated with the news post
+    link VARCHAR(255)
     UNIQUE (news_id, tag_name) -- Ensures each tag is unique per news post
 );
 

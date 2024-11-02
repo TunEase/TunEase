@@ -15,7 +15,7 @@ import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
 import { Service } from "../types/business";
 import FAQs from "./FAQs";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
@@ -28,7 +28,7 @@ type RootStackParamList = {
 };
 
 // Define the navigation and route props
-type ServiceDetailsNavigationProp = StackNavigationProp<
+type ServiceDetailsNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "ServiceDetails"
 >;
@@ -44,9 +44,9 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
   const [eligibility, setEligibility] = useState<any[]>([]);
   const [activeTab, setActiveTab] = React.useState("About Me");
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [modalVisible, setModalVisible] = useState(false);
   const { user } = useAuth();
+  
   useEffect(() => {
     const fetchServiceDetails = async () => {
       console.log("Service ID:", serviceId);
@@ -188,8 +188,10 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
         <Text style={styles.serviceName}>{service.name}</Text>
         <Text style={styles.servicePrice}>{`$${service.price}/hr`}</Text>
         <Text style={styles.serviceRating}>
-          {`⭐ ${service.reviews[0].rating} (${service.reviews.length} Reviews)`}
-        </Text>
+        {service?.reviews?.length > 0 
+    ? `⭐ ${service.reviews[0].rating} (${service.reviews.length} Reviews)`
+    : "No reviews yet"}
+</Text>
       </View>
       <View style={styles.tabContainer}>
         {["About Me", "Fees", "Eligibility", "FAQs"].map((tab) => (

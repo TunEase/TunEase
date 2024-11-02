@@ -72,6 +72,10 @@ import ServiceOnboardingScreen from "./screens/createServiceScreen/ServiceOnboar
 import ServiceSetupScreen from "./screens/createServiceScreen/ServiceSetupScreen";
 import ValidateServiceScreen from "./screens/createServiceScreen/ValidateServiceScreen";
 import NewsScreen from "./screens/news/NewsScreen";
+import CreateNews from "./screens/createNews/CreateNews";
+import MediaScreen from "./screens/createNews/MediaScreen";
+import ValidationScreen from "./screens/createNews/ValidationScreen";
+import NewsDetailScreen from "./screens/news/NewsDetailScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -399,6 +403,30 @@ export default function App() {
             component={NewsCommentScreen}
             options={{ headerShown: false }}
           />  
+             <Stack.Screen 
+        name="CreateNews" 
+        component={CreateNews} 
+        options={{ headerShown: false }}
+
+      />
+      <Stack.Screen
+        name="MediaScreen"
+        component={MediaScreen}
+        options={{ headerShown: false }}
+
+      />
+      <Stack.Screen
+        name="ValidationScreen"
+        component={ValidationScreen}
+        options={{ headerShown: false }}
+
+      />
+    <Stack.Screen
+        name="NewsDetailScreen"
+        component={NewsDetailScreen}
+        options={{ headerShown: false }}
+
+      />
         </Stack.Navigator>
       </AuthProvider>
       <StatusBar style="auto" />

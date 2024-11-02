@@ -137,7 +137,9 @@ const NewsCard: React.FC<NewsCardProps> = ({ news, navigation }) => {
     <View style={styles.card}>
    <TouchableOpacity
   style={styles.header}
-  onPress={() => navigation.navigate('BusinessProfile', { businessId: news.business.id })}
+  onPress={() => navigation.navigate('Profile', { 
+    selectedBusiness: news.business 
+  })}
 >
   <Image
     source={{ 
