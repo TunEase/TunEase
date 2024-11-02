@@ -7,6 +7,7 @@ import { useAuth } from "../../hooks/useAuth";
 type RootStackParamList = {
   UserProfile: undefined;
   Login: undefined;
+  MessageScreen: undefined;
 };
 
 interface FooterProps {
@@ -26,6 +27,13 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
       <TouchableOpacity style={styles.iconContainer}>
         <FontAwesome5 name="bell" size={24} color="#004D40" />
         <Text style={styles.footerText}>Notifications</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.iconContainer}
+        onPress={() => navigation.navigate("MessageScreen")} // Navigate to Messages
+      >
+        <FontAwesome5 name="envelope" size={24} color="#004D40" />
+        <Text style={styles.footerText}>Messages</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.iconContainer}

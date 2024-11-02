@@ -50,7 +50,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   useEffect(() => {
     fetchBusinesses();
     fetchPopularServices();
-    fetchNews()
+    fetchNews();
   }, []);
 
   const fetchPopularServices = async () => {
@@ -103,44 +103,53 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const fetchNews = async () => {
     try {
       const { data: newsData, error: newsError } = await supabase
-        .from('news')
-        .select(`
+        .from("news")
+        .select(
+          `
           *,
           business:business_id(
             id,
             name
             
           )
-        `)
-        .order('created_at', { ascending: false })
+        `
+        )
+        .order("created_at", { ascending: false })
         .limit(10); // Limite optionnelle pour la performance
-  
+
       if (newsError) throw newsError;
-  
+
       if (newsData) {
         // Deuxième requête pour obtenir les médias
         const { data: mediaData, error: mediaError } = await supabase
-          .from('media')
-          .select('*')
-          .in('news_id', newsData.map(news => news.id));
-  
+          .from("media")
+          .select("*")
+          .in(
+            "news_id",
+            newsData.map((news) => news.id)
+          );
+
         if (mediaError) throw mediaError;
-  
+
         // Troisième requête pour obtenir les tags
         const { data: tagData, error: tagError } = await supabase
-          .from('news_tag')
-          .select('*')
-          .in('news_id', newsData.map(news => news.id));
-  
+          .from("news_tags")
+          .select("*")
+          .in(
+            "news_id",
+            newsData.map((news) => news.id)
+          );
+
         if (tagError) throw tagError;
-  
+
         // Combiner toutes les données
-        const newsWithMediaAndTags = newsData.map(news => ({
+        const newsWithMediaAndTags = newsData.map((news) => ({
           ...news,
-          media_url: mediaData?.find(media => media.news_id === news.id)?.media_url,
-          tags: tagData?.filter(tag => tag.news_id === news.id) || []
+          media_url: mediaData?.find((media) => media.news_id === news.id)
+            ?.media_url,
+          tags: tagData?.filter((tag) => tag.news_id === news.id) || [],
         }));
-  
+
         setNews(newsWithMediaAndTags);
         console.log("News fetched successfully:", newsWithMediaAndTags);
       }
@@ -160,9 +169,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           <Text style={styles.viewAllText}>View All</Text>
         </TouchableOpacity>
       </View>
-  
+
       <View style={styles.newsCard}>
-        <ScrollView 
+        <ScrollView
           showsVerticalScrollIndicator={false}
           style={styles.newsScrollView}
         >
@@ -171,17 +180,19 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
               key={item.id}
               style={[
                 styles.newsItem,
-                index < news.length - 1 && styles.newsItemBorder
+                index < news.length - 1 && styles.newsItemBorder,
               ]}
-              onPress={() => navigation.navigate("NewsDetail", { newsId: item.id })}
+              onPress={() =>
+                navigation.navigate("NewsDetail", { newsId: item.id })
+              }
             >
               <Image
-                source={{ 
-                  uri: item.media_url || 'https://via.placeholder.com/80'
+                source={{
+                  uri: item.media_url || "https://via.placeholder.com/80",
                 }}
                 style={styles.newsItemImage}
               />
-              
+
               <View style={styles.newsItemContent}>
                 <View>
                   <Text style={styles.newsItemTitle} numberOfLines={1}>
@@ -191,10 +202,10 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                     {item.content}
                   </Text>
                 </View>
-  
+
                 <View style={styles.newsItemFooter}>
                   <Text style={styles.businessName}>
-                    {item.business?.name || 'Business Name'}
+                    {item.business?.name || "Business Name"}
                   </Text>
                   <Text style={styles.newsDate}>
                     {new Date(item.created_at).toLocaleDateString()}
@@ -272,7 +283,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             { useNativeDriver: true }
           )}
           renderItem={({ item, index }) => {
-            // console.log("item  ☢️☢️☢️☢️☢️☢️", item);
             const inputRange = [
               (index - 1) * 200,
               index * 200,
@@ -283,6 +293,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
               outputRange: [0.8, 1, 0.8],
               extrapolate: "clamp",
             });
+
+            // Safely access the rating
+            const rating = item.reviews?.[0]?.rating ?? "No reviews";
 
             return (
               <Animated.View
@@ -302,9 +315,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                     style={styles.recommendedImage}
                   />
                   <Text style={styles.recommendedTitle}>{item.name}</Text>
-                  <Text
-                    style={styles.recommendedReview}
-                  >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
+                  <Text style={styles.recommendedReview}>{`⭐ ${rating}`}</Text>
                 </TouchableOpacity>
               </Animated.View>
             );
@@ -352,7 +363,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       />
     </View>
   );
-
 
   const renderFooterButtons = () => (
     <View style={styles.buttonContainer}>
@@ -464,7 +474,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#DDD",
     paddingBottom: 10,
   },
-  
+
   searchContainer: {
     flexDirection: "row",
     backgroundColor: "#FFF",
@@ -663,9 +673,9 @@ const styles = StyleSheet.create({
   newsCardTags: {
     flexDirection: "row",
     marginBottom: 5,
-  },  
+  },
   tagContainer: {
-    backgroundColor: '#00796B',
+    backgroundColor: "#00796B",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -711,8 +721,6 @@ const styles = StyleSheet.create({
   newsScrollView: {
     marginHorizontal: 10,
   },
-
 });
-
 
 export default Home;

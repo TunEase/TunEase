@@ -24,7 +24,6 @@ import ManageEligibilityScreen from "./screens/ManageEligibilityScreen";
 import MediaGalleryScreen from "./screens/MediaGalleryScreen";
 import FAQsScreen from "./screens/FAQsScreen";
 
-
 import Onboarding from "./screens/OnBoarding";
 
 // import { insertFakeData } from "./services/supabaseClient";
@@ -45,7 +44,7 @@ import { useAuth } from "./hooks/useAuth";
 import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
 import AddAvailabilityTimeScreen from "./screens/AddAvailabilityTimeScreen";
 import AddService from "./screens/AddService";
-import UploadMedia from './screens/UploadMedia'; 
+import UploadMedia from "./screens/UploadMedia";
 
 // Ensure this import is correct
 import CreateServiceScreen from "./screens/createServiceScreen/CreateServiceScreen";
@@ -73,11 +72,11 @@ import ReorderingConfirmationScreen from "./screens/reordering/ReorderingConfirm
 import AppointmentListScreen from "./screens/reordering/AppointmentListScreen";
 import CustomReorderingScreen from "./screens/reordering/CustomReorderingScreen";
 import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
-
+import MessageScreen from "./screens/MessageScreen";
+import ChatRoomScreen from "./screens/ChatRoomScreen";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-
   const { user } = useAuth();
   const [isOnboardingCompleted, setIsOnboardingCompleted] = useState<
     boolean | null
@@ -374,6 +373,16 @@ export default function App() {
             <Stack.Screen
               name="FAQsScreen"
               component={FAQsScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="MessageScreen"
+              component={MessageScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ChatRoomScreen"
+              component={ChatRoomScreen}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>
