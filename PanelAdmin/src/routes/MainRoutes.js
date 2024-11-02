@@ -6,6 +6,7 @@ import Loadable from 'ui-component/Loadable';
 
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const ServiceDetail = Loadable(lazy(() => import('views/utilities/ServiceDetails')));
 
 // utilities routing
 const UtilsTypography = Loadable(lazy(() => import('views/utilities/Users')));
@@ -13,7 +14,6 @@ const UtilsColor = Loadable(lazy(() => import('views/utilities/Appointments')));
 const UtilsShadow = Loadable(lazy(() => import('views/utilities/Services')));
 const Business = Loadable(lazy(() => import('views/utilities/Business')));
 const Q_and_A = Loadable(lazy(() => import('views/utilities/Q_and_A')));
-
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -34,6 +34,7 @@ const MainRoutes = {
         }
       ]
     },
+
     {
       path: 'utils',
       children: [
@@ -58,6 +59,10 @@ const MainRoutes = {
         {
           path: 'util-shadow',
           element: <UtilsShadow />
+        },
+        {
+          path: ':serviceId',
+          element: <ServiceDetail />
         }
       ]
     },
@@ -69,7 +74,8 @@ const MainRoutes = {
           element: <Q_and_A />
         }
       ]
-    },{
+    },
+    {
       path: 'utils',
       children: [
         {
@@ -77,9 +83,7 @@ const MainRoutes = {
           element: <Business />
         }
       ]
-    },
-    
-   
+    }
   ]
 };
 

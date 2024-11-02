@@ -1,4 +1,6 @@
-import React, { useRef, useEffect } from "react";
+import { Feather } from "@expo/vector-icons";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import React, { useEffect, useRef } from "react";
 import {
   Dimensions,
   FlatList,
@@ -10,11 +12,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 
-import { RootStackParamList } from "../types/business";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../types/business";
 const { width } = Dimensions.get("window");
 
 type ProfileScreenRouteProp = RouteProp<RootStackParamList, "selectedBusiness">;
@@ -27,7 +27,7 @@ const Profile = () => {
   const route = useRoute<ProfileScreenRouteProp>();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const { selectedBusiness } = route.params;
-  const { services = [], media = [] } = selectedBusiness; // Default to empty arrays
+  const { services = [], media = [] } = selectedBusiness || {}; // Default to empty arrays
 
   if (!selectedBusiness) {
     return <Text>Loading...</Text>; // Or handle the error appropriately

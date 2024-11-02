@@ -1,16 +1,26 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 
 interface BookingCardProps {
   date: string;
   time: string;
   serviceName: string;
+  businessName: string;
+  userName: string;
+  media: string;
+  mediaBusiness: string;
+  icon: React.ReactNode;
 }
 
 const BookingCard: React.FC<BookingCardProps> = ({
   date,
   time,
   serviceName,
+  businessName,
+  userName,
+  media,
+  mediaBusiness,
+  icon,
 }) => {
   // Format the date
   const formattedDate = new Intl.DateTimeFormat("fr-FR", {
@@ -21,10 +31,22 @@ const BookingCard: React.FC<BookingCardProps> = ({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Booking Details</Text>
-      <Text style={styles.detail}>Service: {serviceName}</Text>
-      <Text style={styles.detail}>Date: le {formattedDate}</Text>
-      <Text style={styles.detail}>Time: {time}</Text>
+      {/* Header Section */}
+      <View style={styles.header}>
+        {icon && <View>{icon}</View>}
+        <Text style={styles.dateText}>{formattedDate}</Text>
+        <Text style={styles.timeText}>{time}</Text>
+      </View>
+
+      {/* Main Content */}
+      <View style={styles.row}>
+        <Image source={{ uri: media }} style={styles.circularImage} />
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailTitle}>{serviceName}</Text>
+          <Text style={styles.detailSubtitle}>{businessName}</Text>
+          <Text style={styles.clientText}>Client: {userName}</Text>
+        </View>
+      </View>
     </View>
   );
 };
@@ -32,7 +54,7 @@ const BookingCard: React.FC<BookingCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    padding: 20,
+    padding: 15,
     borderRadius: 10,
     shadowColor: "#000",
     shadowOpacity: 0.1,
@@ -41,14 +63,47 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginVertical: 10,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
-  detail: {
+  dateText: {
     fontSize: 16,
-    marginBottom: 5,
+    fontWeight: "600",
+    color: "#00796B",
+  },
+  timeText: {
+    fontSize: 14,
+    color: "#555",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  circularImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  detailsContainer: {
+    flex: 1,
+  },
+  detailTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  detailSubtitle: {
+    fontSize: 14,
+    color: "#555",
+    marginVertical: 5,
+  },
+  clientText: {
+    fontSize: 12,
+    color: "#777",
   },
 });
 

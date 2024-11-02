@@ -1,6 +1,6 @@
 // material-ui
-import { styled } from '@mui/material/styles';
 import { Button, Card, CardContent, Grid, Stack, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 // project imports
 import AnimateButton from 'ui-component/extended/AnimateButton';
