@@ -5,6 +5,7 @@ export interface Appointment {
   date: string;
   start_time: string;
   end_time: string;
+  duration: number;
   status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'PENDING_CONFIRMATION';
   user_profile?: {
     id: string;

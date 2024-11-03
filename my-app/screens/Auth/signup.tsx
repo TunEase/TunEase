@@ -61,37 +61,54 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
   
     try {
       setLoading(true);
-      const { data: authData, error: signupError } = await supabase.auth.signUp({ email, password,
-        options: {
-          data: {
-            name: name.trim(),
-            phone: phone.trim(),
-            role: 'CLIENT',
-          },
+          // First, check if user already exists
+    const { data: existingUser } = await supabase
+    .from("user_profile")
+    .select()
+    .eq('email', email.trim())
+    .single();
+
+  if (existingUser) {
+    setError("User with this email already exists");
+    return;
+  }
+
+      // Proceed with signup
+    const { data: authData, error: signupError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name.trim(),
+          phone: phone.trim(),
+          role: 'CLIENT',
         },
-       });
+      },
+    });
 
-      if (signupError) throw signupError;
+    if (signupError) throw signupError;
 
-      const userId = authData.user?.id;
-      if (!userId) throw new Error("User ID not found after signup");
+    const userId = authData.user?.id;
+    if (!userId) throw new Error("User ID not found after signup");
 
-      const profileData = {
-        id: userId,
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-        role: 'CLIENT',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      console.log("Inserting profile data:", profileData);
-      const { data: profile, error: profileError } = await supabase
+    // Add a delay to ensure auth record is properly created
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const profileData = {
+      id: userId,
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      role: 'CLIENT',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { data: profile, error: profileError } = await supabase
       .from("user_profile")
-      .insert(profileData)
+      .upsert(profileData) // Changed from insert to upsert
       .select()
       .single();
-
     if (profileError) {
       console.error("Profile Error:", profileError);
       throw profileError;
@@ -100,17 +117,18 @@ const Signup: React.FC<SignupProps> = ({ navigation }) => {
     console.log("Created profile:", profile);
         
         if (image) {
-          const { data: mediaRecord, error: mediaError } = await insertMediaRecord(
+          const result = await insertMediaRecord(
             image,
             'image/jpeg',
             { user_profile_id: userId }
           );
   
-          if (mediaError) {
-            console.error("Media Error:", mediaError);
-            setError(mediaError);
+          if (!result) {
+            setError("Failed to upload media");
             return;
           }
+          const { data: mediaRecord } = result;
+        
         }
   
         console.log("User signed up successfully");

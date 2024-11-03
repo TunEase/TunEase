@@ -1,9 +1,9 @@
 CREATE TABLE user_profile (
     id uuid PRIMARY KEY REFERENCES auth.users(id),
-    name VARCHAR(255),
+    name text,
     email VARCHAR(255) NOT NULL UNIQUE,
     role VARCHAR(20) NOT NULL DEFAULT 'CLIENT' CHECK (role IN ('ADMIN', 'CLIENT', 'BUSINESS_MANAGER')),
-    phone VARCHAR(255),
+    phone text,
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
 );
@@ -77,6 +77,7 @@ create table
     date DATE not null,
     start_time time not null,
     end_time time not null,
+    duration INT NOT NULL, -- Duration in minutes
     status varchar(20) check (status in ('SCHEDULED', 'COMPLETED', 'CANCELLED')) not null,
     created_at timestamp default now(),
     updated_at timestamp default now()
@@ -155,7 +156,7 @@ CREATE TABLE media (
     media_type VARCHAR(50) NOT NULL DEFAULT 'image', -- Default to 'image'
     media_url TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
-    updated_at TIMESTAMP DEFAULT now() -- New field for tracking updates
+    updated_at TIMESTAMP DEFAULT now(), -- New field for tracking updates
     eligibility_id uuid REFERENCES eligibility(id) ON DELETE CASCADE;
 );
 create table
