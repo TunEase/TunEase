@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import {
   Box,
   Button,
@@ -21,20 +20,24 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // third party
-import * as Yup from 'yup';
 import { Formik } from 'formik';
+import * as Yup from 'yup';
 
 // project imports
-import useScriptRef from 'hooks/useScriptRef';
 import Google from 'assets/images/icons/social-google.svg';
+import useScriptRef from 'hooks/useScriptRef';
 import AnimateButton from 'ui-component/extended/AnimateButton';
 import { strengthColor, strengthIndicator } from 'utils/password-strength';
 
 // assets
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+
+// Supabase client
+import { supabase } from 'services/supabaseClient';
 
 // ===========================|| FIREBASE - REGISTER ||=========================== //
 
@@ -136,6 +139,15 @@ const FirebaseRegister = ({ ...others }) => {
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
+            const { error } = await supabase.auth.signUp({
+              email: values.email,
+              password: values.password
+            });
+
+            if (error) {
+              throw error;
+            }
+
             if (scriptedRef.current) {
               setStatus({ success: true });
               setSubmitting(false);

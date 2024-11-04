@@ -145,61 +145,67 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
         showBackButton={true}
         onBack={() => navigation.goBack()}
       />
-      <FlatList
-        data={fees}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.feeItem}>
-            <View style={styles.iconContainer}>
-              <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
-                <FontAwesome name="cloud-upload" size={20} color="#00796B" />
-              </TouchableOpacity>
+      <View style={{ padding: 20 }}>
+        <FlatList
+          data={fees}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.feeItem}>
+              <View style={styles.iconContainer}>
+                <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
+                  <FontAwesome name="cloud-upload" size={20} color="#00796B" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.feeTextContainer}>
+                <Text style={styles.feeName}>{item.name}</Text>
+                <Text style={styles.feeDescription}>{item.description}</Text>
+                <Text style={styles.feeDate}>
+                  Created: {new Date(item.created_at).toLocaleDateString()}
+                </Text>
+                <Text style={styles.feeDate}>
+                  Updated: {new Date(item.updated_at).toLocaleDateString()}
+                </Text>
+                {item.media.length > 0 && (
+                  <View style={styles.mediaContainer}>
+                    {item.media.map((mediaItem, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() =>
+                          mediaItem.media_type === "image"
+                            ? openImageViewer(item.media, index)
+                            : openPDF(mediaItem.media_url)
+                        }
+                      >
+                        {mediaItem.media_type === "image" ? (
+                          <Image
+                            source={{ uri: mediaItem.media_url }}
+                            style={styles.mediaImage}
+                          />
+                        ) : (
+                          <View style={styles.pdfThumbnail}>
+                            <Icon
+                              name="cloud-upload"
+                              size={40}
+                              color="#FF5252"
+                            />
+                            <Text style={styles.pdfText}>PDF</Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+              <View style={styles.amountAndEditContainer}>
+                <Text style={styles.feeAmount}>${item.fee.toFixed(2)}</Text>
+                <TouchableOpacity onPress={() => handleEditFee(item)}>
+                  <FontAwesome name="edit" size={20} color="#00796B" />
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.feeTextContainer}>
-              <Text style={styles.feeName}>{item.name}</Text>
-              <Text style={styles.feeDescription}>{item.description}</Text>
-              <Text style={styles.feeDate}>
-                Created: {new Date(item.created_at).toLocaleDateString()}
-              </Text>
-              <Text style={styles.feeDate}>
-                Updated: {new Date(item.updated_at).toLocaleDateString()}
-              </Text>
-              {item.media.length > 0 && (
-                <View style={styles.mediaContainer}>
-                  {item.media.map((mediaItem, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() =>
-                        mediaItem.media_type === "image"
-                          ? openImageViewer(item.media, index)
-                          : openPDF(mediaItem.media_url)
-                      }
-                    >
-                      {mediaItem.media_type === "image" ? (
-                        <Image
-                          source={{ uri: mediaItem.media_url }}
-                          style={styles.mediaImage}
-                        />
-                      ) : (
-                        <View style={styles.pdfThumbnail}>
-                          <Icon name="cloud-upload" size={40} color="#FF5252" />
-                          <Text style={styles.pdfText}>PDF</Text>
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-            <View style={styles.amountAndEditContainer}>
-              <Text style={styles.feeAmount}>${item.fee.toFixed(2)}</Text>
-              <TouchableOpacity onPress={() => handleEditFee(item)}>
-                <FontAwesome name="edit" size={20} color="#00796B" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
+          )}
+        />
+      </View>
       <TouchableOpacity style={styles.addButton} onPress={handleAddFee}>
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -271,7 +277,7 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    // padding: 20,
     backgroundColor: "#f5f5f5", // Light background for contrast
   },
   serviceName: {

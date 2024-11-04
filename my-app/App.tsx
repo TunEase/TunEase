@@ -21,6 +21,7 @@ import Feedback from "./screens/Feedback";
 import Review from "./screens/Review";
 import ManageFeesScreen from "./screens/ManageFeesScreen";
 import ManageEligibilityScreen from "./screens/ManageEligibilityScreen";
+import NewsCommentScreen from "./screens/news/NewsCommentScreen";
 import MediaGalleryScreen from "./screens/MediaGalleryScreen";
 import FAQsScreen from "./screens/FAQsScreen";
 
@@ -44,7 +45,7 @@ import { useAuth } from "./hooks/useAuth";
 import AddAvailabilityScreen from "./screens/AddAvailabilityScreen";
 import AddAvailabilityTimeScreen from "./screens/AddAvailabilityTimeScreen";
 import AddService from "./screens/AddService";
-import UploadMedia from "./screens/UploadMedia";
+import UploadMedia from "./screens/createServiceScreen/UploadMedia";
 
 // Ensure this import is correct
 import CreateServiceScreen from "./screens/createServiceScreen/CreateServiceScreen";
@@ -64,14 +65,19 @@ import StaticBusinessProfile from "./screens/staticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
-import News from "./screens/News";
-ServiceSettings;
-
 import AppointmentDetailsScreen from "./screens/reordering/AppointmentDetailsScreen";
 import ReorderingConfirmationScreen from "./screens/reordering/ReorderingConfirmationScreen";
 import AppointmentListScreen from "./screens/reordering/AppointmentListScreen";
 import CustomReorderingScreen from "./screens/reordering/CustomReorderingScreen";
 import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
+import ServiceOnboardingScreen from "./screens/createServiceScreen/ServiceOnboardingScreen";
+import ServiceSetupScreen from "./screens/createServiceScreen/ServiceSetupScreen";
+import ValidateServiceScreen from "./screens/createServiceScreen/ValidateServiceScreen";
+import NewsScreen from "./screens/news/NewsScreen";
+import CreateNews from "./screens/createNews/CreateNews";
+import MediaScreen from "./screens/createNews/MediaScreen";
+import ValidationScreen from "./screens/createNews/ValidationScreen";
+import NewsDetailScreen from "./screens/news/NewsDetailScreen";
 import MessageScreen from "./screens/MessageScreen";
 import ChatRoomScreen from "./screens/ChatRoomScreen";
 import FeesScreen from "./screens/options/fees";
@@ -154,6 +160,7 @@ export default function App() {
               component={CategoryDetails}
               options={{ headerShown: false }}
             />
+
             <Stack.Screen
               name="AllBusinesses"
               component={AllBusinesses}
@@ -162,6 +169,11 @@ export default function App() {
             <Stack.Screen
               name="AllService"
               component={AllService}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="MainFooter"
+              component={MainFooter}
               options={{ headerShown: false }}
             />
             <Stack.Screen
@@ -295,7 +307,6 @@ export default function App() {
               component={AppointmentDetailsScreen}
               options={{ headerShown: false }}
             />
-
             <Stack.Screen
               name="CreateServiceScreen"
               component={CreateServiceScreen}
@@ -319,6 +330,11 @@ export default function App() {
             <Stack.Screen
               name="Statistics"
               component={Statistics}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="UploadMedia"
+              component={UploadMedia}
               options={{ headerShown: false }}
             />
             <Stack.Screen
@@ -367,6 +383,52 @@ export default function App() {
               component={AppointmentBook}
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="ServiceOnboardingScreen"
+              component={ServiceOnboardingScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ServiceSetupScreen"
+              component={ServiceSetupScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ValidateServiceScreen"
+              component={ValidateServiceScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="NewsScreen"
+              component={NewsScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="NewsCommentScreen"
+              component={NewsCommentScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="CreateNews"
+              component={CreateNews}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="MediaScreen"
+              component={MediaScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ValidationScreen"
+              component={ValidationScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="NewsDetailScreen"
+              component={NewsDetailScreen}
+              options={{ headerShown: false }}
+            />
+
             <Stack.Screen
               name="MediaGalleryScreen"
               component={MediaGalleryScreen}

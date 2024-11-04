@@ -142,12 +142,14 @@ const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
         showBackButton={true}
         onBack={() => navigation.goBack()}
       />
-      <FlatList
-        data={reviews}
-        keyExtractor={(item) => item.id}
-        renderItem={renderReview}
-        contentContainerStyle={styles.listContent}
-      />
+      <View style={{ padding: 20 }}>
+        <FlatList
+          data={reviews}
+          keyExtractor={(item) => item.id}
+          renderItem={renderReview}
+          contentContainerStyle={styles.listContent}
+        />
+      </View>
       <ImageView
         images={images}
         imageIndex={selectedImageIndex}
@@ -162,7 +164,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9F9F9",
-    padding: 20,
+    // padding: 20,
   },
   header: {
     fontSize: 28,

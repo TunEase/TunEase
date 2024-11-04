@@ -16,23 +16,25 @@ const slides = [
     id: '1',
     title: 'Basic Information',
     description: 'Start by adding your service details including name, description, price, and duration.',
-    image: require('../assets/service/customer_service.png') // Add your own images
+    image: require('../../assets/service/customer_service.png') // Add your own images
   },
   {
     id: '2',
     title: 'Add Media',
     description: 'Upload photos or videos that showcase your service to attract more customers.',
-    image: require('../assets/service/media.png')
+    image: require('../../assets/service/media.png')
   },
   {
     id: '3',
     title: 'Review & Publish',
     description: 'Review all information before publishing your service to make it visible to customers.',
-    image: require('../assets/service/settings.png')
+    image: require('../../assets/service/settings.png')
   }
 ];
 
-const ServiceOnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+const ServiceOnboardingScreen: React.FC<{ navigation: any,route:any }> = ({route, navigation }) => {
+  const { businessId,id} = route.params || {};
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -54,12 +56,12 @@ const ServiceOnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) 
       });
       setCurrentIndex(currentIndex + 1);
     } else {
-      navigation.replace('CreateService');
+      navigation.replace('CreateServiceScreen', { businessId,id});
     }
   };
 
   const handleSkip = () => {
-    navigation.replace('CreateService');
+    navigation.replace('CreateServiceScreen',{businessId,id});
   };
 
   return (

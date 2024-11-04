@@ -26,6 +26,7 @@ create table
 
 
 CREATE TABLE services (
+  
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -50,7 +51,6 @@ CREATE TABLE services (
     accept_review BOOLEAN DEFAULT FALSE, -- New field for review acceptance
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
-    
 );
 CREATE TABLE fees (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -153,6 +153,7 @@ CREATE TABLE media (
     review_id uuid REFERENCES reviews (id) ON DELETE CASCADE,
     fee_id uuid REFERENCES fees (id) ON DELETE CASCADE, -- New field for fee reference
     media_type VARCHAR(50) NOT NULL DEFAULT 'image', -- Default to 'image'
+    news_id uuid REFERENCES news (id) ON DELETE CASCADE,
     media_url TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now() -- New field for tracking updates
@@ -166,7 +167,6 @@ create table
     service_id uuid not null references services (id) on delete cascade,
     created_at timestamp default now(),
     unique (user_profile_id, service_id) -- Ensure that a user can only favorite a service once
-
   );
   CREATE TABLE news (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -175,12 +175,17 @@ create table
     content TEXT NOT NULL, -- News content, like a tweet or post
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
+    type VARCHAR(20) CHECK (type IN ('PROMOTION', 'UPDATE', 'EVENT', 'ANNOUNCEMENT', 'OFFER')),
+ status VARCHAR(20) CHECK (status IN ('active', 'inactive')) DEFAULT 'active',
+views INTEGER DEFAULT 0,
+likes INTEGER DEFAULT 0;
 );
 
 CREATE TABLE news_tag (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     news_id uuid REFERENCES news(id) ON DELETE CASCADE,
     tag_name VARCHAR(255) NOT NULL, -- Tags associated with the news post
+    link VARCHAR(255)
     UNIQUE (news_id, tag_name) -- Ensures each tag is unique per news post
 );
 
@@ -200,7 +205,41 @@ CREATE TABLE messages (
     created_at TIMESTAMP DEFAULT now(),
     is_read BOOLEAN DEFAULT FALSE
 );
+CREATE INDEX idx_news_likes_user ON news_likes(user_id);
+CREATE INDEX idx_news_likes_news ON news_likes(news_id);
+CREATE TYPE like_status AS ENUM ('liked', 'unliked');
 
+-- Create the news_likes table to track user likes
+CREATE TABLE news_likes (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id uuid REFERENCES user_profile(id) ON DELETE CASCADE,
+    news_id uuid REFERENCES news(id) ON DELETE CASCADE,
+    status like_status DEFAULT 'liked',
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now(),
+    UNIQUE(user_id, news_id)
+);
+-- Create a function to update the likes count in the news table
+CREATE OR REPLACE FUNCTION update_news_likes_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE news
+    SET likes = (
+        SELECT COUNT(*)
+        FROM news_likes
+        WHERE news_id = NEW.news_id
+        AND status = 'liked'
+    )
+    WHERE id = NEW.news_id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to automatically update likes count
+CREATE TRIGGER update_news_likes_count_trigger
+AFTER INSERT OR UPDATE OR DELETE ON news_likes
+FOR EACH ROW
+EXECUTE FUNCTION update_news_likes_count();
 
 
 

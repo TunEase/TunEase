@@ -1,7 +1,7 @@
-import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
   Dimensions,
+  FlatList,
   Image,
   SafeAreaView,
   StyleSheet,
@@ -18,6 +18,7 @@ import { RouteProp } from "@react-navigation/native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import PagerView from "react-native-pager-view";
+import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
 
@@ -58,7 +59,7 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
           `
           *,
           media:media(*),
-          reviews:reviews(*, media:media(*), user_profile:user_profile(*))
+          reviews:reviews(*, media:media(*), user_profile:user_profile(*), business:business(name))
         `
         )
         .eq("id", serviceId)

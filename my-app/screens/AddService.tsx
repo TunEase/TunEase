@@ -65,7 +65,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
     }
   };
 
-  const addService = async () => { 
+  const addService = async () => {
     const { data, error } = await supabase
       .from("services")
       .insert([...selectedServices, { ...newService, id: "id" }]);
@@ -99,7 +99,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
     console.log("Submitting form for service id:", currentServiceId);
     setModalVisible(false);
   };
-  
+
   useEffect(() => {
     fetchServices();
   }, []);
@@ -110,10 +110,12 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
         data={services}
         renderItem={({ item }) => (
           <View style={styles.card}>
-          {item.media && item.media.length > 0 && item.media[0].media_url ? (
-            <Image source={{ uri: item.media[0].media_url }} style={styles.coverImage} />
-          ) : null
-          }
+            {item.media && item.media.length > 0 && item.media[0].media_url ? (
+              <Image
+                source={{ uri: item.media[0].media_url }}
+                style={styles.coverImage}
+              />
+            ) : null}
             <View style={styles.cardContent}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.description}>{item.description}</Text>
@@ -121,13 +123,21 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   style={styles.settingsButton}
-                  onPress={() => navigation.navigate("ServiceSettings")}
+                  onPress={() =>
+                    navigation.navigate("ServiceSettings", {
+                      serviceId: item.id,
+                    })
+                  }
                 >
                   <Icon name="settings" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.availabilityButton}
-                  onPress={() => navigation.navigate("AvailabilityScreen",{serviceId:item.id})}
+                  onPress={() =>
+                    navigation.navigate("AvailabilityScreen", {
+                      serviceId: item.id,
+                    })
+                  }
                 >
                   <Icon name="check-circle" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
@@ -141,7 +151,10 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
                 >
                   <Icon name="edit" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.updateButton} onPress={()=>navigation.navigate("AppointmentListScreen")}>
+                <TouchableOpacity
+                  style={styles.updateButton}
+                  onPress={() => navigation.navigate("AppointmentListScreen")}
+                >
                   <Icon name="update" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
 
@@ -158,8 +171,14 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
         keyExtractor={(item) => item.id.toString()}
       />
       <TouchableOpacity
-        style={styles.addButton} 
-        onPress={() => navigation.navigate('CreateServiceScreen', { businessId: id })}
+        style={styles.addButton}
+        onPress={() =>
+          navigation.navigate("CreateServiceScreen", { businessId: id })
+        }
+        style={styles.addButton}
+        onPress={() =>
+          navigation.navigate("ServiceOnboardingScreen", { businessId: id })
+        }
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>

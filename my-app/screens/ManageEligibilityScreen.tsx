@@ -16,8 +16,11 @@ import ImageView from "react-native-image-viewing";
 import { Linking } from "react-native";
 import { useSupabaseUpload } from "../hooks/uploadFile";
 import { useMedia } from "../hooks/useMedia";
+import Header from "../components/Form/header";
+import { useNavigation } from "@react-navigation/native";
 
 const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
+  const navigation = useNavigation();
   const { insertMediaRecord } = useMedia();
   const { uploadMultipleFiles } = useSupabaseUpload("application");
   const { serviceId } = route.params;
@@ -150,125 +153,134 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Manage Eligibility</Text>
-      <FlatList
-        data={eligibilities}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.eligibilityItem}>
-            <View style={styles.iconContainer}>
-              <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
-                <FontAwesome name="cloud-upload" size={20} color="#00796B" />
+      <Header
+        title="Manage Eligibility"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
+      />
+      <View style={{ padding: 20 }}>
+        <FlatList
+          data={eligibilities}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.eligibilityItem}>
+              <View style={styles.iconContainer}>
+                <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
+                  <FontAwesome name="cloud-upload" size={20} color="#00796B" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.eligibilityTextContainer}>
+                <Text style={styles.eligibilityName}>{item.name}</Text>
+                <Text style={styles.eligibilityDescription}>
+                  {item.description}
+                </Text>
+                <Text style={styles.eligibilityDate}>
+                  Created: {new Date(item.created_at).toLocaleDateString()}
+                </Text>
+                <Text style={styles.eligibilityDate}>
+                  Updated: {new Date(item.updated_at).toLocaleDateString()}
+                </Text>
+                {item.media.length > 0 && (
+                  <View style={styles.mediaContainer}>
+                    {item.media.map((mediaItem, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() =>
+                          mediaItem.media_type === "image"
+                            ? openImageViewer(item.media, index)
+                            : openPDF(mediaItem.media_url)
+                        }
+                      >
+                        {mediaItem.media_type === "image" ? (
+                          <Image
+                            source={{ uri: mediaItem.media_url }}
+                            style={styles.mediaImage}
+                          />
+                        ) : (
+                          <View style={styles.pdfThumbnail}>
+                            <FontAwesome
+                              name="file-pdf-o"
+                              size={40}
+                              color="#FF5252"
+                            />
+                            <Text style={styles.pdfText}>PDF</Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => handleEditEligibility(item)}>
+                <FontAwesome name="edit" size={20} color="#00796B" />
               </TouchableOpacity>
             </View>
-            <View style={styles.eligibilityTextContainer}>
-              <Text style={styles.eligibilityName}>{item.name}</Text>
-              <Text style={styles.eligibilityDescription}>
-                {item.description}
-              </Text>
-              <Text style={styles.eligibilityDate}>
-                Created: {new Date(item.created_at).toLocaleDateString()}
-              </Text>
-              <Text style={styles.eligibilityDate}>
-                Updated: {new Date(item.updated_at).toLocaleDateString()}
-              </Text>
-              {item.media.length > 0 && (
-                <View style={styles.mediaContainer}>
-                  {item.media.map((mediaItem, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() =>
-                        mediaItem.media_type === "image"
-                          ? openImageViewer(item.media, index)
-                          : openPDF(mediaItem.media_url)
-                      }
-                    >
-                      {mediaItem.media_type === "image" ? (
-                        <Image
-                          source={{ uri: mediaItem.media_url }}
-                          style={styles.mediaImage}
-                        />
-                      ) : (
-                        <View style={styles.pdfThumbnail}>
-                          <FontAwesome
-                            name="file-pdf-o"
-                            size={40}
-                            color="#FF5252"
-                          />
-                          <Text style={styles.pdfText}>PDF</Text>
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
+          )}
+        />
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={handleAddEligibility}
+        >
+          <Text style={styles.addButtonText}>+</Text>
+        </TouchableOpacity>
+
+        <Modal
+          isVisible={modalVisible}
+          onBackdropPress={() => setModalVisible(false)}
+          style={styles.modal}
+          swipeDirection="down"
+          onSwipeComplete={() => setModalVisible(false)}
+          animationInTiming={800}
+          animationOutTiming={800}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {currentEligibility?.id ? "Edit Eligibility" : "Add Eligibility"}
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Eligibility Name"
+              value={currentEligibility?.name}
+              onChangeText={(text) =>
+                setCurrentEligibility({ ...currentEligibility, name: text })
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Eligibility Description"
+              value={currentEligibility?.description}
+              onChangeText={(text) =>
+                setCurrentEligibility({
+                  ...currentEligibility,
+                  description: text,
+                })
+              }
+            />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleSaveEligibility}
+              >
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => handleEditEligibility(item)}>
-              <FontAwesome name="edit" size={20} color="#00796B" />
-            </TouchableOpacity>
           </View>
-        )}
-      />
-      <TouchableOpacity style={styles.addButton} onPress={handleAddEligibility}>
-        <Text style={styles.addButtonText}>+</Text>
-      </TouchableOpacity>
+        </Modal>
 
-      <Modal
-        isVisible={modalVisible}
-        onBackdropPress={() => setModalVisible(false)}
-        style={styles.modal}
-        swipeDirection="down"
-        onSwipeComplete={() => setModalVisible(false)}
-        animationInTiming={800}
-        animationOutTiming={800}
-      >
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>
-            {currentEligibility?.id ? "Edit Eligibility" : "Add Eligibility"}
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Eligibility Name"
-            value={currentEligibility?.name}
-            onChangeText={(text) =>
-              setCurrentEligibility({ ...currentEligibility, name: text })
-            }
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Eligibility Description"
-            value={currentEligibility?.description}
-            onChangeText={(text) =>
-              setCurrentEligibility({
-                ...currentEligibility,
-                description: text,
-              })
-            }
-          />
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.saveButton]}
-              onPress={handleSaveEligibility}
-            >
-              <Text style={styles.buttonText}>Save</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      <ImageView
-        images={images}
-        imageIndex={selectedImageIndex}
-        visible={isImageViewVisible}
-        onRequestClose={() => setImageViewVisible(false)}
-        backgroundColor="#ffffff"
-      />
+        <ImageView
+          images={images}
+          imageIndex={selectedImageIndex}
+          visible={isImageViewVisible}
+          onRequestClose={() => setImageViewVisible(false)}
+          backgroundColor="#ffffff"
+        />
+      </View>
     </View>
   );
 };
@@ -276,8 +288,9 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    // padding: 20,
   },
+
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -349,14 +362,15 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: "absolute",
-    bottom: 20,
-    alignSelf: "center",
+    bottom: 20, // Distance from the bottom of the screen
+    alignSelf: "center", // Center horizontally
     backgroundColor: "#00796B",
-    borderRadius: 50,
+    borderRadius: 30, // Half of the width/height for a perfect circle
     width: 60,
     height: 60,
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 1, // Ensure the button is above other elements
   },
   addButtonText: {
     color: "#FFFFFF",
