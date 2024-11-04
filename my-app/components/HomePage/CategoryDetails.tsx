@@ -7,10 +7,11 @@ import {
   ScrollView,
   Dimensions,
   StatusBar 
+
 } from "react-native";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { LinearGradient } from 'expo-linear-gradient';
-import { Category } from "../../types/category"; 
+import {FontAwesome5} from "@expo/vector-icons";
+import {LinearGradient} from 'expo-linear-gradient';
+// import {Category} from "../../types/category"; 
 
 
 const { width } = Dimensions.get('window');

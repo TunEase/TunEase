@@ -1,7 +1,9 @@
-import { useNavigation } from "@react-navigation/native";
+import { RouteProp, useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
 import {
   Dimensions,
+  FlatList,
   Image,
   SafeAreaView,
   ScrollView,
@@ -9,14 +11,13 @@ import {
   Text,
   TouchableOpacity,
   View,
-  FlatList,
 } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
 import { Service } from "../types/business";
 import FAQs from "./FAQs";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RouteProp } from "@react-navigation/native";
+
 
 const { width } = Dimensions.get("window");
 
@@ -60,7 +61,7 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
           `
           *,
           media:media(*),
-          reviews:reviews(*, media:media(*), user_profile:user_profile(*))
+          reviews:reviews(*, media:media(*), user_profile:user_profile(*), business:business(name))
         `
         )
         .eq("id", serviceId)
@@ -159,7 +160,7 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
       </SafeAreaView>
     );
   }
-
+  console.log("service 💀💀", service);
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
@@ -227,8 +228,10 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
             if (user) {
               // Check if the user is logged in
               navigation.navigate("Book", {
-                service: service,
+                service,
+                // services,
                 serviceName: service.name,
+                selectedBusiness: {},
               });
             } else {
               navigation.navigate("Login");

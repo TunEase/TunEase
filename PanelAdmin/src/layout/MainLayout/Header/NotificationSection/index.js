@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import {
   Avatar,
   Box,
@@ -20,6 +19,7 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -106,11 +106,11 @@ const NotificationSection = () => {
               ...theme.typography.commonAvatar,
               ...theme.typography.mediumAvatar,
               transition: 'all .2s ease-in-out',
-              background: theme.palette.secondary.light,
-              color: theme.palette.secondary.dark,
+              background: theme.palette.success.light, // Changed to green
+              color: theme.palette.success.dark, // Changed to green
               '&[aria-controls="menu-list-grow"],&:hover': {
-                background: theme.palette.secondary.dark,
-                color: theme.palette.secondary.light
+                background: theme.palette.success.dark, // Changed to green
+                color: theme.palette.success.light // Changed to green
               }
             }}
             ref={anchorRef}
@@ -157,13 +157,13 @@ const NotificationSection = () => {
                               label="01"
                               sx={{
                                 color: theme.palette.background.default,
-                                bgcolor: theme.palette.warning.dark
+                                bgcolor: theme.palette.success.dark // Changed to green
                               }}
                             />
                           </Stack>
                         </Grid>
                         <Grid item>
-                          <Typography component={Link} to="#" variant="subtitle2" color="primary">
+                          <Typography component={Link} to="#" variant="subtitle2" state={{ color: '#00796B' }}>
                             Mark as all read
                           </Typography>
                         </Grid>
@@ -202,7 +202,7 @@ const NotificationSection = () => {
                   </Grid>
                   <Divider />
                   <CardActions sx={{ p: 1.25, justifyContent: 'center' }}>
-                    <Button size="small" disableElevation>
+                    <Button style={{ backgroundColor: '#00796B', color: '#FFFFFF' }} size="small" disableElevation>
                       View All
                     </Button>
                   </CardActions>

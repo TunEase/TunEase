@@ -139,7 +139,72 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       setLoading(false);
     }
   };
+  const renderTopBusinesses = () => {
+    const scrollX = useRef(new Animated.Value(0)).current;
 
+    return (
+      <View>
+        <View style={styles.sectionHeaderContainer}>
+          <Text style={styles.sectionHeader}>Top Businesses</Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("AllBusinesses")}
+          >
+            <Text style={styles.viewAllText}>View All</Text>
+          </TouchableOpacity>
+        </View>
+        <Animated.FlatList
+          data={businesses}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+            { useNativeDriver: true }
+          )}
+          renderItem={({ item, index }) => {
+            // console.log("item  ☢️☢️☢️☢️☢️☢️", item);
+            const inputRange = [
+              (index - 1) * 200,
+              index * 200,
+              (index + 1) * 200,
+            ];
+            const scale = scrollX.interpolate({
+              inputRange,
+              outputRange: [0.8, 1, 0.8],
+              extrapolate: "clamp",
+            });
+
+            return (
+              <Animated.View
+                style={[styles.recommendedCard, { transform: [{ scale }] }]}
+              >
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("staticBusinessProfile", {
+                      selectedBusiness: item,
+                    })
+                  }
+                >
+                  <Image
+                    source={{
+                      uri: item.media?.[0]?.media_url || "default-image-url",
+                    }}
+                    style={styles.recommendedImage}
+                  />
+                  <Text style={styles.recommendedTitle}>{item.name}</Text>
+                  <Text
+                    style={styles.recommendedReview}
+                  >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            );
+          }}
+          snapToInterval={200}
+          decelerationRate="fast"
+        />
+      </View>
+    );
+  };
   const fetchNews = async () => {
     try {
       const { data: newsData, error: newsError } = await supabase
@@ -350,52 +415,52 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     </View>
   );
   
-    const renderCategories = () => {
-      if (loading) {
-        return (
-          <View style={[styles.categorySection, { justifyContent: 'center', alignItems: 'center' }]}>
-            <ActivityIndicator size="large" color="#00796B" />
-          </View>
-        );
-      }
+    // const renderCategories = () => {
+    //   if (loading) {
+    //     return (
+    //       <View style={[styles.categorySection, { justifyContent: 'center', alignItems: 'center' }]}>
+    //         <ActivityIndicator size="large" color="#00796B" />
+    //       </View>
+    //     );
+    //   }
   
-      return (
-        <View style={styles.categorySection}>
-          <View style={styles.sectionHeaderContainer}>
-            <View style={styles.headerLeft}>
-              <View style={styles.headerAccent} />
-              <Text style={styles.sectionHeader}>Categories</Text>
-            </View>
-          </View>
+    //   return (
+    //     <View style={styles.categorySection}>
+    //       <View style={styles.sectionHeaderContainer}>
+    //         <View style={styles.headerLeft}>
+    //           <View style={styles.headerAccent} />
+    //           <Text style={styles.sectionHeader}>Categories</Text>
+    //         </View>
+    //       </View>
   
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScrollContainer}
-          >
-            {categories.map((category, index) => (
-              <TouchableOpacity
-                key={category.id}
-                style={styles.categoryCard}
-                onPress={() => navigation.navigate("CategoryDetails", { category })}
-              >
-                <LinearGradient
-                  colors={category.gradient}
-                  style={styles.categoryGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <View style={styles.categoryIconContainer}>
-                    <FontAwesome5 name={category.icon} size={24} color="#FFFFFF" />
-                  </View>
-                  <Text style={styles.categoryTitle}>{category.name}</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      );
-    };
+    //       <ScrollView
+    //         horizontal
+    //         showsHorizontalScrollIndicator={false}
+    //         contentContainerStyle={styles.categoryScrollContainer}
+    //       >
+    //         {categories.map((category, index) => (
+    //           <TouchableOpacity
+    //             key={category.id}
+    //             style={styles.categoryCard}
+    //             onPress={() => navigation.navigate("CategoryDetails", { category })}
+    //           >
+    //             <LinearGradient
+    //               colors={category.gradient}
+    //               style={styles.categoryGradient}
+    //               start={{ x: 0, y: 0 }}
+    //               end={{ x: 1, y: 1 }}
+    //             >
+    //               <View style={styles.categoryIconContainer}>
+    //                 <FontAwesome5 name={category.icon} size={24} color="#FFFFFF" />
+    //               </View>
+    //               <Text style={styles.categoryTitle}>{category.name}</Text>
+    //             </LinearGradient>
+    //           </TouchableOpacity>
+    //         ))}
+    //       </ScrollView>
+    //     </View>
+    //   );
+    // };
 
   const renderPopularServices = () => (
     <View style={styles.adSection}>
@@ -465,7 +530,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         ListHeaderComponent={() => (
           <>
             {renderHeader()}
-            {renderCategories()}
+        
           {renderTopAdvertisement()}
             {renderFooterButtons()}
             {renderTopBusinesses()}
@@ -479,6 +544,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         keyExtractor={() => ""}
         showsVerticalScrollIndicator={false}
       />
+   
       <Footer navigation={navigation} />
     </SafeAreaView>
   );

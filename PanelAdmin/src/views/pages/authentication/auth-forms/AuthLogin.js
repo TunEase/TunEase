@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import {
   Box,
   Button,
@@ -20,10 +19,11 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // third party
-import * as Yup from 'yup';
 import { Formik } from 'formik';
+import * as Yup from 'yup';
 
 // project imports
 import useScriptRef from 'hooks/useScriptRef';
@@ -32,8 +32,10 @@ import AnimateButton from 'ui-component/extended/AnimateButton';
 // assets
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-
 import Google from 'assets/images/icons/social-google.svg';
+
+// Supabase client
+import { supabase } from 'services/supabaseClient';
 
 // ============================|| FIREBASE - LOGIN ||============================ //
 
@@ -89,7 +91,6 @@ const FirebaseLogin = ({ ...others }) => {
             }}
           >
             <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
-
             <Button
               variant="outlined"
               sx={{
@@ -107,7 +108,6 @@ const FirebaseLogin = ({ ...others }) => {
             >
               OR
             </Button>
-
             <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
           </Box>
         </Grid>
@@ -130,6 +130,15 @@ const FirebaseLogin = ({ ...others }) => {
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
+            const { error } = await supabase.auth.signInWithPassword({
+              email: values.email,
+              password: values.password
+            });
+
+            if (error) {
+              throw error;
+            }
+
             if (scriptedRef.current) {
               setStatus({ success: true });
               setSubmitting(false);

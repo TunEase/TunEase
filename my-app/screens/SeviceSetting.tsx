@@ -1,337 +1,277 @@
-import React, { useState } from "react";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import {
-  Alert,
+  Button,
   Modal,
-  ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import Header from "../components/Form/header";
+import { supabase } from "../services/supabaseClient";
 
-interface ServiceSettingsProps {
-  serviceData: {
-    isServiceDisabled: boolean;
-    availability: string;
-    acceptComplaints: boolean;
-    acceptAppointments: boolean;
-    showReviews: boolean;
-    price: number;
-    maxAppointments: number;
-    autoConfirm: boolean;
-    staffAssigned: string;
-  };
-  onSave: (updatedService: any) => void;
-  navigation: any; // Add this prop to navigate back
+interface ServiceSettingProps {
+  // serviceId: string | undefined;
 }
 
-const ServiceSettings: React.FC<ServiceSettingsProps> = ({
-  serviceData = {
-    isServiceDisabled: false,
-    availability: "",
-    acceptComplaints: false,
-    acceptAppointments: false,
-    showReviews: false,
-    price: 0,
-    maxAppointments: 0,
-    autoConfirm: false,
-    staffAssigned: "",
-  },
-  onSave = () => {},
-  navigation, // Destructure navigation for going back
-}) => {
-  const [isServiceDisabled, setIsServiceDisabled] = useState<boolean>(
-    serviceData.isServiceDisabled
-  );
-  const [availability, setAvailability] = useState<string>(
-    serviceData.availability
-  );
-  const [acceptComplaints, setAcceptComplaints] = useState<boolean>(
-    serviceData.acceptComplaints
-  );
-  const [acceptAppointments, setAcceptAppointments] = useState<boolean>(
-    serviceData.acceptAppointments
-  );
-  const [showReviews, setShowReviews] = useState<boolean>(
-    serviceData.showReviews
-  );
-  const [price, setPrice] = useState<number>(serviceData.price);
-  const [maxAppointments, setMaxAppointments] = useState<number>(
-    serviceData.maxAppointments
-  );
-  const [autoConfirm, setAutoConfirm] = useState<boolean>(
-    serviceData.autoConfirm
-  );
-  const [staffAssigned, setStaffAssigned] = useState<string>(
-    serviceData.staffAssigned
-  );
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const handleSave = () => {
-    const updatedService = {
-      isServiceDisabled,
-      availability,
-      acceptComplaints,
-      acceptAppointments,
-      showReviews,
-      price,
-      maxAppointments,
-      autoConfirm,
-      staffAssigned,
+const ServiceSetting: React.FC<ServiceSettingProps> = ({}) => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { serviceId } = route.params as { serviceId: string | undefined };
+  console.log("Service ID:", serviceId);
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  const [settings, setSettings] = useState({
+    disable_availability: false,
+    disable_service: false,
+    accept_cash: false,
+    accept_card: false,
+    accept_online: false,
+    accept_cheque: false,
+    accept_notification: false,
+    accept_complaint: false,
+    accept_review: false,
+    processing_time: "",
+  });
+
+  useEffect(() => {
+    const fetchSettings = async (id: string) => {
+      if (!id) {
+        console.error("Service ID is undefined");
+        return; // Exit if serviceId is invalid
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("services")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setSettings((prevSettings) => ({
+            ...prevSettings,
+            ...data,
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
     };
 
-    onSave(updatedService);
+    fetchSettings(serviceId!);
+  }, [serviceId]);
 
-    Alert.alert("Service Saved", "Your service settings have been saved.", [
-      {
-        text: "OK",
-        onPress: () => {
-          navigation.goBack();
-        },
-      },
-    ]);
+  const handleSave = async () => {
+    try {
+      const { error } = await supabase
+        .from("services")
+        .update(settings)
+        .eq("id", serviceId);
+
+      if (error) throw error;
+
+      setModalVisible(true);
+    } catch (error) {
+      console.error("Error saving settings:", error);
+    }
+  };
+
+  const toggleSetting = (key: keyof typeof settings) => {
+    setSettings((prevSettings) => ({
+      ...prevSettings,
+      [key]: !prevSettings[key],
+    }));
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>Service Settings</Text>
-
-      {/* Disable Service */}
-      <View style={styles.settingCard}>
-        <Text style={styles.label}>Disable Service</Text>
-        <Switch
-          value={isServiceDisabled}
-          onValueChange={setIsServiceDisabled}
-          trackColor={{ false: "#767577", true: "#00796B" }}
-          thumbColor={isServiceDisabled ? "#fff" : "#00796B"}
-        />
-      </View>
-
-      {/* Availability */}
-      <View style={styles.settingCard}>
-        <Text style={styles.label}>Availability</Text>
-        <TextInput
-          style={styles.input}
-          value={availability}
-          onChangeText={setAvailability}
-          placeholder="Enter availability"
-          placeholderTextColor="#a6a6a6"
-        />
-      </View>
-      {/* Accept Complaints */}
-      <View style={styles.settingCard}>
-        <Text style={styles.label}>Accept Complaints</Text>
-        <Switch
-          value={acceptComplaints}
-          onValueChange={setAcceptComplaints}
-          trackColor={{ false: "#767577", true: "#00796B" }}
-          thumbColor={acceptComplaints ? "#fff" : "#00796B"}
-        />
-      </View>
-
-      {/* Accept Appointments */}
-      <View style={styles.settingCard}>
-        <Text style={styles.label}>Accept Appointments</Text>
-        <Switch
-          value={acceptAppointments}
-          onValueChange={setAcceptAppointments}
-          trackColor={{ false: "#767577", true: "#00796B" }}
-          thumbColor={acceptAppointments ? "#fff" : "#00796B"}
-        />
-      </View>
-
-      {/* Show Reviews */}
-      <View style={styles.settingCard}>
-        <Text style={styles.label}>Show Reviews</Text>
-        <Switch
-          value={showReviews}
-          onValueChange={setShowReviews}
-          trackColor={{ false: "#767577", true: "#00796B" }}
-          thumbColor={showReviews ? "#fff" : "#00796B"}
-        />
-      </View>
-
-      {/* Price */}
-      <View style={styles.settingCard}>
-        <Text style={styles.label}>Price ($)</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={price.toString()}
-          onChangeText={(text) => setPrice(Number(text))}
-          placeholder="Enter price"
-          placeholderTextColor="#a6a6a6"
-        />
-      </View>
-
-      {/* Max Number of Appointments */}
-      <View style={styles.settingCard}>
-        <Text style={styles.label}>Max Appointments</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={maxAppointments.toString()}
-          onChangeText={(text) => setMaxAppointments(Number(text))}
-          placeholder="Enter max appointments"
-          placeholderTextColor="#a6a6a6"
-        />
-      </View>
-
-      {/* Auto-Confirmation */}
-      <View style={styles.settingCard}>
-        <Text style={styles.label}>Auto-Confirmation</Text>
-        <Switch
-          value={autoConfirm}
-          onValueChange={setAutoConfirm}
-          trackColor={{ false: "#767577", true: "#00796B" }}
-          thumbColor={autoConfirm ? "#fff" : "#00796B"}
-        />
-      </View>
-
-      {/* Staff Assignment */}
-      <View style={styles.settingCard}>
-        <Text style={styles.label}>Staff Assigned</Text>
-        <TextInput
-          style={styles.input}
-          value={staffAssigned}
-          onChangeText={setStaffAssigned}
-          placeholder="Enter staff name"
-          placeholderTextColor="#a6a6a6"
-        />
-      </View>
-      <TouchableOpacity style={styles.button} onPress={handleSave}>
-        <Text style={styles.buttonText}>Save</Text>
-      </TouchableOpacity>
-      {/* Custom Modal for Save Confirmation */}
+    <View style={styles.container}>
+      <Header title="Service Settings" onBack={() => navigation.goBack()} />
+      <TextInput
+        style={styles.input}
+        placeholder="Processing Time (min)"
+        value={settings.processing_time}
+        onChangeText={(text) => {
+          const numericValue = text.replace(/[^0-9]/g, "");
+          setSettings({ ...settings, processing_time: numericValue });
+        }}
+        keyboardType="numeric"
+      />
       <Modal
         transparent={true}
-        visible={modalVisible}
+        visible={isModalVisible}
         animationType="slide"
-        onRequestClose={() => setModalVisible(true)}
+        onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Service Saved</Text>
-            <Text style={styles.modalSubtext}>
-              Your service settings have been saved successfully.
-            </Text>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalText}>Settings saved successfully!</Text>
             <TouchableOpacity
               style={styles.modalButton}
-              onPress={() => {
-                setModalVisible(true);
-                navigation.goBack();
-              }}
+              onPress={() => setModalVisible(false)}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
+              <Text
+                style={styles.modalButtonText}
+                onPress={() => navigation.navigate("AddService")}
+              >
+                OK
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </ScrollView>
+      <View style={styles.settingsContainer}>
+        {[
+          { label: "Disable Availability", key: "disable_availability" },
+          { label: "Disable Service", key: "disable_service" },
+          { label: "Accept Cash", key: "accept_cash" },
+          { label: "Accept Card", key: "accept_card" },
+          { label: "Accept Online", key: "accept_online" },
+          { label: "Accept Cheque", key: "accept_cheque" },
+          { label: "Accept Notification", key: "accept_notification" },
+          { label: "Accept Complaint", key: "accept_complaint" },
+          { label: "Accept Review", key: "accept_review" },
+        ].map((setting) => {
+          const value = settings[setting.key as keyof typeof settings];
+          const isActive = typeof value === "boolean" ? value : false;
+
+          return (
+            <SettingItem
+              key={setting.key}
+              label={setting.label}
+              isActive={isActive}
+              onPress={() =>
+                toggleSetting(setting.key as keyof typeof settings)
+              }
+            />
+          );
+        })}
+      </View>
+      <View style={styles.buttonContainer}>
+        <Button title="Save" onPress={handleSave} color="#00796B" />
+      </View>
+    </View>
   );
 };
 
-// Updated Styles
+const SettingItem = ({
+  label,
+  isActive,
+  onPress,
+}: {
+  label: string;
+  isActive: boolean;
+  onPress: () => void;
+}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[styles.settingItem, isActive && styles.activeSetting]}
+  >
+    <Text style={[styles.icon, isActive && styles.activeIcon]}>
+      {isActive ? "✓" : "✕"}
+    </Text>
+    <Text style={[styles.settingText, isActive && styles.activeText]}>
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
-  modalContent: {
-    // backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 10,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#00796B",
-  },
-  modalSubtext: {
-    fontSize: 18,
-    color: "#4A4A4A",
-    marginBottom: 24,
-    fontStyle: "italic",
-    lineHeight: 1.5,
-    textAlign: "center",
-    fontFamily: "Arial",
-  },
-
-  modalButton: {
-    backgroundColor: "#009688",
-    marginTop: 20,
-
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-
-  modalButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    fontSize: 16,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-
-  modalContainer: {
+  modalBackground: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  button: {
-    backgroundColor: "#00796B",
-    padding: 10,
-    borderRadius: 5,
+  modalContainer: {
+    width: "80%",
+    padding: 20,
+    backgroundColor: "#fff",
+    borderRadius: 10,
     alignItems: "center",
   },
-  buttonText: {
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: "#00796B",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  modalButtonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontSize: 16,
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginTop: 20,
+  },
+  buttonContainer: {
+    marginTop: 0,
+    alignSelf: "center",
+    width: "40%",
+    top: -15,
+    borderRadius: 40,
   },
   container: {
+    flex: 1,
     padding: 20,
-    backgroundColor: "#f0f4f8", // Soft background
-    flexGrow: 1,
-  },
-  heading: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#00796B", // Primary color for the heading
-    textAlign: "center",
-    marginBottom: 25,
-  },
-  settingCard: {
-    backgroundColor: "#fff", // White card background
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    elevation: 2, // Shadow for Android
-    shadowColor: "#000", // Shadow for iOS
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  label: {
-    fontSize: 18, // Larger text for better readability
-    fontWeight: "600",
-    color: "#00796B", // Primary color for labels
+    backgroundColor: "#f5f5f5",
   },
   input: {
+    height: 40,
     width: "50%",
-    padding: 10,
-    borderColor: "#00796B", // Primary color for input borders
+    alignSelf: "center",
+    borderColor: "#c0c0c0",
     borderWidth: 1,
     borderRadius: 8,
-    backgroundColor: "#f9f9f9",
-    color: "#333", // Text color
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+    top: -5,
+  },
+  settingsContainer: {
+    marginBottom: 20,
+    top: -10,
+  },
+  settingItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#c0c0c0",
+    backgroundColor: "#e0e0e0",
+  },
+  activeSetting: {
+    borderColor: "#00796B",
+    backgroundColor: "#00796B",
+  },
+  icon: {
+    fontSize: 18,
+    color: "#666",
+    marginRight: 10,
+  },
+  activeIcon: {
+    color: "#fff",
+  },
+  settingText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  activeText: {
+    color: "#fff",
   },
 });
 
-export default ServiceSettings;
+export default ServiceSetting;
