@@ -7,6 +7,7 @@ type MediaOptions = {
   complaint_id?: string;
   review_id?: string;
   fee_id?: string;
+  message_id?: string;
 };
 
 type MediaRecord = {
@@ -19,6 +20,7 @@ type MediaRecord = {
   complaint_id?: string;
   review_id?: string;
   fee_id?: string;
+  message_id?: string;
 };
 
 export function useMedia() {
@@ -43,6 +45,7 @@ export function useMedia() {
           complaint_id: options.complaint_id,
           review_id: options.review_id,
           fee_id: options.fee_id,
+          message_id: options.message_id,
         })
         .select("*")
         .single();

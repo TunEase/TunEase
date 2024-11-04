@@ -107,6 +107,7 @@ export function useSupabaseUpload(bucketName: string) {
         quality: options.quality || 1, // Default quality,
         allowsMultipleSelection: true,
       });
+      console.log("result", result);
 
       if ((result.canceled && !result.assets) || result.assets.length === 0) {
         console.log("User cancelled file picker.");

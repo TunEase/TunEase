@@ -7,6 +7,8 @@ import { createFees } from "./createFees";
 import { injectMedia } from "./createImages";
 import { createReviewData } from "./createReviews";
 import { createService } from "./createServices";
+import { addNews } from "./addNews";
+import { createRoomsAndMessages } from "./createRoomsAndMessages";
 import { seedNews } from "./addNews";
 import { addMediaToNews } from "./addMediaToNews";
 const dropTablesExceptUsers = async () => {
@@ -45,9 +47,11 @@ const dropTablesExceptUsers = async () => {
 };
 // Main function to run all operations in order
 const runAllFunctions = async () => {
+  await createRoomsAndMessages();
   // await createBusiness(); // Create businesses
   // await createService(); // Create services
   // await createAvailabilityData(); // Create availability data
+  // await addNews();
   await seedNews();
   // await addMediaToNews();
   // await createComplaintsData(); // Create complaints data

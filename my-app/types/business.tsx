@@ -43,6 +43,15 @@ export interface Service {
   business?: Business;
   eligibility: string;
   fees: string;
+  service_type: string;
+  service_duration: string;
+  processing_time: string;
+  disable_availability: boolean;
+  disable_service: boolean;
+  accept_cash: boolean;
+  accept_card: boolean;
+  accept_online: boolean;
+  accept_cheque: boolean;
 }
 
 export interface Review {
@@ -59,5 +68,14 @@ export type RootStackParamList = {
   selectedBusiness: {
     selectedBusiness: Business;
     ServiceDetails: { serviceId: string };
+    // ChatRoomScreen: { businessName: string };
   };
 };
+
+export interface Conversation {
+  id: string;
+  business: { name: string };
+  last_message: string;
+  created_at: string;
+  avatar_url: string;
+}

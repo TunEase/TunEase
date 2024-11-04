@@ -4,6 +4,8 @@ import { SwipeListView } from "react-native-swipe-list-view";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { supabase } from "../services/supabaseClient";
 import * as Animatable from "react-native-animatable";
+import Header from "../components/Form/header";
+import { useNavigation } from "@react-navigation/native";
 
 type Complaint = {
   id: string;
@@ -55,8 +57,8 @@ const OwnerComplaintsScreen: React.FC<{ route: any; navigation: any }> = ({
       } else {
         const formattedData = data.map((complaint: any) => ({
           ...complaint,
-          user_name: complaint.user_profile.name,
-          user_email: complaint.user_profile.email,
+          user_name: complaint.user_profile?.name,
+          user_email: complaint.user_profile?.email,
           user_image_url: complaint.media ? complaint.media.media_url : null,
         }));
         setComplaints(formattedData);
@@ -89,83 +91,89 @@ const OwnerComplaintsScreen: React.FC<{ route: any; navigation: any }> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Complaints</Text>
-      <SwipeListView
-        data={complaints}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.complaintItem}>
-            {item.user_image_url && (
-              <Image
-                source={{ uri: item.user_image_url }}
-                style={styles.userImage}
-              />
-            )}
-            <Text style={styles.userName}>{item.user_name}</Text>
-            <Text style={styles.complaintText}>{item.description}</Text>
-            <Text
-              style={[
-                styles.complaintStatus,
-                item.status === "DISMISSED" && styles.dismissedStatus,
-              ]}
-            >
-              Status: {item.status}
-            </Text>
-            <Text style={styles.complaintDate}>
-              Created At: {item.created_at}
-            </Text>
-            {item.resolved_at && (
-              <Text style={styles.complaintResolved}>
-                Resolved At: {item.resolved_at}
-              </Text>
-            )}
-            {item.resolution_note && (
-              <Text style={styles.complaintNote}>
-                Note: {item.resolution_note}
-              </Text>
-            )}
-          </View>
-        )}
-        renderHiddenItem={({ item }) => (
-          <View style={styles.rowBack}>
-            <View style={styles.iconContainer}>
-              <Icon
-                name="close"
-                size={30}
-                color="#FFF"
-                onPress={() => handleReject(item.id)}
-              />
-              <Text style={styles.iconText}>Reject</Text>
-            </View>
-            <View style={styles.iconContainerBlue}>
-              <Icon
-                name="reply"
-                size={30}
-                color="#FFF"
-                onPress={() =>
-                  navigation.navigate("ReplyToComplaintScreen", {
-                    complaintId: item.id,
-                    description: item.description,
-                    created_at: item.created_at,
-                  })
-                }
-              />
-              <Text style={styles.iconText}>Reply</Text>
-            </View>
-          </View>
-        )}
-        leftOpenValue={75}
-        rightOpenValue={-75}
+      <Header
+        title="Complaints"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
       />
-      {rejectedAnimationVisible && (
-        <Animatable.View
-          animation="fadeIn"
-          duration={500}
-          style={styles.rejectedAnimation}
-        >
-          <Text style={styles.rejectedAnimationText}>Rejected!</Text>
-        </Animatable.View>
-      )}
+      <View style={{ padding: 20 }}>
+        <SwipeListView
+          data={complaints}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.complaintItem}>
+              {item.user_image_url && (
+                <Image
+                  source={{ uri: item.user_image_url }}
+                  style={styles.userImage}
+                />
+              )}
+              <Text style={styles.userName}>{item.user_name}</Text>
+              <Text style={styles.complaintText}>{item.description}</Text>
+              <Text
+                style={[
+                  styles.complaintStatus,
+                  item.status === "DISMISSED" && styles.dismissedStatus,
+                ]}
+              >
+                Status: {item.status}
+              </Text>
+              <Text style={styles.complaintDate}>
+                Created At: {item.created_at}
+              </Text>
+              {item.resolved_at && (
+                <Text style={styles.complaintResolved}>
+                  Resolved At: {item.resolved_at}
+                </Text>
+              )}
+              {item.resolution_note && (
+                <Text style={styles.complaintNote}>
+                  Note: {item.resolution_note}
+                </Text>
+              )}
+            </View>
+          )}
+          renderHiddenItem={({ item }) => (
+            <View style={styles.rowBack}>
+              <View style={styles.iconContainer}>
+                <Icon
+                  name="close"
+                  size={30}
+                  color="#FFF"
+                  onPress={() => handleReject(item.id)}
+                />
+                <Text style={styles.iconText}>Reject</Text>
+              </View>
+              <View style={styles.iconContainerBlue}>
+                <Icon
+                  name="reply"
+                  size={30}
+                  color="#FFF"
+                  onPress={() =>
+                    navigation.navigate("ReplyToComplaintScreen", {
+                      complaintId: item.id,
+                      description: item.description,
+                      created_at: item.created_at,
+                    })
+                  }
+                />
+                <Text style={styles.iconText}>Reply</Text>
+              </View>
+            </View>
+          )}
+          leftOpenValue={75}
+          rightOpenValue={-75}
+        />
+        {rejectedAnimationVisible && (
+          <Animatable.View
+            animation="fadeIn"
+            duration={500}
+            style={styles.rejectedAnimation}
+          >
+            <Text style={styles.rejectedAnimationText}>Rejected!</Text>
+          </Animatable.View>
+        )}
+      </View>
     </View>
   );
 };
@@ -173,7 +181,7 @@ const OwnerComplaintsScreen: React.FC<{ route: any; navigation: any }> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    // padding: 20,
     backgroundColor: "#F0F4F8",
   },
   header: {

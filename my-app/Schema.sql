@@ -158,6 +158,7 @@ CREATE TABLE media (
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now() -- New field for tracking updates
     eligibility_id uuid REFERENCES eligibility(id) ON DELETE CASCADE;
+    message_id uuid REFERENCES messages(id) ON DELETE CASCADE;
 );
 create table
   favorites (
@@ -188,6 +189,22 @@ CREATE TABLE news_tag (
     UNIQUE (news_id, tag_name) -- Ensures each tag is unique per news post
 );
 
+CREATE TABLE conversations (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    business_id uuid REFERENCES business(id) ON DELETE CASCADE,
+    user_profile_id uuid REFERENCES user_profile(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now()
+);
+
+CREATE TABLE messages (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    conversation_id uuid REFERENCES conversations(id) ON DELETE CASCADE,
+    sender_id uuid REFERENCES user_profile(id) ON DELETE SET NULL,
+    content TEXT,
+    created_at TIMESTAMP DEFAULT now(),
+    is_read BOOLEAN DEFAULT FALSE
+);
 CREATE INDEX idx_news_likes_user ON news_likes(user_id);
 CREATE INDEX idx_news_likes_news ON news_likes(news_id);
 CREATE TYPE like_status AS ENUM ('liked', 'unliked');
