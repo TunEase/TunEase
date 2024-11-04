@@ -13,15 +13,14 @@ import {
   Animated,
   ActivityIndicator,
   Dimensions,
-
+ 
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
-import News from "./News";
 import { LinearGradient } from "expo-linear-gradient";
-
+import { FontAwesome5 } from '@expo/vector-icons';
 
 interface HomeProps {
   navigation: any;
@@ -40,6 +39,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [Error, setError] = useState<string | null>(null);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [isManualScroll, setIsManualScroll] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
   const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
 
   const adScrollRef = useRef<ScrollView>(null);
@@ -74,6 +74,8 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     fetchBusinesses();
     fetchPopularServices();
     fetchNews()
+    fetchCategories();
+
   }, []);
 
   const fetchPopularServices = async () => {
@@ -120,6 +122,21 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       setBusinesses(data);
     } catch (error) {
       console.error("Error fetching businesses:", error);
+    }
+  };
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -289,6 +306,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </View>
     );
   };
+
   
   const renderHeader = () => (
     <View style={styles.header}>
@@ -331,81 +349,53 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
-
-
-  const renderTopBusinesses = () => {
-    const scrollX = useRef(new Animated.Value(0)).current;
-
-    return (
-      <View style={styles.adSection}>
-      <View style={styles.sectionHeaderContainer}>
-        <View style={styles.headerLeft}>
-          <View style={styles.headerAccent} />
-          <Text style={styles.sectionHeader}>Top Businesses</Text>
-          
-        </View>
-        <TouchableOpacity 
-          style={styles.viewAllButton}
-          onPress={() => navigation.navigate("AllBusinesses")}
-        >
-          <Text style={styles.viewAllText}>View All</Text>
-          <Icon name="arrow-forward" size={16} color="#00796B" />
-        </TouchableOpacity>
-      </View>
-        <Animated.FlatList
-          data={businesses}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item.id.toString()}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-            { useNativeDriver: true }
-          )}
-          renderItem={({ item, index }) => {
-            // console.log("item  ☢️☢️☢️☢️☢️☢️", item);
-            const inputRange = [
-              (index - 1) * 200,
-              index * 200,
-              (index + 1) * 200,
-            ];
-            const scale = scrollX.interpolate({
-              inputRange,
-              outputRange: [0.8, 1, 0.8],
-              extrapolate: "clamp",
-            });
-
-            return (
-              <Animated.View
-                style={[styles.recommendedCard, { transform: [{ scale }] }]}
+  
+    const renderCategories = () => {
+      if (loading) {
+        return (
+          <View style={[styles.categorySection, { justifyContent: 'center', alignItems: 'center' }]}>
+            <ActivityIndicator size="large" color="#00796B" />
+          </View>
+        );
+      }
+  
+      return (
+        <View style={styles.categorySection}>
+          <View style={styles.sectionHeaderContainer}>
+            <View style={styles.headerLeft}>
+              <View style={styles.headerAccent} />
+              <Text style={styles.sectionHeader}>Categories</Text>
+            </View>
+          </View>
+  
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryScrollContainer}
+          >
+            {categories.map((category, index) => (
+              <TouchableOpacity
+                key={category.id}
+                style={styles.categoryCard}
+                onPress={() => navigation.navigate("CategoryDetails", { category })}
               >
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("Profile", {
-                      selectedBusiness: item,
-                    })
-                  }
+                <LinearGradient
+                  colors={category.gradient}
+                  style={styles.categoryGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
                 >
-                  <Image
-                    source={{
-                      uri: item.media?.[0]?.media_url || "default-image-url",
-                    }}
-                    style={styles.recommendedImage}
-                  />
-                  <Text style={styles.recommendedTitle}>{item.name}</Text>
-                  <Text
-                    style={styles.recommendedReview}
-                  >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
-                </TouchableOpacity>
-              </Animated.View>
-            );
-          }}
-          snapToInterval={200}
-          decelerationRate="fast"
-        />
-      </View>
-    );
-  };
-
+                  <View style={styles.categoryIconContainer}>
+                    <FontAwesome5 name={category.icon} size={24} color="#FFFFFF" />
+                  </View>
+                  <Text style={styles.categoryTitle}>{category.name}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      );
+    };
 
   const renderPopularServices = () => (
     <View style={styles.adSection}>
@@ -475,10 +465,12 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         ListHeaderComponent={() => (
           <>
             {renderHeader()}
-            {renderTopAdvertisement()}
+            {renderCategories()}
+          {renderTopAdvertisement()}
             {renderFooterButtons()}
             {renderTopBusinesses()}
             {renderPopularServices()}
+        
            
           </>
         )}
@@ -977,7 +969,49 @@ dateText: {
 viewAll:{
   color: '#00796B',
   fontWeight: '600',
-}
+},categorySection: {
+  marginVertical: 20,
+  
+},
+categoryScrollContainer: {
+  paddingHorizontal: 15,
+  paddingVertical: 10,
+
+},
+categoryCard: {
+  width: 100,
+  height: 100,
+  marginRight: 15,
+  borderRadius: 15,
+  overflow: 'hidden',
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+  elevation: 5,
+},
+categoryGradient: {
+  flex: 1,
+  padding: 15,
+  justifyContent: 'space-between',
+},
+categoryIconContainer: {
+  width: 45,
+  height: 45,
+  borderRadius: 22.5,
+  backgroundColor: 'rgba(255,255,255,0.2)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+categoryTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#FFFFFF',
+},
+
 });
 
 

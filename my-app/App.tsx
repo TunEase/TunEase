@@ -76,6 +76,7 @@ import CreateNews from "./screens/createNews/CreateNews";
 import MediaScreen from "./screens/createNews/MediaScreen";
 import ValidationScreen from "./screens/createNews/ValidationScreen";
 import NewsDetailScreen from "./screens/news/NewsDetailScreen";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -427,6 +428,7 @@ export default function App() {
         options={{ headerShown: false }}
 
       />
+
         </Stack.Navigator>
       </AuthProvider>
       <StatusBar style="auto" />
