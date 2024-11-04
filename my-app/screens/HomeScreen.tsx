@@ -1,26 +1,33 @@
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
-  Animated,
   FlatList,
   Image,
-  ImageBackground,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  ScrollView,
+  ImageBackground,
+  Animated,
+  ActivityIndicator,
+  Dimensions,
+ 
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
+import { LinearGradient } from "expo-linear-gradient";
+import { FontAwesome5 } from '@expo/vector-icons';
 
 interface HomeProps {
   navigation: any;
 }
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const AD_CARD_WIDTH = SCREEN_WIDTH - 40; // 20px padding on eac
 const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [services, setServices] = useState<any[]>([]);
@@ -30,26 +37,45 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [Error, setError] = useState<string | null>(null);
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [isManualScroll, setIsManualScroll] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const adScrollRef = useRef<ScrollView>(null);
+
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const scrollAnimation = Animated.loop(
-      Animated.timing(scrollX, {
-        toValue: 1,
-        duration: 20000, // Adjust duration for speed
-        useNativeDriver: true,
-      })
-    );
-    scrollAnimation.start();
-
-    return () => scrollAnimation.stop();
-  }, [scrollX]);
+    const startAutoScroll = () => {
+      if (news.length > 1 && !isManualScroll) {
+        autoScrollTimer.current = setInterval(() => {
+          const nextIndex = (currentAdIndex + 1) % news.length;
+          adScrollRef.current?.scrollTo({
+            x: nextIndex * AD_CARD_WIDTH,
+            animated: true
+          });
+          setCurrentAdIndex(nextIndex);
+        }, 5000);
+      }
+    };
+  
+    startAutoScroll();
+  
+    return () => {
+      if (autoScrollTimer.current) {
+        clearInterval(autoScrollTimer.current);
+      }
+    };
+  }, [currentAdIndex, news.length, isManualScroll]);
 
   useEffect(() => {
     fetchBusinesses();
     fetchPopularServices();
-    fetchNews();
+    fetchNews()
+    fetchCategories();
+
   }, []);
 
   const fetchPopularServices = async () => {
@@ -98,255 +124,21 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       console.error("Error fetching businesses:", error);
     }
   };
-
-  const fetchNews = async () => {
+  const fetchCategories = async () => {
     try {
-      const { data: newsData, error: newsError } = await supabase
-        .from("news")
-        .select(
-          `
-          *,
-          business:business_id(
-            id,
-            name
-            
-          )
-        `
-        )
-        .order("created_at", { ascending: false })
-        .limit(10); // Limite optionnelle pour la performance
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('created_at', { ascending: true });
 
-      if (newsError) throw newsError;
-
-      if (newsData) {
-        // Deuxième requête pour obtenir les médias
-        const { data: mediaData, error: mediaError } = await supabase
-          .from("media")
-          .select("*")
-          .in(
-            "news_id",
-            newsData.map((news) => news.id)
-          );
-
-        if (mediaError) throw mediaError;
-
-        // Troisième requête pour obtenir les tags
-        const { data: tagData, error: tagError } = await supabase
-          .from("news_tag")
-          .select("*")
-          .in(
-            "news_id",
-            newsData.map((news) => news.id)
-          );
-
-        if (tagError) throw tagError;
-
-        // Combiner toutes les données
-        const newsWithMediaAndTags = newsData.map((news) => ({
-          ...news,
-          media_url: mediaData?.find((media) => media.news_id === news.id)
-            ?.media_url,
-          tags: tagData?.filter((tag) => tag.news_id === news.id) || [],
-        }));
-
-        setNews(newsWithMediaAndTags);
-        console.log("News fetched successfully:", newsWithMediaAndTags);
-      }
+      if (error) throw error;
+      setCategories(data || []);
     } catch (error) {
-      console.error("Error fetching news:", error.message);
-      setError(error.message);
+      console.error('Error fetching categories:', error);
     } finally {
       setLoading(false);
     }
   };
-
-  const renderNewsCards = () => (
-    <View style={styles.newsSection}>
-      <View style={styles.sectionHeaderContainer}>
-        <View style={styles.headerLeft}>
-          <View style={styles.headerAccent} />
-          <Text style={styles.sectionHeader}>Trending News</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.viewAllButton}
-          onPress={() => navigation.navigate("AllNews")}
-        >
-          <Text style={styles.viewAllText}>View All</Text>
-          <Icon name="arrow-forward" size={20} color="#00796B" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Main News Card */}
-      <TouchableOpacity
-        style={styles.newsCard}
-        onPress={() =>
-          navigation.navigate("NewsDetail", { newsId: news[0]?.id })
-        }
-      >
-        <ImageBackground
-          source={{
-            uri: news[0]?.media_url || "https://via.placeholder.com/300",
-          }}
-          style={styles.newsCardImage}
-          imageStyle={{ borderRadius: 20 }}
-        >
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.9)"]}
-            style={styles.newsGradient}
-          >
-            <View style={styles.newsCardContent}>
-              <View style={styles.tagRow}>
-                <View style={styles.tagContainer}>
-                  <Icon name="trending-up" size={14} color="#FFF" />
-                  <Text style={styles.tagText}>TRENDING</Text>
-                </View>
-                <View style={styles.navigationContainer}>
-                  <TouchableOpacity style={styles.navButton}>
-                    <Icon name="chevron-left" size={24} color="#FFF" />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.navButton}>
-                    <Icon name="chevron-right" size={24} color="#FFF" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <Text style={styles.newsCardTitle} numberOfLines={2}>
-                {news[0]?.title}
-              </Text>
-              <View style={styles.newsCardFooter}>
-                <View style={styles.businessInfo}>
-                  <Image
-                    source={{
-                      uri:
-                        news[0]?.business?.logo ||
-                        "https://via.placeholder.com/30",
-                    }}
-                    style={styles.businessLogo}
-                  />
-                  <Text style={styles.businessName}>
-                    {news[0]?.business?.name}
-                  </Text>
-                </View>
-                <TouchableOpacity style={styles.readMoreButton}>
-                  <Text style={styles.readMoreText}>Read More</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </LinearGradient>
-        </ImageBackground>
-      </TouchableOpacity>
-
-      {/* Secondary News Cards */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.newsScrollView}
-      >
-        {news.slice(1, 3).map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={[styles.newsCard, styles.newsCardSecondary]}
-            onPress={() =>
-              navigation.navigate("NewsDetail", { newsId: item.id })
-            }
-          >
-            <ImageBackground
-              source={{
-                uri: item.media_url || "https://via.placeholder.com/300",
-              }}
-              style={styles.newsCardImage}
-              imageStyle={{ borderRadius: 20 }}
-            >
-              <LinearGradient
-                colors={["transparent", "rgba(0,0,0,0.9)"]}
-                style={styles.newsGradient}
-              >
-                <View style={styles.newsCardContent}>
-                  <View style={styles.tagRow}>
-                    <View style={styles.tagContainer}>
-                      <Icon name="fiber-new" size={14} color="#FFF" />
-                      <Text style={styles.tagText}>NEW</Text>
-                    </View>
-                    <View style={styles.navigationContainer}>
-                      <TouchableOpacity style={styles.navButton}>
-                        <Icon name="chevron-left" size={24} color="#FFF" />
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.navButton}>
-                        <Icon name="chevron-right" size={24} color="#FFF" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  <Text style={styles.newsCardTitle} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  <View style={styles.newsCardFooter}>
-                    <View style={styles.businessInfo}>
-                      <Image
-                        source={{
-                          uri:
-                            item.business?.logo ||
-                            "https://via.placeholder.com/30",
-                        }}
-                        style={styles.businessLogo}
-                      />
-                      <Text style={styles.businessName}>
-                        {item.business?.name}
-                      </Text>
-                    </View>
-                    <TouchableOpacity style={styles.readMoreButton}>
-                      <Text style={styles.readMoreText}>Read More</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </LinearGradient>
-            </ImageBackground>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  );
-
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <Image
-        source={require("../assets/background.jpg")}
-        style={styles.headerImage}
-      />
-      <View style={styles.overlay}>
-        <Text style={styles.headerTitle}>ASAP</Text>
-        <Text style={styles.headerSubtitle}>As Soon As Possible Services</Text>
-        <View style={styles.searchContainer}>
-          <Icon name="search" size={24} color="#888" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search for services..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-        {/* {Error && <Text style={styles.errorText}>{Error}</Text>}
-        {loading ? (
-          <Text>Loading...</Text>
-        ) : (
-          <FlatList
-            data={news}
-            // renderItem={renderNewsItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            pagingEnabled
-          />
-        )} */}
-      </View>
-
-      <TouchableOpacity
-        style={styles.profileIcon}
-        onPress={() => navigation.navigate("BusinessProfileApp")}
-      >
-        <Icon name="person" size={30} color="#FFF" />
-      </TouchableOpacity>
-    </View>
-  );
-
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -413,15 +205,278 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </View>
     );
   };
-
-  const renderPopularServices = () => (
-    <View>
+  const fetchNews = async () => {
+    try {
+      const { data: newsData, error: newsError } = await supabase
+        .from('news')
+        .select(`
+          *,
+          business:business_id (
+            id,
+            name
+          ),
+          media (
+            media_url,
+            is_primary
+          ),
+          news_tags (
+            tag_name
+          )
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(10);
+  
+      if (newsError) throw newsError;
+      setNews(newsData || []);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching news:", error.message);
+      setError(error.message);
+      setLoading(false);
+    }
+  };
+  const renderTopAdvertisement = () => {
+    if (loading) {
+      return (
+        <View style={styles.adSection}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#00796B" />
+          </View>
+        </View>
+      );
+    }
+  
+    if (!news.length) {
+      return (
+        <View style={styles.adSection}>
+          <View style={styles.emptyContainer}>
+            <Icon name="info-outline" size={24} color="#666" />
+            <Text style={styles.emptyText}>No featured updates available</Text>
+          </View>
+        </View>
+      );
+    }
+  
+    return (
+      <View style={styles.adSection}>
       <View style={styles.sectionHeaderContainer}>
-        <Text style={styles.sectionHeader}>Popular Services</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("AllService")}>
+        <View style={styles.headerLeft}>
+          <View style={styles.headerAccent} />
+          <Text style={styles.sectionHeader}>News</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={() => navigation.navigate("NewsScreen")}
+        >
           <Text style={styles.viewAllText}>View All</Text>
+          <Icon name="arrow-forward" size={16} color="#00796B" />
         </TouchableOpacity>
       </View>
+  
+        <ScrollView
+  ref={adScrollRef}
+  horizontal
+  pagingEnabled
+  showsHorizontalScrollIndicator={false}
+  onScrollBeginDrag={() => {
+    setIsManualScroll(true);
+    if (autoScrollTimer.current) {
+      clearInterval(autoScrollTimer.current);
+    }
+  }}
+  onScrollEndDrag={() => {
+    setTimeout(() => {
+      setIsManualScroll(false);
+    }, 1000); // Give user a second before auto-scroll resumes
+  }}
+  onMomentumScrollEnd={(event) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(offsetX / AD_CARD_WIDTH);
+    setCurrentAdIndex(newIndex);
+  }}
+  style={styles.adScrollView}
+  contentContainerStyle={styles.adScrollContent}
+  snapToInterval={AD_CARD_WIDTH}
+  decelerationRate="fast"
+  scrollEventThrottle={16}
+>
+{news.map((ad, index) => (
+    <View 
+      key={ad.id} 
+      style={[
+        styles.adCardContainer,
+        { width: AD_CARD_WIDTH }
+      ]}
+    >
+      <TouchableOpacity
+        style={styles.adCard}
+        onPress={() => navigation.navigate("NewsDetailScreen", { newsId: ad.id })}
+      >
+                <ImageBackground
+                  source={{ 
+                    uri: ad.media?.find(m => m.is_primary)?.media_url || 
+                         ad.media?.[0]?.media_url || 
+                         'https://via.placeholder.com/400'
+                  }}
+                  style={styles.adImage}
+                  imageStyle={{ borderRadius: 20 }}
+                >
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.9)']}
+                    style={styles.adGradient}
+                  >
+                    <View style={styles.adContent}>
+                      <View style={styles.tagRow}>
+                        <View style={styles.adBadge}>
+                          <Icon name="campaign" size={16} color="#FFF" />
+                          <Text style={styles.adBadgeText}>{ad.type || 'FEATURED'}</Text>
+                        </View>
+                        {ad.news_tag?.slice(0, 2).map((tag) => (
+                          <View key={tag.tag_name} style={styles.tag}>
+                            <Text style={styles.tagText}>{tag.tag_name}</Text>
+                          </View>
+                        ))}
+                      </View>
+  
+                      <Text style={styles.adTitle} numberOfLines={2}>
+                        {ad.title}
+                      </Text>
+  
+                      <Text style={styles.adDescription} numberOfLines={3}>
+                        {ad.content}
+                      </Text>
+  
+                      <View style={styles.adFooter}>
+                        <View style={styles.businessInfo}>
+                          <Text style={styles.businessName}>{ad.business?.name.slice(0, 5)}</Text>
+                          <Text style={styles.dateText}>
+                            {new Date(ad.created_at).toLocaleDateString()}
+                          </Text>
+                        </View>
+                        <TouchableOpacity style={styles.detailsButton} onPress={() => {
+                                  navigation.navigate('NewsDetailScreen', { newsId: ad.id });
+                         }}>
+                             <Text style={styles.detailsButtonText}>See Details</Text>
+   <Icon name="arrow-forward" size={16} color="#FFF" />
+</TouchableOpacity>
+                      </View>
+                    </View>
+                  </LinearGradient>
+                </ImageBackground>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Image
+        source={require("../assets/background.jpg")}
+        style={styles.headerImage}
+      />
+      <View style={styles.overlay}>
+        <Text style={styles.headerTitle}>ASAP</Text>
+        <Text style={styles.headerSubtitle}>As Soon As Possible Services</Text>
+        <View style={styles.searchContainer}>
+          <Icon name="search" size={24} color="#888" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search for services..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+        {/* {Error && <Text style={styles.errorText}>{Error}</Text>}
+        {loading ? (
+          <Text>Loading...</Text>
+        ) : (
+          <FlatList
+            data={news}
+            // renderItem={renderNewsItem}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+          />
+        )} */}
+      </View>
+
+      <TouchableOpacity
+        style={styles.profileIcon}
+        onPress={() => navigation.navigate("BusinessProfileApp")}
+      >
+        <Icon name="person" size={30} color="#FFF" />
+      </TouchableOpacity>
+    </View>
+  );
+  
+    // const renderCategories = () => {
+    //   if (loading) {
+    //     return (
+    //       <View style={[styles.categorySection, { justifyContent: 'center', alignItems: 'center' }]}>
+    //         <ActivityIndicator size="large" color="#00796B" />
+    //       </View>
+    //     );
+    //   }
+  
+    //   return (
+    //     <View style={styles.categorySection}>
+    //       <View style={styles.sectionHeaderContainer}>
+    //         <View style={styles.headerLeft}>
+    //           <View style={styles.headerAccent} />
+    //           <Text style={styles.sectionHeader}>Categories</Text>
+    //         </View>
+    //       </View>
+  
+    //       <ScrollView
+    //         horizontal
+    //         showsHorizontalScrollIndicator={false}
+    //         contentContainerStyle={styles.categoryScrollContainer}
+    //       >
+    //         {categories.map((category, index) => (
+    //           <TouchableOpacity
+    //             key={category.id}
+    //             style={styles.categoryCard}
+    //             onPress={() => navigation.navigate("CategoryDetails", { category })}
+    //           >
+    //             <LinearGradient
+    //               colors={category.gradient}
+    //               style={styles.categoryGradient}
+    //               start={{ x: 0, y: 0 }}
+    //               end={{ x: 1, y: 1 }}
+    //             >
+    //               <View style={styles.categoryIconContainer}>
+    //                 <FontAwesome5 name={category.icon} size={24} color="#FFFFFF" />
+    //               </View>
+    //               <Text style={styles.categoryTitle}>{category.name}</Text>
+    //             </LinearGradient>
+    //           </TouchableOpacity>
+    //         ))}
+    //       </ScrollView>
+    //     </View>
+    //   );
+    // };
+
+  const renderPopularServices = () => (
+    <View style={styles.adSection}>
+        <View style={styles.sectionHeaderContainer}>
+          <View style={styles.headerLeft}>
+            <View style={styles.headerAccent} />
+            <Text style={styles.sectionHeader}>Popular Services</Text>
+          </View>
+          <TouchableOpacity 
+          style={styles.viewAllButton}
+          onPress={() => navigation.navigate("AllService")}
+        >
+          <Text style={styles.viewAllText}>View All</Text>
+          <Icon name="arrow-forward" size={16} color="#00796B" />
+        </TouchableOpacity>
+        </View>
       <FlatList
         data={popularServices.slice(0, 4)}
         renderItem={({ item }) => (
@@ -451,6 +506,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     </View>
   );
 
+
   const renderFooterButtons = () => (
     <View style={styles.buttonContainer}>
       <TouchableOpacity
@@ -474,10 +530,13 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         ListHeaderComponent={() => (
           <>
             {renderHeader()}
+        
+          {renderTopAdvertisement()}
             {renderFooterButtons()}
             {renderTopBusinesses()}
             {renderPopularServices()}
-            {renderNewsCards()}
+        
+           
           </>
         )}
         data={[]}
@@ -485,16 +544,104 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         keyExtractor={() => ""}
         showsVerticalScrollIndicator={false}
       />
+   
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  sectionHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent:'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap:8,
+  },
+  headerAccent:{
+    width:4,
+    height:20,
+    backgroundColor:'#00796B',
+    borderRadius:2,
+  },
+  viewAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  viewAllText: {
+    color: '#00796B',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  adScrollView: {
+    height: 400,
+  },
+  adScrollContent: {
+    paddingHorizontal: 0, // Remove horizontal padding here
+  },
+  adCardContainer: {
+    paddingHorizontal: 2, // Add padding to container instead
+  },
+  adSection: {
+    marginVertical: 20,
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 20,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0,121,107,0.2)',
+  },
+  paginationDotActive: {
+    backgroundColor: '#00796B',
+    width: 24,
+  },
+  // Add/update these styles
+adCard: {
+  height: 400,
+  borderRadius: 20,
+  overflow: 'hidden',
+  backgroundColor: '#FFF',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+},
   // Container
   container: {
     flex: 1,
     backgroundColor: "#F8F8F8",
+  },
+  navigationContainer:{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+  },  
+  newsCardSecondary:{
+    width: 300,
+    height: 380,
+    marginRight: 20,
+    borderRadius: 20,
+    overflow: 'hidden',
+    },
+  navButton:{
+    padding: 10,
+    backgroundColor: "#00796B",
+    borderRadius: 50,
   },
 
   // Header Styles
@@ -502,20 +649,21 @@ const styles = StyleSheet.create({
     height: 250,
     position: "relative",
   },
+ 
   headerImage: {
     height: "100%",
     width: "100%",
     resizeMode: "cover",
   },
   overlay: {
-    top: 40,
+    position: "absolute",
+    top: 36,
     left: 0,
     right: 0,
     bottom: 0,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.3)",
-    position: "absolute",
   },
   headerTitle: {
     fontSize: 28,
@@ -557,7 +705,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
   },
-
   // Button Container Styles
   buttonContainer: {
     flexDirection: "row",
@@ -587,38 +734,12 @@ const styles = StyleSheet.create({
   newsSection: {
     margin: 15,
   },
-  sectionHeaderContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerAccent: {
-    width: 4,
-    height: 24,
-    backgroundColor: "#00796B",
-    marginRight: 10,
-    borderRadius: 2,
-  },
   sectionHeader: {
     fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
   },
-  viewAllButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  viewAllText: {
-    fontSize: 14,
-    color: "#00796B",
-    fontWeight: "600",
-  },
+
   newsScrollView: {
     paddingLeft: 15,
   },
@@ -627,7 +748,7 @@ const styles = StyleSheet.create({
     height: 380,
     marginRight: 20,
     borderRadius: 20,
-    overflow: "hidden",
+    overflow: 'hidden',
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -638,61 +759,61 @@ const styles = StyleSheet.create({
     elevation: 16,
   },
   newsCardImage: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   newsGradient: {
     flex: 1,
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
     padding: 20,
   },
   newsCardContent: {
     gap: 15,
   },
-  tagRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
+  // tagRow: {
+  //   flexDirection: 'row',
+  //   justifyContent: 'space-between',
+  //   alignItems: 'center',
+  //   marginBottom: 12,
+  // },
   tagContainer: {
-    backgroundColor: "#00796B",
-    flexDirection: "row",
-    alignItems: "center",
+    backgroundColor: '#00796B',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
-    gap: 5,
+    borderRadius:20,
+    gap:5,
   },
   dateContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 5,
   },
-  tagText: {
-    color: "#FFF",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  dateText: {
-    color: "#FFF",
-    fontSize: 12,
-  },
+  // tagText: {
+  //   color: '#FFF',
+  //   fontSize: 12,
+  //   fontWeight: 'bold',
+  // },
+  // dateText: {
+  //   color: '#FFF',
+  //   fontSize: 12,
+  // },
   newsCardTitle: {
     fontSize: 22,
-    fontWeight: "bold",
-    color: "#FFF",
+    fontWeight: 'bold',
+    color: '#FFF',
     lineHeight: 28,
   },
   newsCardFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 10,
   },
   businessInfo: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   businessLogo: {
@@ -700,25 +821,24 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
     borderWidth: 2,
-    borderColor: "#FFF",
+    borderColor: '#FFF',
   },
   businessName: {
-    color: "#FFF",
+    color: '#FFF',
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   readMoreButton: {
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
   },
   readMoreText: {
-    color: "#00796B",
+    color: '#00796B',
     fontSize: 13,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
-
   // Service Card Styles
   serviceCard: {
     backgroundColor: "#FFF",
@@ -786,6 +906,7 @@ const styles = StyleSheet.create({
     color: "#888",
   },
 
+
   // Utility Styles
   row: {
     justifyContent: "space-between",
@@ -796,6 +917,168 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: "center",
   },
+
+  adImage: {
+    width: '100%',
+    height: '100%',
+  },
+  adGradient: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: 20,
+  },
+  adContent: {
+    gap: 12,
+  },
+  adBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#00796B',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    gap: 6,
+  },
+  adBadgeText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  adTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFF',
+    lineHeight: 32,
+  },
+  adDescription: {
+    fontSize: 16,
+    color: '#FFF',
+    opacity: 0.9,
+    lineHeight: 24,
+  },
+  adFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  detailsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 8,
+  },
+  detailsButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  createUpdateButton: {
+    margin: 20,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  createUpdateGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    gap: 8,
+  },
+  createUpdateText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  // Add to your existing styles
+loadingContainer: {
+  height: 200,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+emptyContainer: {
+  height: 200,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#F5F5F5',
+  borderRadius: 15,
+  gap: 8,
+},
+emptyText: {
+  color: '#666',
+  fontSize: 16,
+},
+tagRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+},
+tag: {
+  backgroundColor: 'rgba(255,255,255,0.2)',
+  paddingHorizontal: 12,
+  paddingVertical: 4,
+  borderRadius: 20,
+},
+tagText: {
+  color: '#FFF',
+  fontSize: 12,
+  fontWeight: '600',
+},
+dateText: {
+  color: 'rgba(255,255,255,0.8)',
+  fontSize: 12,
+},
+viewAll:{
+  color: '#00796B',
+  fontWeight: '600',
+},categorySection: {
+  marginVertical: 20,
+  
+},
+categoryScrollContainer: {
+  paddingHorizontal: 15,
+  paddingVertical: 10,
+
+},
+categoryCard: {
+  width: 100,
+  height: 100,
+  marginRight: 15,
+  borderRadius: 15,
+  overflow: 'hidden',
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 2,
+  },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+  elevation: 5,
+},
+categoryGradient: {
+  flex: 1,
+  padding: 15,
+  justifyContent: 'space-between',
+},
+categoryIconContainer: {
+  width: 45,
+  height: 45,
+  borderRadius: 22.5,
+  backgroundColor: 'rgba(255,255,255,0.2)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+categoryTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#FFFFFF',
+},
+
 });
+
 
 export default Home;

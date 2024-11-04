@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Item } from "react-native-paper/lib/typescript/components/Drawer/Drawer";
 import { RootStackParamList } from "../types/business";
 const { width } = Dimensions.get("window");
 
@@ -99,11 +100,20 @@ const Profile = () => {
               renderItem={({ item: service }) => (
                 <TouchableOpacity
                   style={styles.serviceCard}
-                  onPress={() =>
+                  onPress={() => {
+                    const serviceData = {
+                      ...service,
+                      media: service.media || [],
+                      reviews: service.reviews || [],
+                      rating: service.rating || 0,
+                      total_reviews: service.total_reviews || 0,
+                      price: service.price || 0
+                    };
                     navigation.navigate("ServiceDetails", {
                       serviceId: service.id,
-                    })
-                  }
+                      service: serviceData
+                    });
+                  }}
                 >
                   {service.media?.length > 0 ? (
                     <Image
