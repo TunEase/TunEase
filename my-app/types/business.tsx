@@ -42,6 +42,15 @@ export interface Service {
   price: number;
   eligibility: string;
   fees: string;
+  service_type: string;
+  service_duration: string;
+  processing_time: string;
+  disable_availability: boolean;
+  disable_service: boolean;
+  accept_cash: boolean;
+  accept_card: boolean;
+  accept_online: boolean;
+  accept_cheque: boolean;
 }
 
 export interface Review {

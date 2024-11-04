@@ -74,6 +74,8 @@ import CustomReorderingScreen from "./screens/reordering/CustomReorderingScreen"
 import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
 import MessageScreen from "./screens/MessageScreen";
 import ChatRoomScreen from "./screens/ChatRoomScreen";
+import FeesScreen from "./screens/options/fees";
+import EligibilitityScreen from "./screens/options/eligibilitity";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -383,6 +385,16 @@ export default function App() {
             <Stack.Screen
               name="ChatRoomScreen"
               component={ChatRoomScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="FeesScreen"
+              component={FeesScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="EligibilitityScreen"
+              component={EligibilitityScreen}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>
