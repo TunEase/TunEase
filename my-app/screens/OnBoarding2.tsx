@@ -341,7 +341,7 @@ const OnBoardingScreen4: React.FC = () => {
 
       if (error) throw error;
       await updateUserRole('BUSINESS_MANAGER');
-      navigation.navigate('BusinessProfileApp' as never);
+      navigation.navigate('Login' as never);
     } catch (error) {
       console.error('Error updating user role:', error);
       Alert.alert('Error', 'Failed to update user role. Please try again.');

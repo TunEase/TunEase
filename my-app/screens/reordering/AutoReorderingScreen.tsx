@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet, SafeAreaView, StatusBar,Animated } from 'react-native';
 import { supabase } from '../../services/supabaseClient';
-import { NotificationService } from '../../services/NotificationService';
+// import { NotificationService } from '../../services/NotificationService';
 import { Ionicons } from '@expo/vector-icons';
 import { Appointment } from '../../types/Appointment';
 import Header from '../../components/Form/header';
@@ -107,11 +107,11 @@ const AutoReorderingScreen = ({ navigation }: { navigation: any }) => {
       if (updateError) throw updateError;
 
       // Send notification to client about rescheduling
-      await NotificationService.sendReschedulingNotification(
-        appointment,
-        appointment.date,
-        appointment.start_time
-      );
+      // await NotificationService.sendReschedulingNotification(
+      //   appointment,
+      //   appointment.date,
+      //   appointment.start_time
+      // );
     }
 
       // Update UI with reordered appointments

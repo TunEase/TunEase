@@ -32,7 +32,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [Error, setError] = useState<string | null>(null);
-
+  const [userRole, setUserRole] = useState<string | null>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -52,7 +52,34 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     fetchBusinesses();
     fetchPopularServices();
     fetchNews()
+    checkUserRole();
   }, []);
+
+  const checkUserRole = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found');
+        return;
+      }
+  
+      const { data: profile, error } = await supabase
+        .from('user_profile')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+  
+      if (error) {
+        console.error('Profile fetch error:', error);
+        return;
+      }
+  
+      console.log('User role:', profile?.role); // Debug log
+      setUserRole(profile?.role);
+    } catch (error) {
+      console.error('Error checking user role:', error);
+    }
+  };
 
   const fetchPopularServices = async () => {
     try {
@@ -287,6 +314,16 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       <View style={styles.overlay}>
         <Text style={styles.headerTitle}>ASAP</Text>
         <Text style={styles.headerSubtitle}>As Soon As Possible Services</Text>
+        {userRole === 'BUSINESS_MANAGER' && (
+        <TouchableOpacity
+          style={styles.managerButton}
+          onPress={() => navigation.navigate("AppointmentListScreen")}
+        >
+          <Text style={styles.managerButtonText}>View Appointments</Text>
+          <Icon name="calendar" size={24} color="#FFF" />
+        </TouchableOpacity>
+      )}
+  
         <View style={styles.searchContainer}>
           <Icon name="search" size={24} color="#888" />
           <TextInput
@@ -296,21 +333,8 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             onChangeText={setSearchQuery}
           />
         </View>
-        {/* {Error && <Text style={styles.errorText}>{Error}</Text>}
-        {loading ? (
-          <Text>Loading...</Text>
-        ) : (
-          <FlatList
-            data={news}
-            // renderItem={renderNewsItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            pagingEnabled
-          />
-        )} */}
       </View>
-
+  
       <TouchableOpacity
         style={styles.profileIcon}
         onPress={() => navigation.navigate("BusinessProfileApp")}
@@ -319,7 +343,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
-
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -484,14 +507,17 @@ const styles = StyleSheet.create({
   },
   overlay: {
     position: "absolute",
-    top: 36,
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.3)",
+    paddingHorizontal: 20,
+    paddingTop: 60,
   },
+  // },
   headerTitle: {
     fontSize: 28,
     color: "#FFF",
@@ -623,6 +649,10 @@ const styles = StyleSheet.create({
   },
   newsCardContent: {
     gap: 15,
+  },
+  newsCardSecondary: {
+    width: 280,  // Slightly smaller than primary card
+    height: 340,
   },
   tagRow: {
     flexDirection: 'row',
@@ -761,7 +791,6 @@ const styles = StyleSheet.create({
     color: "#888",
   },
   
-
   // Utility Styles
   row: {
     justifyContent: "space-between",
@@ -772,7 +801,32 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: "center",
   },
-
+  
+  navigationContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  navButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  managerButton: {
+    backgroundColor: '#00796B',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '90%',
+    marginBottom: 15,
+  },
+  managerButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 

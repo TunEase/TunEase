@@ -6,7 +6,7 @@ import { Appointment } from '../../types/Appointment';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import Header from '../../components/Form/header';
-import { NotificationService } from '../../services/NotificationService';
+// import { NotificationService } from '../../services/NotificationService';
 const CustomReorderingScreen = ({ navigation }: { navigation: any }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isReordering, setIsReordering] = useState(false);
@@ -67,11 +67,11 @@ const WORKING_HOURS = {
             if (error) throw error;
   
             // Send notification to the client
-            await NotificationService.sendReschedulingNotification(
-              appointment,
-              appointment.date,
-              newStartTime
-            );
+            // await NotificationService.sendReschedulingNotification(
+            //   appointment,
+            //   appointment.date,
+            //   newStartTime
+            // );
           }
   
           // Add appointment duration (or default 30 minutes) to current time

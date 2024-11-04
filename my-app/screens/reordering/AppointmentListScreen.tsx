@@ -1,15 +1,120 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, FlatList, Alert, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, ActivityIndicator } from 'react-native';
+import { 
+  View, 
+  Text, 
+  FlatList, 
+  Alert, 
+  StyleSheet, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  StatusBar, 
+  ActivityIndicator,
+  LayoutAnimation,
+  Platform,
+  UIManager
+} from 'react-native';
 import { supabase } from '../../services/supabaseClient';
 import { Appointment } from '../../types/Appointment';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import Header from '../../components/Form/header';
+
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android') {
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+}
+
+const AppointmentCard = ({ item }: { item: Appointment }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  const toggleExpand = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(!expanded);
+  };
+  const formatTime = (timeString: string | null) => {
+    if (!timeString) return 'No time set';
+    try {
+      return format(new Date(`2000-01-01T${timeString}`), 'h:mm a');
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return 'Invalid time';
+    }
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'No date set';
+    try {
+      return format(new Date(dateString), 'EEE, MMM dd, yyyy');
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date';
+    }
+  };
+  return (
+    <TouchableOpacity
+      style={[styles.appointmentItem, expanded && styles.expandedItem]}
+      onPress={toggleExpand}
+      activeOpacity={0.7}
+    >
+      <View style={styles.appointmentHeader}>
+        <View style={styles.appointmentMainInfo}>
+          <Text style={styles.appointmentTime}>
+            {format(new Date(`2000-01-01T${item.start_time}`), 'h:mm a')}
+          </Text>
+          <Text style={styles.appointmentDate}>
+            {format(new Date(item.date), 'EEE, MMM dd, yyyy')}
+          </Text>
+        </View>
+        <View style={styles.expandIconContainer}>
+          <AntDesign 
+            name={expanded ? "caretup" : "caretdown"} 
+            size={16} 
+            color="#00796B" 
+          />
+        </View>
+      </View>
+
+      {expanded && (
+        <View style={styles.expandedContent}>
+          <View style={styles.divider} />
+          
+          <View style={styles.detailSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="person-outline" size={18} color="#00796B" />
+              <Text style={styles.sectionTitle}>Client Information</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Name:</Text>
+              <Text style={styles.detailText}>{item.user_profile?.name || 'N/A'}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Phone:</Text>
+              <Text style={styles.detailText}>{item.user_profile?.phone || 'N/A'}</Text>
+            </View>
+          </View>
+
+          <View style={styles.detailSection}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="cut-outline" size={18} color="#00796B" />
+              <Text style={styles.sectionTitle}>Service Details</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Service:</Text>
+              <Text style={styles.detailText}>{item.service?.name || 'N/A'}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+};
+
 const AppointmentListScreen = ({navigation}:{navigation:any}) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true); 
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchAppointments();
@@ -19,7 +124,6 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
   const fetchAppointments = async () => {
     setIsLoading(true);
     try {
-      // Fetch the manager's business ID
       const userId = (await supabase.auth.getUser()).data.user?.id;
       const { data: businessData, error: businessError } = await supabase
         .from('business')
@@ -27,18 +131,13 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
         .eq('manager_id', userId)
         .single();
       
-      if (businessError) {
-        Alert.alert('Error fetching business data', businessError.message);
-        return;
-      }
+      if (businessError) throw businessError;
       
       if (!businessData?.id) {
         console.log('No business found for this manager');
         return;
       }
       
-  
-      // Fetch appointments for services associated with the business
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('appointments')
         .select(`
@@ -58,21 +157,17 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
         .order('date', { ascending: true })
         .order('start_time', { ascending: true });
   
-      if (appointmentsError) {
-        Alert.alert('Error fetching appointments', appointmentsError.message);
-        return;
-      }
+      if (appointmentsError) throw appointmentsError;
   
-      // Check and transform the data to match the Appointment type if needed
       const transformedData = appointmentsData?.map(apt => ({
         ...apt,
-        user_profile: apt.user_profile?.[0] || { name:'Unknown'  , phone: 'N/A' },
-        service: apt.service?.[0] || { id: '', name: 'Unknown' }
+        user_profile: apt.user_profile || { name: 'Unknown', phone: 'N/A' },
+        service: apt.service || { id: '', name: 'Unknown' }
       })) || [];
   
-      setAppointments(transformedData as Appointment[]);
-    } catch (error) {
-      Alert.alert('Unexpected error', error.message);
+      setAppointments(transformedData as unknown as Appointment[]);
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
     } finally {
       setIsLoading(false);
     }
@@ -82,71 +177,47 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
     try {
       const { data, error } = await supabase
         .from('user_profile')
-        .select('role')  // Make sure your table has a 'role' column
+        .select('role')
         .eq('id', (await supabase.auth.getUser()).data.user?.id)
         .single();
   
-      if (error) {
-        console.error('Error fetching user role:', error);
-        Alert.alert('Error fetching user role', error.message);
-      } else {
-        setUserRole(data?.role || null);
-        console.log('User role:', data?.role); // Add this to debug
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
+      if (error) throw error;
+      setUserRole(data?.role || null);
+    } catch (error: any) {
+      console.error('Error fetching user role:', error);
     }
   };
 
-  const handleReorder = () => {
-    if (userRole !== 'BUSINESS_MANAGER') {
-      Alert.alert('Access Denied', 'Only business managers can reorder appointments');
-      return;
-    }
-    // Navigate to Reordering Screen
-    // navigate('ReorderingScreen');
-  };
   const renderAppointmentItem = ({ item }: { item: Appointment }) => (
-    <TouchableOpacity
-      style={styles.appointmentItem}
-      
-    >
-      <View style={styles.appointmentInfo}>
-        <Text style={styles.appointmentDate}>
-          📅 {format(new Date(item.date), 'MMM dd, yyyy')}
-        </Text>
-        <Text style={styles.appointmentTime}>
-          ⏰ {format(new Date(`2000-01-01T${item.start_time}`), 'h:mm a')}
-        </Text>
-        <View style={styles.clientInfoContainer}>
-          <Text style={styles.clientName}>
-            👤 {item.user_profile?.name || 'N/A'}
-          </Text>
-          <Text style={styles.clientPhone}>
-            📞 {item.user_profile?.phone || 'N/A'}
-          </Text>
-        </View>
-      </View>
-      <Ionicons name="chevron-forward" size={24} color="#00796B" />
-    </TouchableOpacity>
+    <AppointmentCard item={item} />
   );
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Header 
+          title="Appointments"
+          onBack={() => navigation.goBack()}
+          backgroundColor="#00796B"
+        />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#00796B" />
+          <Text style={styles.loadingText}>Loading appointments...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#00796B" barStyle="light-content" />
       <Header 
-        title="Appointment List"
-        subtitle="Manage your schedule"
+        title="Appointments"
         onBack={() => navigation.goBack()}
         backgroundColor="#00796B"
       />
    
-      {isLoading ? (
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color="#00796B" />
-          <Text style={styles.loadingText}>Loading appointments...</Text>
-        </View>
-      ) : appointments.length === 0 ? (
+      {appointments.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="calendar-outline" size={64} color="#00796B" />
           <Text style={styles.emptyText}>No appointments found</Text>
@@ -156,11 +227,8 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
         <FlatList
           data={appointments}
           renderItem={renderAppointmentItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={[
-            styles.listContent,
-            { paddingBottom: userRole === 'BUSINESS_MANAGER' ? 100 : 20 } // Add extra padding when buttons are shown
-          ]}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
           refreshing={isLoading}
           onRefresh={fetchAppointments}
         />
@@ -172,14 +240,14 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
             style={styles.reorderButton} 
             onPress={() => navigation.navigate("AutoReorderingScreen")}
           >
-            <Ionicons name="flash-outline" size={24} color="#FFFFFF" style={styles.buttonIcon} />
+            <Ionicons name="flash-outline" size={24} color="#FFFFFF" />
             <Text style={styles.reorderButtonText}>Auto Reorder</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.reorderButton} 
             onPress={() => navigation.navigate("CustomReorderingScreen")}
           >
-            <Ionicons name="list-outline" size={24} color="#FFFFFF" style={styles.buttonIcon} />
+            <Ionicons name="list-outline" size={24} color="#FFFFFF" />
             <Text style={styles.reorderButtonText}>Custom Reorder</Text>
           </TouchableOpacity>
         </View>
@@ -191,105 +259,99 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F2F2F2",
+    backgroundColor: "#F5F5F5",
   },
-  listContent: {
-    paddingHorizontal: 20,
-    // paddingBottom: 20,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   appointmentItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 15,
+    borderRadius: 12,
     marginVertical: 8,
     elevation: 3,
-  },
-  appointmentInfo: {
-    flex: 1,
-  },
-  appointmentDate: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  appointmentTime: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 5,
-  },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#F2F2F2',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    elevation: 5,
+    overflow: 'hidden',
   },
-  reorderButton: {
-    backgroundColor: "#00796B",
-    borderRadius: 25,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    alignItems: 'center',
+  expandedItem: {
+    elevation: 4,
+    shadowOpacity: 0.15,
+  },
+  appointmentHeader: {
     flexDirection: 'row',
-    flex: 1,
-    marginHorizontal: 5,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
   },
-  reorderButtonText: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    fontWeight: 'bold',
-    textAlign: 'center',
+  appointmentMainInfo: {
     flex: 1,
   },
-  buttonIcon: {
-    marginRight: 8,
+  appointmentTime: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#00796B',
+    marginBottom: 4,
   },
-    clientInfoContainer: {
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 6,
-  },
-  clientName: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
-  },
-  clientPhone: {
+  appointmentDate: {
     fontSize: 14,
     color: '#666',
-    marginTop: 2,
   },
-  // serviceName: {
-  //   fontSize: 14,
-  //   color: '#666',
-  //   marginTop: 2,
-  // },
+  expandIconContainer: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 16,
+  },
+  expandedContent: {
+    backgroundColor: '#F8F8F8',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  detailSection: {
+    padding: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#00796B',
+    marginLeft: 8,
+    textTransform: 'uppercase',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingLeft: 26,
+  },
+  detailLabel: {
+    width: 60,
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  detailText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#333',
+    marginLeft: 8,
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -298,8 +360,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: '#333',
     fontWeight: 'bold',
+    color: '#333',
     marginTop: 16,
   },
   emptySubText: {
@@ -313,5 +375,36 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 16,
   },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    elevation: 5,
+  },
+  reorderButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#00796B',
+    padding: 12,
+    borderRadius: 25,
+    marginHorizontal: 8,
+    elevation: 2,
+  },
+  reorderButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
 });
+
 export default AppointmentListScreen;
