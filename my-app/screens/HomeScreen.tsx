@@ -41,6 +41,38 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [categories, setCategories] = useState<any[]>([]);
   const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
 
+  //top businesses scrolling
+  const topBusinessScrollRef = useRef<FlatList>(null);
+  const [currentBusinessIndex, setCurrentBusinessIndex] = useState(0);
+  const businessAutoScrollTimer = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const startBusinessAutoScroll = () => {
+      if (businesses.length > 1) {
+        businessAutoScrollTimer.current = setInterval(() => {
+          const nextIndex = (currentBusinessIndex + 1) % businesses.length;
+          topBusinessScrollRef.current?.scrollToIndex({
+            index: nextIndex,
+            animated: true,
+            viewPosition: 0.5,
+          });
+          setCurrentBusinessIndex(nextIndex);
+        }, 5000);
+      }
+    };
+    if (businesses.length > 0) {
+      startBusinessAutoScroll();
+    }
+
+    return () => {
+      if (businessAutoScrollTimer.current) {
+        clearInterval(businessAutoScrollTimer.current);
+      }
+    };
+  }, [currentBusinessIndex, businesses.length]);
+
+  ////////
+
   const adScrollRef = useRef<ScrollView>(null);
 
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -136,13 +168,17 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       setLoading(false);
     }
   };
+
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
 
     return (
       <View>
         <View style={styles.sectionHeaderContainer}>
-          <Text style={styles.sectionHeader}>Top Businesses</Text>
+          <View style={styles.headerLeft}>
+            <View style={styles.headerAccent} />
+            <Text style={styles.sectionHeader}>Top Businesses</Text>
+          </View>
           <TouchableOpacity
             onPress={() => navigation.navigate("AllBusinesses")}
           >
@@ -150,6 +186,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         <Animated.FlatList
+          ref={topBusinessScrollRef}
           data={businesses}
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -159,15 +196,14 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             { useNativeDriver: true }
           )}
           renderItem={({ item, index }) => {
-            // console.log("item  ☢️☢️☢️☢️☢️☢️", item);
             const inputRange = [
-              (index - 1) * 200,
-              index * 200,
-              (index + 1) * 200,
+              (index - 1) * 220,
+              index * 220,
+              (index + 1) * 220,
             ];
             const scale = scrollX.interpolate({
               inputRange,
-              outputRange: [0.8, 1, 0.8],
+              outputRange: [0.9, 1, 0.9],
               extrapolate: "clamp",
             });
 
@@ -182,22 +218,45 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                     })
                   }
                 >
-                  <Image
+                  <ImageBackground
                     source={{
                       uri: item.media?.[0]?.media_url || "default-image-url",
                     }}
                     style={styles.recommendedImage}
-                  />
-                  <Text style={styles.recommendedTitle}>{item.name}</Text>
-                  <Text
-                    style={styles.recommendedReview}
-                  >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
+                    imageStyle={{ borderRadius: 15 }}
+                  >
+                    <LinearGradient
+                      colors={["transparent", "rgba(0,0,0,0.7)"]}
+                      style={styles.imageOverlay}
+                    >
+                      <Text style={styles.recommendedTitle}>{item.name}</Text>
+                      <Text
+                        style={styles.recommendedReview}
+                      >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
+                    </LinearGradient>
+                  </ImageBackground>
                 </TouchableOpacity>
               </Animated.View>
             );
           }}
-          snapToInterval={200}
-          decelerationRate="fast"
+          snapToAlignment="center"
+          decelerationRate="normal"
+          snapToInterval={220} // Ensure this matches the card width
+          bounces={false} // Prevents bouncing back to the first card
+          getItemLayout={(data, index) => ({
+            length: 220, // Width of each item
+            offset: 220 * index, // Offset for each item
+            index,
+          })}
+          onScrollToIndexFailed={(info) => {
+            const wait = new Promise((resolve) => setTimeout(resolve, 500));
+            wait.then(() => {
+              topBusinessScrollRef.current?.scrollToIndex({
+                index: info.index,
+                animated: true,
+              });
+            });
+          }}
         />
       </View>
     );
@@ -502,7 +561,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
               style={styles.serviceImage}
             />
             <Text style={styles.serviceName}>{item.name}</Text>
-            <Text style={styles.serviceDescription}>{item.description}</Text>
+            {/* <Text style={styles.serviceDescription}>{item.description}</Text> */}
             <Text
               style={styles.serviceReview}
             >{`⭐ ${item.reviews?.[0]?.rating}`}</Text>
@@ -884,32 +943,33 @@ const styles = StyleSheet.create({
   recommendedCard: {
     backgroundColor: "#FFF",
     borderRadius: 15,
-    padding: 10,
     marginRight: 15,
-    width: 200,
+    width: 220,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
+    overflow: "hidden",
   },
   recommendedImage: {
     width: "100%",
-    height: 150,
-    borderRadius: 10,
-    marginBottom: 10,
+    height: 180,
+    justifyContent: "flex-end",
+  },
+  imageOverlay: {
+    padding: 10,
+    borderRadius: 15,
   },
   recommendedTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
+    color: "#FFF",
     marginBottom: 5,
   },
   recommendedReview: {
     fontSize: 14,
-    color: "#888",
+    color: "#FFF",
   },
 
   // Utility Styles

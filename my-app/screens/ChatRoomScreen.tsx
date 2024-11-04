@@ -73,29 +73,51 @@ const ChatRoomScreen: React.FC = () => {
     fetchMessages(); // Refresh messages after uploading
   };
 
-  const renderMessage = ({ item }: { item: Message }) => (
-    <View style={styles.messageContainer}>
-      <Text style={styles.messageText}>{item.content}</Text>
-      {item.media &&
-        item.media.map((mediaItem) =>
-          mediaItem.media_type === "image" ? (
-            <Image
-              key={mediaItem.media_url}
-              source={{ uri: mediaItem.media_url }}
-              style={styles.mediaImage}
-            />
-          ) : (
-            <Video
-              key={mediaItem.media_url}
-              source={{ uri: mediaItem.media_url }}
-              style={styles.mediaVideo}
-              useNativeControls
-              resizeMode={ResizeMode.COVER}
-            />
-          )
-        )}
-    </View>
-  );
+  const renderMessage = ({ item }: { item: Message }) => {
+    const isSentByUser = item.sender_id === authenticatedUserId;
+    return (
+      <View
+        style={[
+          styles.messageContainer,
+          isSentByUser ? styles.sentMessage : styles.receivedMessage,
+        ]}
+      >
+        <View
+          style={[
+            styles.messageBubble,
+            isSentByUser ? styles.sentBubble : styles.receivedBubble,
+          ]}
+        >
+          <Text
+            style={[
+              styles.messageText,
+              isSentByUser ? styles.sentText : styles.receivedText,
+            ]}
+          >
+            {item.content}
+          </Text>
+          {item.media &&
+            item.media.map((mediaItem) =>
+              mediaItem.media_type === "image" ? (
+                <Image
+                  key={mediaItem.media_url}
+                  source={{ uri: mediaItem.media_url }}
+                  style={styles.mediaImage}
+                />
+              ) : (
+                <Video
+                  key={mediaItem.media_url}
+                  source={{ uri: mediaItem.media_url }}
+                  style={styles.mediaVideo}
+                  useNativeControls
+                  resizeMode={ResizeMode.COVER}
+                />
+              )
+            )}
+        </View>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -113,6 +135,7 @@ const ChatRoomScreen: React.FC = () => {
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
         contentContainerStyle={styles.messageList}
+        inverted // Invert the list to show the latest messages at the bottom
       />
       <View style={styles.inputContainer}>
         <TouchableOpacity
@@ -175,10 +198,34 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     flexDirection: "row",
-    alignItems: "center",
     marginBottom: 10,
   },
+  sentMessage: {
+    justifyContent: "flex-end",
+  },
+  receivedMessage: {
+    justifyContent: "flex-start",
+  },
+  messageBubble: {
+    maxWidth: "70%",
+    padding: 10,
+    borderRadius: 15,
+  },
+  sentBubble: {
+    backgroundColor: "#DCF8C6",
+    alignSelf: "flex-end",
+  },
+  receivedBubble: {
+    backgroundColor: "#FFF",
+    alignSelf: "flex-start",
+  },
   messageText: {
+    fontSize: 16,
+  },
+  sentText: {
+    color: "#333",
+  },
+  receivedText: {
     color: "#333",
   },
   mediaImage: {
