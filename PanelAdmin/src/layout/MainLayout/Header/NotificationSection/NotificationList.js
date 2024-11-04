@@ -1,5 +1,4 @@
 // material-ui
-import { useTheme, styled } from '@mui/material/styles';
 import {
   Avatar,
   Button,
@@ -16,6 +15,7 @@ import {
   Stack,
   Typography
 } from '@mui/material';
+import { styled, useTheme } from '@mui/material/styles';
 
 // assets
 import { IconBrandTelegram, IconBuildingStore, IconMailbox, IconPhoto } from '@tabler/icons-react';
@@ -44,21 +44,21 @@ const NotificationList = () => {
   };
   const chipErrorSX = {
     ...chipSX,
-    color: theme.palette.orange.dark,
-    backgroundColor: theme.palette.orange.light,
+    color: theme.palette.success.dark, // Changed to green
+    backgroundColor: theme.palette.success.light, // Changed to green
     marginRight: '5px'
   };
 
   const chipWarningSX = {
     ...chipSX,
-    color: theme.palette.warning.dark,
-    backgroundColor: theme.palette.warning.light
+    color: theme.palette.success.dark, // Changed to green
+    backgroundColor: theme.palette.success.light // Changed to green
   };
 
   const chipSuccessSX = {
     ...chipSX,
-    color: theme.palette.success.dark,
-    backgroundColor: theme.palette.success.light,
+    color: theme.palette.success.dark, // Changed to green
+    backgroundColor: theme.palette.success.light, // Changed to green
     height: 28
   };
 
@@ -86,9 +86,24 @@ const NotificationList = () => {
       <ListItemWrapper>
         <ListItem alignItems="center">
           <ListItemAvatar>
-            <Avatar alt="John Doe" src={User1} />
+            <Avatar
+              sx={{
+                color: theme.palette.success.dark, // Changed to green
+                backgroundColor: theme.palette.success.light, // Changed to green
+                border: 'none',
+                borderColor: theme.palette.success.main
+              }}
+            >
+              <IconBuildingStore stroke={1.5} size="1.3rem" style={{ color: '#00796B' }} />
+            </Avatar>
           </ListItemAvatar>
-          <ListItemText primary="John Doe" />
+          <ListItemText
+            primary={
+              <Typography style={{ color: '#00796B' }} variant="subtitle1">
+                Store Verification Done
+              </Typography>
+            }
+          />
           <ListItemSecondaryAction>
             <Grid container justifyContent="flex-end">
               <Grid item xs={12}>
@@ -99,17 +114,16 @@ const NotificationList = () => {
             </Grid>
           </ListItemSecondaryAction>
         </ListItem>
-        <Grid container direction="column" className="list-container">
+        <Grid container direction="column" className="list-container" style={{ color: '#00796B' }}>
           <Grid item xs={12} sx={{ pb: 2 }}>
-            <Typography variant="subtitle2">It is a long established fact that a reader will be distracted</Typography>
+            <Typography style={{ color: '#00796B' }} variant="subtitle2">
+              We have successfully received your request.
+            </Typography>
           </Grid>
           <Grid item xs={12}>
             <Grid container>
               <Grid item>
                 <Chip label="Unread" sx={chipErrorSX} />
-              </Grid>
-              <Grid item>
-                <Chip label="New" sx={chipWarningSX} />
               </Grid>
             </Grid>
           </Grid>
@@ -127,23 +141,31 @@ const NotificationList = () => {
                 borderColor: theme.palette.success.main
               }}
             >
-              <IconBuildingStore stroke={1.5} size="1.3rem" />
+              <IconBuildingStore stroke={1.5} size="1.3rem" style={{ color: '#00796B' }} />
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary={<Typography variant="subtitle1">Store Verification Done</Typography>} />
+          <ListItemText
+            primary={
+              <Typography style={{ color: '#00796B' }} variant="subtitle1">
+                Store Verification Done
+              </Typography>
+            }
+          />
           <ListItemSecondaryAction>
             <Grid container justifyContent="flex-end">
               <Grid item xs={12}>
-                <Typography variant="caption" display="block" gutterBottom>
+                <Typography variant="caption" display="block" gutterBottom style={{ color: '#00796B' }}>
                   2 min ago
                 </Typography>
               </Grid>
             </Grid>
           </ListItemSecondaryAction>
         </ListItem>
-        <Grid container direction="column" className="list-container">
+        <Grid container direction="column" className="list-container" style={{ color: '#00796B' }}>
           <Grid item xs={12} sx={{ pb: 2 }}>
-            <Typography variant="subtitle2">We have successfully received your request.</Typography>
+            <Typography variant="subtitle2" style={{ color: '#00796B' }}>
+              We have successfully received your request.
+            </Typography>
           </Grid>
           <Grid item xs={12}>
             <Grid container>
@@ -166,10 +188,16 @@ const NotificationList = () => {
                 borderColor: theme.palette.primary.main
               }}
             >
-              <IconMailbox stroke={1.5} size="1.3rem" />
+              <IconMailbox stroke={1.5} size="1.3rem" style={{ color: '#00796B' }} />
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary={<Typography variant="subtitle1">Check Your Mail.</Typography>} />
+          <ListItemText
+            primary={
+              <Typography style={{ color: '#00796B' }} variant="subtitle1">
+                Check Your Mail.
+              </Typography>
+            }
+          />
           <ListItemSecondaryAction>
             <Grid container justifyContent="flex-end">
               <Grid item>
@@ -187,7 +215,12 @@ const NotificationList = () => {
           <Grid item xs={12}>
             <Grid container>
               <Grid item>
-                <Button variant="contained" disableElevation endIcon={<IconBrandTelegram stroke={1.5} size="1.3rem" />}>
+                <Button
+                  style={{ backgroundColor: '#00796B', color: '#FFFFFF' }}
+                  variant="contained"
+                  disableElevation
+                  endIcon={<IconBrandTelegram stroke={1.5} size="1.3rem" />}
+                >
                   Mail
                 </Button>
               </Grid>
@@ -201,7 +234,13 @@ const NotificationList = () => {
           <ListItemAvatar>
             <Avatar alt="John Doe" src={User1} />
           </ListItemAvatar>
-          <ListItemText primary={<Typography variant="subtitle1">John Doe</Typography>} />
+          <ListItemText
+            primary={
+              <Typography style={{ color: '#00796B' }} variant="subtitle1">
+                John Doe
+              </Typography>
+            }
+          />
           <ListItemSecondaryAction>
             <Grid container justifyContent="flex-end">
               <Grid item xs={12}>

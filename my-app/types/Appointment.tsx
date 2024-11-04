@@ -1,4 +1,5 @@
 // types/appointment.ts
+import { Service, User_profile } from "./business";
 
 export interface Appointment {
   id: string;
@@ -20,15 +21,15 @@ export interface Appointment {
   notifications_enabled: boolean;
 }
 
-interface Service {
-  name: string;
-  duration: number;
-  price: number;
-  start_time?: string;
-  end_time?: string;
-}
-interface UserProfile {
-  name: string;
-  email: string;
-  phone: string;
-}
+// interface Service {
+//   name: string;
+//   duration: number;
+//   price: number;
+//   start_time?: string;
+//   end_time?: string;
+// }
+// interface UserProfile {
+//   name: string;
+//   email: string;
+//   phone: string;
+// }

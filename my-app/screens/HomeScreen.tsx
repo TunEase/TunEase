@@ -1,23 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   FlatList,
   Image,
+  ImageBackground,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
-  ImageBackground,
-  Animated,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
-import News from "./News";
-import { LinearGradient } from "expo-linear-gradient";
 
 interface HomeProps {
   navigation: any;
@@ -49,9 +47,11 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   }, [scrollX]);
 
   useEffect(() => {
+    
     fetchBusinesses();
     fetchPopularServices();
     fetchNews()
+    fetchNews();
     checkUserRole();
   }, []);
 
@@ -63,19 +63,33 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         return;
       }
   
-      const { data: profile, error } = await supabase
+      // First check user_profile
+      const { data: profileData, error: profileError } = await supabase
         .from('user_profile')
         .select('role')
         .eq('id', user.id)
         .single();
   
-      if (error) {
-        console.error('Profile fetch error:', error);
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
         return;
       }
   
-      console.log('User role:', profile?.role); // Debug log
-      setUserRole(profile?.role);
+      // Then verify if they're actually managing any business
+      const { data: businessData, error: businessError } = await supabase
+        .from('business')
+        .select('*')
+        .eq('manager_id', user.id)
+        .single();
+  
+      if (profileData?.role === 'BUSINESS_MANAGER' && businessData) {
+        console.log('Confirmed business manager');
+        setUserRole('BUSINESS_MANAGER');
+      } else {
+        console.log('Not a business manager');
+        setUserRole(profileData?.role || null);
+      }
+  
     } catch (error) {
       console.error('Error checking user role:', error);
     }
@@ -131,44 +145,53 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const fetchNews = async () => {
     try {
       const { data: newsData, error: newsError } = await supabase
-        .from('news')
-        .select(`
+        .from("news")
+        .select(
+          `
           *,
           business:business_id(
             id,
             name
             
           )
-        `)
-        .order('created_at', { ascending: false })
+        `
+        )
+        .order("created_at", { ascending: false })
         .limit(10); // Limite optionnelle pour la performance
-  
+
       if (newsError) throw newsError;
-  
+
       if (newsData) {
         // Deuxième requête pour obtenir les médias
         const { data: mediaData, error: mediaError } = await supabase
-          .from('media')
-          .select('*')
-          .in('news_id', newsData.map(news => news.id));
-  
+          .from("media")
+          .select("*")
+          .in(
+            "news_id",
+            newsData.map((news) => news.id)
+          );
+
         if (mediaError) throw mediaError;
-  
+
         // Troisième requête pour obtenir les tags
         const { data: tagData, error: tagError } = await supabase
-          .from('news_tag')
-          .select('*')
-          .in('news_id', newsData.map(news => news.id));
-  
+          .from("news_tag")
+          .select("*")
+          .in(
+            "news_id",
+            newsData.map((news) => news.id)
+          );
+
         if (tagError) throw tagError;
-  
+
         // Combiner toutes les données
-        const newsWithMediaAndTags = newsData.map(news => ({
+        const newsWithMediaAndTags = newsData.map((news) => ({
           ...news,
-          media_url: mediaData?.find(media => media.news_id === news.id)?.media_url,
-          tags: tagData?.filter(tag => tag.news_id === news.id) || []
+          media_url: mediaData?.find((media) => media.news_id === news.id)
+            ?.media_url,
+          tags: tagData?.filter((tag) => tag.news_id === news.id) || [],
         }));
-  
+
         setNews(newsWithMediaAndTags);
         console.log("News fetched successfully:", newsWithMediaAndTags);
       }
@@ -187,7 +210,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           <View style={styles.headerAccent} />
           <Text style={styles.sectionHeader}>Trending News</Text>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.viewAllButton}
           onPress={() => navigation.navigate("AllNews")}
         >
@@ -197,17 +220,21 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </View>
 
       {/* Main News Card */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.newsCard}
-        onPress={() => navigation.navigate("NewsDetail", { newsId: news[0]?.id })}
+        onPress={() =>
+          navigation.navigate("NewsDetail", { newsId: news[0]?.id })
+        }
       >
         <ImageBackground
-          source={{ uri: news[0]?.media_url || 'https://via.placeholder.com/300' }}
+          source={{
+            uri: news[0]?.media_url || "https://via.placeholder.com/300",
+          }}
           style={styles.newsCardImage}
           imageStyle={{ borderRadius: 20 }}
         >
           <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.9)']}
+            colors={["transparent", "rgba(0,0,0,0.9)"]}
             style={styles.newsGradient}
           >
             <View style={styles.newsCardContent}>
@@ -231,10 +258,16 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
               <View style={styles.newsCardFooter}>
                 <View style={styles.businessInfo}>
                   <Image
-                    source={{ uri: news[0]?.business?.logo || 'https://via.placeholder.com/30' }}
+                    source={{
+                      uri:
+                        news[0]?.business?.logo ||
+                        "https://via.placeholder.com/30",
+                    }}
                     style={styles.businessLogo}
                   />
-                  <Text style={styles.businessName}>{news[0]?.business?.name}</Text>
+                  <Text style={styles.businessName}>
+                    {news[0]?.business?.name}
+                  </Text>
                 </View>
                 <TouchableOpacity style={styles.readMoreButton}>
                   <Text style={styles.readMoreText}>Read More</Text>
@@ -246,24 +279,28 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </TouchableOpacity>
 
       {/* Secondary News Cards */}
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.newsScrollView}
       >
         {news.slice(1, 3).map((item) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             key={item.id}
             style={[styles.newsCard, styles.newsCardSecondary]}
-            onPress={() => navigation.navigate("NewsDetail", { newsId: item.id })}
+            onPress={() =>
+              navigation.navigate("NewsDetail", { newsId: item.id })
+            }
           >
             <ImageBackground
-              source={{ uri: item.media_url || 'https://via.placeholder.com/300' }}
+              source={{
+                uri: item.media_url || "https://via.placeholder.com/300",
+              }}
               style={styles.newsCardImage}
               imageStyle={{ borderRadius: 20 }}
             >
               <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.9)']}
+                colors={["transparent", "rgba(0,0,0,0.9)"]}
                 style={styles.newsGradient}
               >
                 <View style={styles.newsCardContent}>
@@ -287,10 +324,16 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                   <View style={styles.newsCardFooter}>
                     <View style={styles.businessInfo}>
                       <Image
-                        source={{ uri: item.business?.logo || 'https://via.placeholder.com/30' }}
+                        source={{
+                          uri:
+                            item.business?.logo ||
+                            "https://via.placeholder.com/30",
+                        }}
                         style={styles.businessLogo}
                       />
-                      <Text style={styles.businessName}>{item.business?.name}</Text>
+                      <Text style={styles.businessName}>
+                        {item.business?.name}
+                      </Text>
                     </View>
                     <TouchableOpacity style={styles.readMoreButton}>
                       <Text style={styles.readMoreText}>Read More</Text>
@@ -304,7 +347,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </ScrollView>
     </View>
   );
-  
+
   const renderHeader = () => (
     <View style={styles.header}>
       <Image
@@ -314,15 +357,15 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       <View style={styles.overlay}>
         <Text style={styles.headerTitle}>ASAP</Text>
         <Text style={styles.headerSubtitle}>As Soon As Possible Services</Text>
+        
         {userRole === 'BUSINESS_MANAGER' && (
-        <TouchableOpacity
-          style={styles.managerButton}
-          onPress={() => navigation.navigate("AppointmentListScreen")}
-        >
-          <Text style={styles.managerButtonText}>View Appointments</Text>
-          <Icon name="calendar" size={24} color="#FFF" />
-        </TouchableOpacity>
-      )}
+  <TouchableOpacity
+    style={styles.managerButton}
+    onPress={() => navigation.navigate("AppointmentListScreen")}
+  >
+    <Icon name="event" size={24} color="#FFF" />
+  </TouchableOpacity>
+)}
   
         <View style={styles.searchContainer}>
           <Icon name="search" size={24} color="#888" />
@@ -343,6 +386,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
+  
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -410,7 +454,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     );
   };
 
-
   const renderPopularServices = () => (
     <View>
       <View style={styles.sectionHeaderContainer}>
@@ -447,7 +490,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       />
     </View>
   );
-
 
   const renderFooterButtons = () => (
     <View style={styles.buttonContainer}>
@@ -506,16 +548,14 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   overlay: {
-    position: "absolute",
-    top: 0,
+    top: 40,
     left: 0,
     right: 0,
     bottom: 0,
     justifyContent: "flex-start",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.3)",
-    paddingHorizontal: 20,
-    paddingTop: 60,
+    position: "absolute",
   },
   // },
   headerTitle: {
@@ -589,36 +629,36 @@ const styles = StyleSheet.create({
     margin: 15,
   },
   sectionHeaderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   headerAccent: {
     width: 4,
     height: 24,
-    backgroundColor: '#00796B',
+    backgroundColor: "#00796B",
     marginRight: 10,
     borderRadius: 2,
   },
   sectionHeader: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   viewAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 5,
   },
   viewAllText: {
     fontSize: 14,
-    color: '#00796B',
-    fontWeight: '600',
+    color: "#00796B",
+    fontWeight: "600",
   },
   newsScrollView: {
     paddingLeft: 15,
@@ -628,7 +668,7 @@ const styles = StyleSheet.create({
     height: 380,
     marginRight: 20,
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -639,12 +679,12 @@ const styles = StyleSheet.create({
     elevation: 16,
   },
   newsCardImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   newsGradient: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     padding: 20,
   },
   newsCardContent: {
@@ -655,49 +695,49 @@ const styles = StyleSheet.create({
     height: 340,
   },
   tagRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
   tagContainer: {
-    backgroundColor: '#00796B',
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: "#00796B",
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     gap: 5,
   },
   dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 5,
   },
   tagText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   dateText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 12,
   },
   newsCardTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#FFF',
+    fontWeight: "bold",
+    color: "#FFF",
     lineHeight: 28,
   },
   newsCardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 10,
   },
   businessInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   businessLogo: {
@@ -705,23 +745,23 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
     borderWidth: 2,
-    borderColor: '#FFF',
+    borderColor: "#FFF",
   },
   businessName: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   readMoreButton: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
   },
   readMoreText: {
-    color: '#00796B',
+    color: "#00796B",
     fontSize: 13,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
   // Service Card Styles
@@ -790,7 +830,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#888",
   },
-  
   // Utility Styles
   row: {
     justifyContent: "space-between",
@@ -813,14 +852,19 @@ const styles = StyleSheet.create({
   },
   managerButton: {
     backgroundColor: '#00796B',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '90%',
-    marginBottom: 15,
+    padding: 12,
+    borderRadius: 50,
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   managerButtonText: {
     color: '#FFF',
@@ -828,6 +872,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
 
 export default Home;

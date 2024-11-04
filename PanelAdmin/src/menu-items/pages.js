@@ -11,12 +11,12 @@ const icons = {
 const pages = {
   id: 'pages',
   title: 'Pages',
-  caption: 'Pages Caption',
+  // caption: 'Pages Caption',
   type: 'group',
   children: [
     {
       id: 'authentication',
-      title: 'Authentication',
+      title: 'Access Control',
       type: 'collapse',
       icon: icons.IconKey,
 
@@ -27,8 +27,7 @@ const pages = {
           type: 'item',
           url: '/pages/login/login3',
           target: true
-        },
-        
+        }
       ]
     }
   ]
