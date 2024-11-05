@@ -21,7 +21,7 @@ import Feedback from "./screens/Feedback";
 import Review from "./screens/Review";
 import ManageFeesScreen from "./screens/ManageFeesScreen";
 import ManageEligibilityScreen from "./screens/ManageEligibilityScreen";
-
+import NewsCommentScreen from "./screens/news/NewsCommentScreen";
 
 import Onboarding from "./screens/OnBoarding";
 
@@ -63,7 +63,6 @@ import StaticBusinessProfile from "./screens/staticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
-import News from "./screens/News";
 import ReorderingConfirmationScreen from "./screens/reordering/ReorderingConfirmationScreen";
 import AppointmentListScreen from "./screens/reordering/AppointmentListScreen";
 import CustomReorderingScreen from "./screens/reordering/CustomReorderingScreen";
@@ -71,6 +70,12 @@ import AutoReorderingScreen from "./screens/reordering/AutoReorderingScreen";
 import ServiceOnboardingScreen from "./screens/createServiceScreen/ServiceOnboardingScreen";
 import ServiceSetupScreen from "./screens/createServiceScreen/ServiceSetupScreen";
 import ValidateServiceScreen from "./screens/createServiceScreen/ValidateServiceScreen";
+import NewsScreen from "./screens/news/NewsScreen";
+import CreateNews from "./screens/createNews/CreateNews";
+import MediaScreen from "./screens/createNews/MediaScreen";
+import ValidationScreen from "./screens/createNews/ValidationScreen";
+import NewsDetailScreen from "./screens/news/NewsDetailScreen";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -370,11 +375,6 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="News"
-            component={News}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
             name="ServiceOnboardingScreen"
             component={ServiceOnboardingScreen}
             options={{ headerShown: false }}
@@ -389,6 +389,41 @@ export default function App() {
             component={ValidateServiceScreen}
             options={{ headerShown: false }}
           />
+          <Stack.Screen
+            name="NewsScreen"
+            component={NewsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="NewsCommentScreen"
+            component={NewsCommentScreen}
+            options={{ headerShown: false }}
+          />  
+             <Stack.Screen 
+        name="CreateNews" 
+        component={CreateNews} 
+        options={{ headerShown: false }}
+
+      />
+      <Stack.Screen
+        name="MediaScreen"
+        component={MediaScreen}
+        options={{ headerShown: false }}
+
+      />
+      <Stack.Screen
+        name="ValidationScreen"
+        component={ValidationScreen}
+        options={{ headerShown: false }}
+
+      />
+    <Stack.Screen
+        name="NewsDetailScreen"
+        component={NewsDetailScreen}
+        options={{ headerShown: false }}
+
+      />
+
         </Stack.Navigator>
       </AuthProvider>
       <StatusBar style="auto" />

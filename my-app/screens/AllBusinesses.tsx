@@ -86,10 +86,13 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
       <Text style={styles.ratingText}>{` ${rating.toFixed(1)}`}</Text>
     </View>
   );
-
   const renderItem: ListRenderItem<Business> = ({ item }) => {
     const randomImageUrl =
       item.media[Math.floor(Math.random() * item.media.length)].media_url;
+
+    // Safely access the rating
+    const rating =
+      item.reviews && item.reviews.length > 0 ? item.reviews[0].rating : 0; // Default to 0 if no reviews
 
     return (
       <TouchableOpacity
@@ -99,7 +102,7 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
         <Image source={{ uri: randomImageUrl }} style={styles.businessImage} />
         <Text style={styles.businessName}>{item.name}</Text>
         <View style={styles.ratingAndFavoriteContainer}>
-          {renderStars(item.reviews[0].rating || 0)}
+          {renderStars(rating)}
           <TouchableOpacity style={styles.favoriteIcon}>
             <FontAwesome name="heart-o" size={24} color="#FF6347" />
           </TouchableOpacity>

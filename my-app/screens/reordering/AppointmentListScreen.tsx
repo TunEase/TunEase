@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Picker } from '@react-native-picker/picker'
 import { 
   View, 
   Text, 
@@ -115,12 +116,25 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [services, setServices] = useState<Array<{id: string, name: string}>>([]);
+  const [selectedService, setSelectedService] = useState<string>('all');
   useEffect(() => {
     fetchAppointments();
     checkUserRole();
-  }, []);
-
+  }, [selectedService]);
+  const fetchServices = async (businessId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('services')
+        .select('id, name')
+        .eq('business_id', businessId);
+      
+      if (error) throw error;
+      setServices(data || []);
+    } catch (error: any) {
+      console.error('Error fetching services:', error);
+    }
+  };
   const fetchAppointments = async () => {
     setIsLoading(true);
     try {
@@ -137,8 +151,11 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
         console.log('No business found for this manager');
         return;
       }
+
+      // Fetch services when business is found
+      await fetchServices(businessData.id);
       
-      const { data: appointmentsData, error: appointmentsError } = await supabase
+      let query = supabase
         .from('appointments')
         .select(`
           id,
@@ -153,18 +170,25 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
             name
           )
         `)
-        .eq('service.business_id', businessData.id)
+        .eq('service.business_id', businessData.id);
+
+      // Add service filter if a specific service is selected
+      if (selectedService !== 'all') {
+        query = query.eq('service_id', selectedService);
+      }
+
+      const { data: appointmentsData, error: appointmentsError } = await query
         .order('date', { ascending: true })
         .order('start_time', { ascending: true });
-  
+
       if (appointmentsError) throw appointmentsError;
-  
+
       const transformedData = appointmentsData?.map(apt => ({
         ...apt,
         user_profile: apt.user_profile || { name: 'Unknown', phone: 'N/A' },
         service: apt.service || { id: '', name: 'Unknown' }
       })) || [];
-  
+
       setAppointments(transformedData as unknown as Appointment[]);
     } catch (error: any) {
       Alert.alert('Error', error.message);
@@ -216,7 +240,7 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
         onBack={() => navigation.goBack()}
         backgroundColor="#00796B"
       />
-   
+    
       {appointments.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="calendar-outline" size={64} color="#00796B" />
@@ -404,7 +428,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 8,
-  },
+  }, 
+  
 });
 
 export default AppointmentListScreen;

@@ -1,32 +1,36 @@
-import { RouteProp, useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
   Image,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Animated,
 } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
 import { Service } from "../types/business";
-import FAQs from "./FAQs";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RouteProp } from "@react-navigation/native";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import PagerView from "react-native-pager-view";
+import { useNavigation } from "@react-navigation/native";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
-// Define the navigation parameter list
 type RootStackParamList = {
   ServiceDetails: { serviceId: string };
   Book: { serviceId: string };
   ComplaintsScreen: undefined;
+  FAQsScreen: undefined;
+  EligibilityScreen: undefined;
+  FeesScreen: undefined;
 };
 
-// Define the navigation and route props
 type ServiceDetailsNavigationProp = StackNavigationProp<
   RootStackParamList,
   "ServiceDetails"
@@ -39,16 +43,12 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
   const navigation = useNavigation<ServiceDetailsNavigationProp>();
   const { serviceId } = route.params;
   const [service, setService] = useState<Service | null>(null);
-  const [fees, setFees] = useState<any[]>([]);
-  const [eligibility, setEligibility] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = React.useState("About Me");
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const [modalVisible, setModalVisible] = useState(false);
   const { user } = useAuth();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [blinkAnim] = useState(new Animated.Value(1)); // Initial opacity value
+
   useEffect(() => {
     const fetchServiceDetails = async () => {
-      console.log("Service ID:", serviceId);
       if (!serviceId) {
         console.error("Service ID is undefined");
         return;
@@ -72,84 +72,25 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
       }
     };
 
-    const fetchFees = async () => {
-      const { data, error } = await supabase
-        .from("fees")
-        .select("*")
-        .eq("service_id", serviceId);
-
-      if (error) {
-        console.error("Error fetching fees:", error);
-      } else {
-        setFees(data);
-      }
-    };
-
-    const fetchEligibility = async () => {
-      const { data, error } = await supabase
-        .from("eligibility")
-        .select("*")
-        .eq("service_id", serviceId);
-
-      if (error) {
-        console.error("Error fetching eligibility:", error);
-      } else {
-        setEligibility(data);
-      }
-    };
-
     fetchServiceDetails();
-    fetchFees();
-    fetchEligibility();
   }, [serviceId]);
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "About Me":
-        return (
-          <Text style={styles.tabContent}>
-            {service?.description || "No description available."}
-          </Text>
-        );
-      case "Fees":
-        return (
-          <View style={styles.contentContainer}>
-            {fees && fees.length > 0 ? (
-              fees.map((fee, index) => (
-                <View key={index} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{fee.name}</Text>
-                  <Text style={styles.tableCell}>{`$${fee.fee}`}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.tabContent}>
-                No fees information available.
-              </Text>
-            )}
-          </View>
-        );
-      case "Eligibility":
-        return (
-          <View style={styles.contentContainer}>
-            {eligibility && eligibility.length > 0 ? (
-              eligibility.map((criteria, index) => (
-                <View key={index} style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{criteria.description}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.tabContent}>
-                No eligibility information available.
-              </Text>
-            )}
-          </View>
-        );
-      case "FAQs":
-        return <FAQs />;
-      default:
-        return null;
-    }
-  };
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(blinkAnim, {
+          toValue: 0.3,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(blinkAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [blinkAnim]);
 
   if (!service) {
     return (
@@ -158,83 +99,140 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
       </SafeAreaView>
     );
   }
-  console.log("service 💀💀", service);
+
+  const availabilityColor = service.disable_availability ? "red" : "green";
+
+  const renderLabel = (label: string, isEnabled: boolean) => (
+    <View
+      style={[styles.label, { backgroundColor: isEnabled ? "green" : "grey" }]}
+    >
+      <Text style={styles.labelText}>{label}</Text>
+    </View>
+  );
+  const calculateAverageRating = (reviews) => {
+    if (!reviews || reviews.length === 0) return 0;
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return (total / reviews.length).toFixed(1);
+  };
+
+  const isServiceAvailableToday = () => {
+    const today = new Date();
+    const startDate = new Date(service.start_date);
+    const endDate = new Date(service.end_date);
+    const startTime = new Date(`1970-01-01T${service.start_time}`);
+    const endTime = new Date(`1970-01-01T${service.end_time}`);
+    const currentTime = new Date(
+      `1970-01-01T${today.toTimeString().slice(0, 8)}`
+    );
+
+    return (
+      today >= startDate &&
+      today <= endDate &&
+      currentTime >= startTime &&
+      currentTime <= endTime
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={service.media}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Image source={{ uri: item.media_url }} style={styles.coverImage} />
-        )}
-        pagingEnabled
-        onScroll={(event) => {
-          const index = Math.floor(event.nativeEvent.contentOffset.x / width);
-          setCurrentIndex(index);
-        }}
-      />
-      <View style={styles.pagination}>
+      <PagerView
+        style={styles.viewPager}
+        initialPage={0}
+        onPageSelected={(e) => setCurrentIndex(e.nativeEvent.position)}
+      >
+        {service.media.map((item, index) => (
+          <View key={index} style={styles.page}>
+            <Image source={{ uri: item.media_url }} style={styles.coverImage} />
+          </View>
+        ))}
+      </PagerView>
+      <View style={styles.dotsContainer}>
         {service.media.map((_, index) => (
           <View
             key={index}
-            style={[styles.dot, currentIndex === index && styles.activeDot]}
+            style={[styles.dot, { opacity: currentIndex === index ? 1 : 0.3 }]}
           />
         ))}
       </View>
       <View style={styles.profileContainer}>
-        <Text style={styles.serviceName}>{service.name}</Text>
-        <Text style={styles.servicePrice}>{`$${service.price}/hr`}</Text>
+        <View style={styles.serviceNameContainer}>
+          <Text style={styles.serviceName}>{service.name}</Text>
+          <Animated.View style={{ opacity: blinkAnim }}>
+            <FontAwesome
+              name="circle"
+              size={16}
+              color={availabilityColor}
+              style={styles.blinkingIcon}
+            />
+          </Animated.View>
+        </View>
+        <View style={styles.labelsContainer}>
+          {renderLabel("Cash", service.accept_cash)}
+          {renderLabel("Card", service.accept_card)}
+          {renderLabel("Online", service.accept_online)}
+          {renderLabel("Cheque", service.accept_cheque)}
+          {renderLabel(service.service_type, true)}
+        </View>
+        <Text style={styles.serviceDescription}>{service.description}</Text>
+        <Text style={styles.serviceProcessingTime}>
+          Processing Time: {service.processing_time}
+        </Text>
+        <View style={styles.availabilityContainer}>
+          <Text style={styles.servicePrice}>{`$${service.price}/hr`}</Text>
+        </View>
         <Text style={styles.serviceRating}>
-          {`⭐ ${service.reviews[0].rating} (${service.reviews.length} Reviews)`}
+          {`тнР ${calculateAverageRating(service.reviews)} (${service.reviews.length} Reviews)`}
+        </Text>
+        <Text style={styles.serviceAvailability}>
+          {isServiceAvailableToday()
+            ? `Available today from ${service.start_time} to ${service.end_time}`
+            : "Not available today"}
         </Text>
       </View>
-      <View style={styles.tabContainer}>
-        {["About Me", "Fees", "Eligibility", "FAQs"].map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                activeTab === tab && styles.activeTabText,
-              ]}
-            >
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        {renderTabContent()}
-      </ScrollView>
-      <View style={styles.buttonContainer}>
+
+      <View style={styles.iconContainer}>
         <TouchableOpacity
-          style={styles.complaintButton}
+          style={styles.iconButton}
           onPress={() => navigation.navigate("ComplaintsScreen")}
         >
-          <Text style={styles.buttonText}>Raise a Complaint</Text>
+          <MaterialIcons name="report-problem" size={30} color="#FF5722" />
+          <Text style={styles.iconText}>Complaints</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.bookButton}
+          style={styles.iconButton}
+          onPress={() => navigation.navigate("FAQsScreen")}
+        >
+          <FontAwesome name="question-circle" size={30} color="#007AFF" />
+          <Text style={styles.iconText}>FAQs</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.iconButton}
           onPress={() => {
             if (user) {
-              // Check if the user is logged in
-              navigation.navigate("Book", {
-                service,
-                // services,
-                serviceName: service.name,
-                selectedBusiness: {},
-              });
+              navigation.navigate("Book", { serviceId });
             } else {
               navigation.navigate("Login");
             }
           }}
         >
-          <Text style={styles.buttonText}>Book Now</Text>
+          <FontAwesome name="calendar" size={30} color="#00796B" />
+          <Text style={styles.iconText}>Book</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() =>
+            navigation.navigate("EligibilitityScreen", { serviceId })
+          }
+        >
+          <FontAwesome name="check-circle" size={30} color="#4CAF50" />
+          <Text style={styles.iconText}>Eligibility</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => navigation.navigate("FeesScreen", { serviceId })}
+        >
+          <FontAwesome name="dollar" size={30} color="#FFC107" />
+          <Text style={styles.iconText}>Fees</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -246,108 +244,102 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  header: {
-    padding: 10,
-    flexDirection: "row",
+  viewPager: {
+    flex: 1,
+  },
+  page: {
+    justifyContent: "center",
     alignItems: "center",
   },
   coverImage: {
     width: width,
-    height: 200,
+    height: height * 0.4, // Adjust this to take the remaining height
   },
-  pagination: {
+  dotsContainer: {
     flexDirection: "row",
     justifyContent: "center",
     marginVertical: 10,
   },
   dot: {
-    height: 8,
     width: 8,
-    backgroundColor: "#E0E0E0",
+    height: 8,
     borderRadius: 4,
+    backgroundColor: "#00796B",
     marginHorizontal: 4,
-  },
-  activeDot: {
-    backgroundColor: "#007AFF",
   },
   profileContainer: {
     alignItems: "center",
     padding: 20,
   },
+  serviceNameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   serviceName: {
     fontSize: 24,
     fontWeight: "bold",
+    marginRight: 8,
+  },
+  blinkingIcon: {
+    marginLeft: 5,
+  },
+  serviceDescription: {
+    fontSize: 16,
+    color: "#666",
+    marginVertical: 10,
+    textAlign: "center",
+  },
+  serviceProcessingTime: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 10,
+  },
+  availabilityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 10,
   },
   servicePrice: {
     fontSize: 16,
     color: "#00796B",
+    marginRight: 10,
   },
   serviceRating: {
     fontSize: 14,
     color: "#666",
   },
-  tabContainer: {
+  serviceAvailability: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 10,
+  },
+  labelsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    marginVertical: 10,
+  },
+  label: {
+    padding: 5,
+    borderRadius: 5,
+    margin: 5,
+  },
+  labelText: {
+    color: "#FFF",
+    fontSize: 12,
+  },
+  iconContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-    paddingVertical: 10,
+    paddingVertical: 20,
   },
-  tab: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+  iconButton: {
+    alignItems: "center",
   },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: "#007AFF",
-  },
-  tabText: {
+  iconText: {
+    marginTop: 5,
+    fontSize: 12,
     color: "#666",
-  },
-  activeTabText: {
-    color: "#007AFF",
-    fontWeight: "bold",
-  },
-  contentContainer: {
-    padding: 20,
-    minHeight: 400,
-  },
-  tabContent: {
-    fontSize: 16,
-    color: "#666",
-  },
-  tableRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 10,
-    borderBottomWidth: 1, // Added border for better separation
-    borderBottomColor: "#E0E0E0",
-  },
-  tableCell: {
-    fontSize: 16,
-    color: "#333",
-    flex: 1, // Ensures cells take equal space
-    textAlign: "center", // Centers text within each cell
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    padding: 20,
-  },
-  complaintButton: {
-    backgroundColor: "#FF5722",
-    padding: 15,
-    borderRadius: 5,
-  },
-  bookButton: {
-    backgroundColor: "#00796B",
-    padding: 15,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
   },
 });
 

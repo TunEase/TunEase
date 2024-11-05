@@ -1,140 +1,154 @@
-import { faker } from "@faker-js/faker";
-import { supabase } from "../services/supabaseClient";
+import { faker } from '@faker-js/faker';
+import { supabase } from '../services/supabaseClient';
 
-export const addNews = async () => {
-    try {
-        // Fetch existing businesses to reference them
-        const { data: businesses } = await supabase
-            .from('business')
-            .select('id');
-
-        if (!businesses || businesses.length === 0) {
-            console.error('No businesses found');
-            return;
-        }
-
-        // Create 10 news items
-        for (let i = 0; i < 10; i++) {
-            // Create news entry
-            const newsData = {
-                business_id: businesses[Math.floor(Math.random() * businesses.length)].id,
-                title: faker.company.catchPhrase(),
-                content: faker.lorem.paragraphs(3),
-                created_at: faker.date.past(),
-                updated_at: faker.date.recent(),
-            };
-
-            const { data: news, error: newsError } = await supabase
-                .from('news')
-                .insert(newsData)
-                .select()
-                .single();
-
-            if (newsError) {
-                console.error('Error creating news:', newsError);
-                continue;
-            }
-
-            // Add media for the news
-            const mediaData = {
-                news_id: news.id,
-                media_type: 'image',
-                media_url: faker.image.url({ width: 640, height: 480 }),
-                created_at: faker.date.past(),
-                updated_at: faker.date.recent(),
-            };
-
-            const { error: mediaError } = await supabase
-                .from('media')
-                .insert(mediaData);
-
-            if (mediaError) {
-                console.error('Error creating media:', mediaError);
-            }
-
-            // Add 2-4 tags for each news
-            const numberOfTags = faker.number.int({ min: 2, max: 4 });
-            const tags = [];
-            for (let j = 0; j < numberOfTags; j++) {
-                //@ts-ignore
-                tags.push({
-            
-                    news_id: news.id,
-            
-                    tag_name: faker.word.sample(),
-                });
-            }
-
-            const { error: tagError } = await supabase
-                .from('news_tag')
-                .insert(tags);
-
-            if (tagError) {
-                console.error('Error creating tags:', tagError);
-            }
-        }
-
-        console.log('Successfully added news items with media and tags');
-    } catch (error) {
-        console.error('Error in addNews:', error);
-    }
-};
-
-// Types de données factices pour les news
-const newsCategories = [
-    'Business Update',
-    'New Service',
-    'Special Offer',
-    'Event',
-    'Achievement',
-    'Partnership',
-    'Community',
-    'Technology',
-    'Innovation',
-    'Customer Story'
+const NEWS_TYPES = ['PROMOTION', 'UPDATE', 'EVENT', 'ANNOUNCEMENT', 'OFFER'] as const;
+const TAGS = [
+  'Special Offer', 'Limited Time', 'New Service', 'Featured',
+  'Discount', 'Holiday', 'Seasonal', 'Premium', 'Flash Sale',
+  'Member Only', 'Weekend Special', 'Trending'
 ];
 
-const tagOptions = [
-    'urgent',
-    'promotion',
-    'new',
-    'featured',
-    'limited-time',
-    'exclusive',
-    'trending',
-    'popular',
-    'seasonal',
-    'special'
-];
+async function seedNewsData(count = 20) {
+  try {
+    console.log('🌱 Starting news data seeding...');
 
-// Fonction helper pour générer un titre réaliste
-const generateNewsTitle = (category: string): string => {
-    switch (category) {
-        case 'Business Update':
-            return `${faker.company.name()} Announces ${faker.company.buzzPhrase()}`;
-        case 'New Service':
-            return `Introducing Our New ${faker.commerce.productName()} Service`;
-        case 'Special Offer':
-            return `Special ${faker.number.int({ min: 10, max: 75 })}% Off on ${faker.commerce.productName()}`;
-        case 'Event':
-            return `Join Us for ${faker.company.buzzPhrase()} Event`;
-        default:
-            return faker.company.catchPhrase();
+    // Get existing businesses for reference
+    const { data: businesses, error: businessError } = await supabase
+      .from('business')
+      .select('id');
+
+    if (businessError || !businesses?.length) {
+      throw new Error('No businesses found or error fetching businesses');
     }
+
+    // Get some users for reactions and comments
+    const { data: users, error: userError } = await supabase
+      .from('user_profile')
+      .select('id');
+
+    if (userError || !users?.length) {
+      throw new Error('No users found or error fetching users');
+    }
+
+    for (let i = 0; i < count; i++) {
+      // Create news post
+      const newsData = {
+        business_id: businesses[Math.floor(Math.random() * businesses.length)].id,
+        title: faker.company.catchPhrase(),
+        content: faker.lorem.paragraphs(2),
+        type: NEWS_TYPES[Math.floor(Math.random() * NEWS_TYPES.length)],
+        status: Math.random() > 0.1 ? 'active' : 'inactive', // 90% active
+        views: faker.number.int({ min: 0, max: 1000 }),
+      };
+
+      const { data: news, error: newsError } = await supabase
+        .from('news')
+        .insert(newsData)
+        .select()
+        .single();
+
+      if (newsError || !news) {
+        console.error(`Error creating news ${i + 1}:`, newsError);
+        continue;
+      }
+
+      console.log(`📰 Created news post ${i + 1}`);
+
+      // Add tags (2-4 random tags)
+      const numTags = faker.number.int({ min: 2, max: 4 });
+      const selectedTags = faker.helpers.shuffle(TAGS).slice(0, numTags);
+      
+      for (const tag of selectedTags) {
+        await supabase
+          .from('news_tags')
+          .insert({
+            news_id: news.id,
+            tag_name: tag,
+          });
+      }
+
+      // Add reactions (random number of upvotes/downvotes)
+      const numReactions = faker.number.int({ min: 5, max: 20 });
+      const reactionPromises = Array(numReactions).fill(null).map(async () => {
+        const randomUser = users[Math.floor(Math.random() * users.length)];
+        return supabase
+          .from('news_reactions')
+          .insert({
+            news_id: news.id,
+            user_id: randomUser.id,
+            reaction_type: Math.random() > 0.3 ? 'upvote' : 'downvote', // 70% upvotes
+          })
+          .select();
+      });
+
+      await Promise.all(reactionPromises);
+
+      // Add comments (0-5 random comments)
+      const numComments = faker.number.int({ min: 0, max: 5 });
+      const commentPromises = Array(numComments).fill(null).map(async () => {
+        const randomUser = users[Math.floor(Math.random() * users.length)];
+        return supabase
+          .from('news_comments')
+          .insert({
+            news_id: news.id,
+            user_id: randomUser.id,
+            content: faker.lorem.sentence(),
+          })
+          .select();
+      });
+
+      await Promise.all(commentPromises);
+    }
+
+    console.log('✅ News data seeding completed successfully!');
+  } catch (error) {
+    console.error('❌ Error seeding news data:', error);
+  }
+}
+
+// Create a function to add media to news posts
+async function addMediaToNews() {
+  try {
+    console.log('🖼️ Adding media to news posts...');
+
+    const { data: newsItems, error: newsError } = await supabase
+      .from('news')
+      .select('id');
+
+    if (newsError || !newsItems?.length) {
+      throw new Error('No news found or error fetching news');
+    }
+
+    for (const news of newsItems) {
+      // Add 1-3 images per news post
+      const numImages = faker.number.int({ min: 1, max: 3 });
+      
+      for (let i = 0; i < numImages; i++) {
+        const mediaData = {
+          news_id: news.id,
+          media_url: faker.image.urlPicsumPhotos({ width: 800, height: 600 }),
+          is_primary: i === 0, // First image is primary
+          media_type: 'image',
+        };
+
+        await supabase
+          .from('media')
+          .insert(mediaData);
+      }
+
+      console.log(`📸 Added media to news post ${news.id}`);
+    }
+
+    console.log('✅ Media addition completed successfully!');
+  } catch (error) {
+    console.error('❌ Error adding media:', error);
+  }
+}
+
+// Export functions to be called from your app
+export const seedNews = async () => {
+  await seedNewsData();
+  await addMediaToNews();
 };
 
-// Fonction helper pour générer une description réaliste
-const generateNewsDescription = (category: string): string => {
-    switch (category) {
-        case 'Business Update':
-            return `${faker.company.catchPhrase()}. ${faker.company.buzzPhrase()}.`;
-        case 'New Service':
-            return `We're excited to introduce our latest service offering. ${faker.commerce.productDescription()}`;
-        case 'Special Offer':
-            return `Limited time offer! ${faker.commerce.productDescription()}. Don't miss out on this amazing opportunity.`;
-        case 'Event':
-            return `Join us for an exciting event. ${faker.lorem.paragraph()}`;
-        default:
-            return faker.lorem.paragraph();
-    }
-};
+

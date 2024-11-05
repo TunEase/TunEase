@@ -3,7 +3,8 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useState } from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
-
+import { useNotifications } from "../../hooks/useNotifications";
+import { NotificationsModal } from "../../components/Notifications/NotificationsModal";
 type RootStackParamList = {
   UserProfile: undefined;
   Login: undefined;
@@ -16,39 +17,67 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ navigation }) => {
   const { user } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [notificationsVisible, setNotificationsVisible] = useState(false);
+  const { notifications, unreadCount } = useNotifications();
   return (
-    <View style={styles.footerContainer}>
-      <TouchableOpacity style={styles.iconContainer}>
-        <FontAwesome5 name="home" size={24} color="#004D40" />
-        <Text style={styles.footerText}>Home</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.iconContainer}>
-        <FontAwesome5 name="bell" size={24} color="#004D40" />
-        <Text style={styles.footerText}>Notifications</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.iconContainer}
-        onPress={() => {
-          if (!user) {
-            setModalVisible(true); // Show modal if user is not logged in
-          } else {
-            navigation.navigate("UserProfile");
-          }
-        }}
-      >
-        <FontAwesome5 name="user" size={24} color="#004D40" />
-        <Text style={styles.footerText}>Profile</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.iconContainer}
-        onPress={() => navigation.navigate("Login")}
-      >
-        <FontAwesome5 name="sign-out-alt" size={24} color="#004D40" />
-        <Text style={styles.footerText}>Logout</Text>
-      </TouchableOpacity>
+    <>
+      <View style={styles.footerContainer}>
+        <TouchableOpacity style={styles.iconContainer}>
+          <FontAwesome5 name="home" size={24} color="#004D40" />
+          <Text style={styles.footerText}>Home</Text>
+        </TouchableOpacity>
 
-      {/* Custom Styled Modal Alert */}
+        <TouchableOpacity 
+          style={styles.iconContainer}
+          onPress={() => {
+            if (!user) {
+              setModalVisible(true);
+            } else {
+              setNotificationsVisible(true);
+            }
+          }}
+        >
+          <View style={styles.notificationContainer}>
+            <FontAwesome5 name="bell" size={24} color="#004D40" />
+            {unreadCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{unreadCount}</Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.footerText}>Notifications</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.iconContainer}
+          onPress={() => {
+            if (!user) {
+              setModalVisible(true);
+            } else {
+              navigation.navigate("UserProfile");
+            }
+          }}
+        >
+          <FontAwesome5 name="user" size={24} color="#004D40" />
+          <Text style={styles.footerText}>Profile</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.iconContainer}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <FontAwesome5 name="sign-out-alt" size={24} color="#004D40" />
+          <Text style={styles.footerText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Notifications Modal */}
+      <NotificationsModal 
+        visible={notificationsVisible}
+        onClose={() => setNotificationsVisible(false)}
+      />
+
+      {/* Login Required Modal */}
       <Modal
         transparent={true}
         animationType="fade"
@@ -79,8 +108,8 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-    </View>
-  );
+    </>
+);
 };
 
 export default Footer;
@@ -105,6 +134,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#004D40",
     marginTop: 3,
+  },
+  notificationContainer: {
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    right: -8,
+    top: -8,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FAFAFA',
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   modalOverlay: {
     flex: 1,

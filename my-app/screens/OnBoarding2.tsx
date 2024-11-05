@@ -7,6 +7,9 @@ import { useAuth } from '../hooks/useAuth';
 import { Alert } from 'react-native';
 import { supabase } from '../services/supabaseClient';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import * as ImagePicker from 'expo-image-picker';
+import { decode } from 'base64-arraybuffer';
+
 type RootStackParamList = {
   OnBoardingScreen3: {
     businessName: string;
@@ -171,7 +174,8 @@ const OnBoardingScreen3: React.FC = () => {
   const [longitude, setLongitude] = useState('');
   const [latitude, setLatitude] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   // Get the business data from the previous screen
   const { businessName, businessAddress, businessType } = route.params as any;
 
@@ -184,15 +188,14 @@ const OnBoardingScreen3: React.FC = () => {
       Alert.alert('Missing Information', 'Please fill in all fields');
       return;
     }
-
+  
     if (!validateEmail(email)) {
       Alert.alert('Invalid Email', 'Please enter a valid email address');
       return;
     }
-
+  
     setIsLoading(true);
     try {
-      // Create the business in Supabase
       const { data, error } = await supabase
         .from('business')
         .insert([
@@ -205,14 +208,15 @@ const OnBoardingScreen3: React.FC = () => {
             phone: phone.trim(),
             email: email.trim(),
             longitude: parseFloat(longitude) || null,
-            latitude: parseFloat(latitude) || null
+            latitude: parseFloat(latitude) || null,
+            images: images // Add this line
           }
         ])
         .select()
         .single();
-
+  
       if (error) throw error;
-
+  
       console.log('Business created:', data);
       setProgress(3);
       navigation.navigate('OnBoardingScreen4' as never);
@@ -222,7 +226,44 @@ const OnBoardingScreen3: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-
+  };
+  const pickAndUploadImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+        base64: true,
+      });
+  
+      if (!result.canceled && result.assets[0].base64) {
+        setUploading(true);
+        const base64FileData = result.assets[0].base64;
+        const filePath = `business-images/${Date.now()}-${Math.random().toString(36).substring(7)}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('business-images')
+          .upload(filePath, decode(base64FileData), {
+            contentType: 'image/jpeg'
+          });
+  
+        if (uploadError) {
+          throw uploadError;
+        }
+  
+        const { data: { publicUrl } } = supabase.storage
+          .from('business-images')
+          .getPublicUrl(filePath);
+  
+        setImages(prev => [...prev, publicUrl]);
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', 'Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -233,7 +274,7 @@ const OnBoardingScreen3: React.FC = () => {
           <Animated.View style={[styles.progressBar, { width: `${(progress / 4) * 100}%` }]} />
         </View>
       </View>
-
+  
       <ScrollView 
         style={styles.scrollContainer}
         contentContainerStyle={styles.contentContainer}
@@ -241,7 +282,7 @@ const OnBoardingScreen3: React.FC = () => {
       >
         <Text style={styles.title}>Additional Business Details</Text>
         <Text style={styles.subtitle}>Help customers learn more about your business</Text>
-
+  
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Business Description</Text>
           <TextInput
@@ -255,6 +296,7 @@ const OnBoardingScreen3: React.FC = () => {
             textAlignVertical="top"
           />
         </View>
+  
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Business Location (Optional)</Text>
           <View style={styles.locationContainer}>
@@ -276,6 +318,7 @@ const OnBoardingScreen3: React.FC = () => {
             />
           </View>
         </View>
+  
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Phone Number</Text>
           <View style={styles.phoneInputContainer}>
@@ -291,12 +334,12 @@ const OnBoardingScreen3: React.FC = () => {
             />
           </View>
         </View>
-
+  
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Business Email</Text>
+          <Text style={styles.label}>Email Address</Text>
           <TextInput
             style={styles.input}
-            placeholder="your@business.com"
+            placeholder="business@example.com"
             placeholderTextColor="rgba(255,255,255,0.6)"
             value={email}
             onChangeText={setEmail}
@@ -304,15 +347,50 @@ const OnBoardingScreen3: React.FC = () => {
             autoCapitalize="none"
           />
         </View>
+  
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Business Images</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.imageScrollView}
+          >
+            {images.map((image, index) => (
+              <View key={index} style={styles.imageContainer}>
+                <Image source={{ uri: image }} style={styles.uploadedImage} />
+                <TouchableOpacity 
+                  style={styles.removeImageButton}
+                  onPress={() => setImages(prev => prev.filter((_, i) => i !== index))}
+                >
+                  <Icon name="close" size={20} color="#FFF" />
+                </TouchableOpacity>
+              </View>
+            ))}
+            <TouchableOpacity 
+              style={styles.addImageButton} 
+              onPress={pickAndUploadImage}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <>
+                  <Icon name="add-photo-alternate" size={24} color="#FFF" />
+                  <Text style={styles.addImageText}>Add Image</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
       </ScrollView>
-
+  
       <TouchableOpacity 
-        style={[styles.nextButton, (!description.trim() || !phone.trim() || !email.trim()) && styles.disabledButton]}
+        style={[styles.nextButton, isLoading && styles.disabledButton]} 
         onPress={handleNext}
-        disabled={isLoading || !description.trim() || !phone.trim() || !email.trim()}
+        disabled={isLoading}
       >
         {isLoading ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#004D40" />
         ) : (
           <Text style={styles.buttonText}>Next</Text>
         )}
@@ -660,6 +738,43 @@ const styles = StyleSheet.create({
   },
   locationInput: {
     flex: 1,
+  },
+  imageScrollView: {
+    flexGrow: 0,
+    marginTop: 10,
+  },
+  imageContainer: {
+    position: 'relative',
+    marginRight: 10,
+  },
+  uploadedImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addImageButton: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#004D40',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addImageText: {
+    color: '#FFF',
+    marginTop: 4,
+    fontSize: 12,
   },
 });
 
