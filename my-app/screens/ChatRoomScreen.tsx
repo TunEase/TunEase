@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native"; // Import useNavigation
 import { supabase } from "../services/supabaseClient";
 import { ResizeMode, Video } from "expo-av";
 import { useSendMessage } from "../hooks/useSendMesage";
@@ -25,8 +25,7 @@ interface Message {
 }
 
 const ChatRoomScreen: React.FC = () => {
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const navigation = useNavigation(); // Initialize the navigation hook
   const route = useRoute();
   const { conversationId, businessName, authenticatedUserId } =
     route.params as {
@@ -34,6 +33,9 @@ const ChatRoomScreen: React.FC = () => {
       businessName: string;
       authenticatedUserId: string;
     };
+
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const {
     loading,
@@ -51,7 +53,8 @@ const ChatRoomScreen: React.FC = () => {
       .select(
         "*,user_profile(name,media(media_url, media_type)), media:media!media_message_id_fkey(media_url, media_type)"
       )
-      .eq("conversation_id", conversationId);
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: false }); // Order by created_at descending
 
     if (error) {
       console.error("Error fetching messages:", error);
@@ -73,34 +76,62 @@ const ChatRoomScreen: React.FC = () => {
     fetchMessages(); // Refresh messages after uploading
   };
 
-  const renderMessage = ({ item }: { item: Message }) => (
-    <View style={styles.messageContainer}>
-      <Text style={styles.messageText}>{item.content}</Text>
-      {item.media &&
-        item.media.map((mediaItem) =>
-          mediaItem.media_type === "image" ? (
-            <Image
-              key={mediaItem.media_url}
-              source={{ uri: mediaItem.media_url }}
-              style={styles.mediaImage}
-            />
-          ) : (
-            <Video
-              key={mediaItem.media_url}
-              source={{ uri: mediaItem.media_url }}
-              style={styles.mediaVideo}
-              useNativeControls
-              resizeMode={ResizeMode.COVER}
-            />
-          )
-        )}
-    </View>
-  );
+  const renderMessage = ({ item }: { item: Message }) => {
+    const isSentByUser = item.sender_id === authenticatedUserId;
+    return (
+      <View
+        style={[
+          styles.messageContainer,
+          isSentByUser ? styles.sentMessage : styles.receivedMessage,
+        ]}
+      >
+        <View
+          style={[
+            styles.messageBubble,
+            isSentByUser ? styles.sentBubble : styles.receivedBubble,
+          ]}
+        >
+          <Text
+            style={[
+              styles.messageText,
+              isSentByUser ? styles.sentText : styles.receivedText,
+            ]}
+          >
+            {item.content}
+          </Text>
+          {item.media &&
+            item.media.map((mediaItem) =>
+              mediaItem.media_type === "image" ? (
+                <Image
+                  key={mediaItem.media_url}
+                  source={{ uri: mediaItem.media_url }}
+                  style={styles.mediaImage}
+                />
+              ) : (
+                <Video
+                  key={mediaItem.media_url}
+                  source={{ uri: mediaItem.media_url }}
+                  style={styles.mediaVideo}
+                  useNativeControls
+                  resizeMode={ResizeMode.COVER}
+                />
+              )
+            )}
+          <Text style={styles.timestamp}>
+            {new Date(item.created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <FontAwesome name="chevron-left" size={20} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerText}>{businessName}</Text>
@@ -113,6 +144,7 @@ const ChatRoomScreen: React.FC = () => {
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
         contentContainerStyle={styles.messageList}
+        inverted // Invert the list to show the latest messages at the bottom
       />
       <View style={styles.inputContainer}>
         <TouchableOpacity
@@ -175,10 +207,34 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     flexDirection: "row",
-    alignItems: "center",
     marginBottom: 10,
   },
+  sentMessage: {
+    justifyContent: "flex-end",
+  },
+  receivedMessage: {
+    justifyContent: "flex-start",
+  },
+  messageBubble: {
+    maxWidth: "70%",
+    padding: 10,
+    borderRadius: 15,
+  },
+  sentBubble: {
+    backgroundColor: "#DCF8C6",
+    alignSelf: "flex-end",
+  },
+  receivedBubble: {
+    backgroundColor: "#FFF",
+    alignSelf: "flex-start",
+  },
   messageText: {
+    fontSize: 16,
+  },
+  sentText: {
+    color: "#333",
+  },
+  receivedText: {
     color: "#333",
   },
   mediaImage: {
@@ -192,6 +248,12 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
     marginVertical: 5,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 5,
+    alignSelf: "flex-end",
   },
   inputContainer: {
     flexDirection: "row",

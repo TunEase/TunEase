@@ -8,9 +8,11 @@ import {
   TextInput,
   Image,
 } from "react-native";
-import { FontAwesome5, FontAwesome } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { supabase } from "../services/supabaseClient";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import MainFooter from "../components/HomePage/MainFooter"; // Import MainFooter
 
 interface Conversation {
   id: string;
@@ -24,6 +26,7 @@ const MessageScreen: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [userRole, setUserRole] = useState<string>("");
   const [authenticatedUserId, setAuthenticatedUserId] = useState<string>("");
+
   useEffect(() => {
     fetchUserRole();
   }, []);
@@ -135,11 +138,12 @@ const MessageScreen: React.FC = () => {
               })
             }
           >
-            <View
+            <LinearGradient
+              colors={["#FFF", "#F0F0F0"]}
               style={[
                 styles.messageItem,
                 {
-                  backgroundColor: item.name === "Unknown" ? "#D3D3D3" : "#FFF", // Light grey for business, white for user_profile
+                  backgroundColor: item.name === "Unknown" ? "#D3D3D3" : "#FFF",
                 },
               ]}
             >
@@ -153,17 +157,11 @@ const MessageScreen: React.FC = () => {
                   <Text style={styles.unreadCount}>2</Text>
                 </View>
               </View>
-            </View>
+            </LinearGradient>
           </TouchableOpacity>
         )}
       />
-      <View style={styles.footer}>
-        <FontAwesome name="home" size={24} color="#888" />
-        <View style={styles.footerButton}>
-          <FontAwesome name="comments" size={24} color="#FFF" />
-        </View>
-        <FontAwesome name="user" size={24} color="#888" />
-      </View>
+      <MainFooter navigation={navigation} />
     </View>
   );
 };
@@ -203,7 +201,11 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
-    backgroundColor: "#FFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
   },
   avatar: {
     width: 50,
@@ -227,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   unreadBadge: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#00796B",
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -236,20 +238,6 @@ const styles = StyleSheet.create({
   unreadCount: {
     color: "#FFF",
     fontSize: 12,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingVertical: 10,
-    backgroundColor: "#FFF",
-    borderTopWidth: 1,
-    borderColor: "#EEE",
-  },
-  footerButton: {
-    backgroundColor: "#007BFF",
-    borderRadius: 30,
-    padding: 10,
   },
 });
 

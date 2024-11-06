@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,17 @@ import {
   Modal,
   TextInput,
   Switch,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { fetchUserProfile, updateUserProfile, deactivateAccount } from '../services/userProfileService';
-import { useAuth } from '../hooks/useAuth';
-import * as ImagePicker from 'expo-image-picker';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import {
+  fetchUserProfile,
+  updateUserProfile,
+  deactivateAccount,
+} from "../services/userProfileService";
+import { useAuth } from "../hooks/useAuth";
+import * as ImagePicker from "expo-image-picker";
+
+import starBookmark from "../assets/FAV.png";
 
 interface UserProfile {
   id: string;
@@ -33,21 +39,22 @@ const UserProfile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [image, setImage] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] = useState(false);
+  const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] =
+    useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState<string | null>(null);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const userId = user?.id;
 
   useEffect(() => {
     const loadProfile = async () => {
       if (!userId) {
-        Alert.alert('Error', 'User ID is not available.');
+        Alert.alert("Error", "User ID is not available.");
         return;
       }
       try {
@@ -55,13 +62,13 @@ const UserProfile: React.FC = () => {
         if (userProfile) {
           setProfile(userProfile as UserProfile);
           setImage(userProfile.avatarUrl || null);
-          setName(userProfile.name || '');
-          setEmail(userProfile.email || '');
+          setName(userProfile.name || "");
+          setEmail(userProfile.email || "");
           setPhone(userProfile.phone || null);
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
-        Alert.alert('Error', 'Failed to load user profile.');
+        console.error("Error fetching profile:", error);
+        Alert.alert("Error", "Failed to load user profile.");
       } finally {
         setIsLoading(false);
       }
@@ -112,7 +119,7 @@ const UserProfile: React.FC = () => {
 
   const handleProfileUpdate = async (newImage?: string | null) => {
     if (!userId) {
-      Alert.alert('Error', 'User ID is not available.');
+      Alert.alert("Error", "User ID is not available.");
       return;
     }
 
@@ -124,21 +131,27 @@ const UserProfile: React.FC = () => {
     };
 
     try {
-      const success = await updateUserProfile(userId, updatedProfile as Partial<UserProfile>);
+      const success = await updateUserProfile(
+        userId,
+        updatedProfile as Partial<UserProfile>
+      );
       if (success) {
-        Alert.alert('Profile updated successfully!');
-        setProfile(prevProfile => ({ ...prevProfile, ...updatedProfile } as UserProfile));
+        Alert.alert("Profile updated successfully!");
+        setProfile(
+          (prevProfile) =>
+            ({ ...prevProfile, ...updatedProfile }) as UserProfile
+        );
       } else {
-        Alert.alert('Failed to update profile.');
+        Alert.alert("Failed to update profile.");
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      Alert.alert('Error updating profile.');
+      console.error("Error updating profile:", error);
+      Alert.alert("Error updating profile.");
     }
   };
 
   const handleNavigateToOnboarding = () => {
-    navigation.navigate('OnBoarding1' as never);
+    navigation.navigate("OnBoarding1" as never);
   };
 
   const toggleNotifications = () => {
@@ -147,38 +160,38 @@ const UserProfile: React.FC = () => {
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert("Error", "Passwords do not match");
       return;
     }
 
     try {
       await updatePassword(currentPassword, newPassword);
-      Alert.alert('Success', 'Password changed successfully!');
+      Alert.alert("Success", "Password changed successfully!");
       setIsChangePasswordModalVisible(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to change password');
+      Alert.alert("Error", error.message || "Failed to change password");
     }
   };
 
   const handleDeactivateAccount = async () => {
     if (!user) {
-      Alert.alert('Error', 'User not found. Please log in again.');
+      Alert.alert("Error", "User not found. Please log in again.");
       return;
     }
 
     try {
       const success = await deactivateAccount(user.id);
       if (success) {
-        Alert.alert('Success', 'Your account has been deactivated.');
+        Alert.alert("Success", "Your account has been deactivated.");
         logout();
       } else {
-        Alert.alert('Error', 'Failed to deactivate account');
+        Alert.alert("Error", "Failed to deactivate account");
       }
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to deactivate account');
+      Alert.alert("Error", error.message || "Failed to deactivate account");
     }
   };
 
@@ -189,8 +202,22 @@ const UserProfile: React.FC = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileSection}>
-        <TouchableOpacity onPress={() => setIsModalVisible(true)} style={styles.avatarContainer}>
-          <Image source={image ? { uri: image } : require('../assets/avat.jpg')} style={styles.avatar} />
+        {/* Add the image in the top right */}
+        <TouchableOpacity
+          onPress={() => navigation.navigate("FavoritesScreen" as never)}
+          style={styles.bookmarkIcon}
+        >
+          <Image source={starBookmark} style={styles.bookmarkIcon} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setIsModalVisible(true)}
+          style={styles.avatarContainer}
+        >
+          <Image
+            source={image ? { uri: image } : require("../assets/avat.jpg")}
+            style={styles.avatar}
+          />
           <View style={styles.editOverlay}>
             <Text style={styles.editText}>Edit</Text>
           </View>
@@ -213,11 +240,14 @@ const UserProfile: React.FC = () => {
         <TextInput
           style={styles.input}
           placeholder="Enter Phone"
-          value={phone || ''}
+          value={phone || ""}
           onChangeText={setPhone}
         />
 
-        <TouchableOpacity style={styles.saveButton} onPress={() => handleProfileUpdate()}>
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={() => handleProfileUpdate()}
+        >
           <Text style={styles.saveButtonText}>Save Changes</Text>
         </TouchableOpacity>
 
@@ -244,12 +274,14 @@ const UserProfile: React.FC = () => {
         >
           <Text style={styles.deactivateText}>Deactivate Account</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.convertButton}
           onPress={handleNavigateToOnboarding}
         >
-          <Text style={styles.convertButtonText}>Convert to Business Profile</Text>
+          <Text style={styles.convertButtonText}>
+            Convert to Business Profile
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -281,11 +313,14 @@ const UserProfile: React.FC = () => {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
             />
-            <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleChangePassword}
+            >
               <Text style={styles.buttonText}>Change Password</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.button, styles.cancelButton]} 
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
               onPress={() => setIsChangePasswordModalVisible(false)}
             >
               <Text style={styles.buttonText}>Cancel</Text>
@@ -294,23 +329,28 @@ const UserProfile: React.FC = () => {
         </View>
       </Modal>
 
-      <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-      >
+      <Modal visible={isModalVisible} transparent={true} animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <TouchableOpacity style={styles.modalButton} onPress={handleImagePicker}>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={handleImagePicker}
+            >
               <Text style={styles.modalButtonText}>Choose from Gallery</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalButton} onPress={handleCameraPicker}>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={handleCameraPicker}
+            >
               <Text style={styles.modalButtonText}>Take a Photo</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalButton} onPress={removeImage}>
               <Text style={styles.modalButtonText}>Remove Photo</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalButton} onPress={() => setIsModalVisible(false)}>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setIsModalVisible(false)}
+            >
               <Text style={styles.modalButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -338,11 +378,11 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   avatarContainer: {
-    position: 'relative',
+    position: "relative",
     marginVertical: 20,
     padding: 4,
     borderRadius: 75,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     shadowColor: "#00796B",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -357,10 +397,10 @@ const styles = StyleSheet.create({
     borderColor: "#E8F5E9",
   },
   editOverlay: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 5,
     right: 5,
-    backgroundColor: '#00796B',
+    backgroundColor: "#00796B",
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
@@ -371,9 +411,9 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   editText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   input: {
     width: "100%",
@@ -397,7 +437,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     marginVertical: 16,
-    width: '100%',
+    width: "100%",
     shadowColor: "#00796B",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -420,7 +460,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderBottomWidth: 1,
     borderBottomColor: "#E8F5E9",
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   settingsText: {
     fontSize: 16,
@@ -433,7 +473,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     marginVertical: 8,
-    width: '100%',
+    width: "100%",
     shadowColor: "#00796B",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
@@ -463,7 +503,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     marginVertical: 16,
-    width: '100%',
+    width: "100%",
     borderWidth: 2,
     borderColor: "#00796B",
     shadowColor: "#000",
@@ -480,15 +520,15 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     padding: 24,
     borderRadius: 15,
-    width: '85%',
+    width: "85%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
@@ -503,7 +543,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 32,
     marginVertical: 8,
-    width: '100%',
+    width: "100%",
   },
   modalButtonText: {
     color: "#00796B",
@@ -512,8 +552,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   cancelButton: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
     borderWidth: 0,
+  },
+  bookmarkIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 60,
+    height: 60,
   },
 });
 

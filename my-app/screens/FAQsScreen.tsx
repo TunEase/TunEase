@@ -9,8 +9,11 @@ import {
   ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { useNavigation } from "@react-navigation/native"; // Import the useNavigation hook
+import Header from "../components/Form/header"; // Import the Header component
 
 const FAQs: React.FC = () => {
+  const navigation = useNavigation(); // Initialize the navigation hook
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
@@ -41,33 +44,39 @@ const FAQs: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Frequently Asked Questions</Text>
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search using keywords"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
+      <Header
+        title="FAQs"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
       />
-      <ScrollView>
-        {faqs.map((faq, index) => (
-          <View key={index} style={styles.faqContainer}>
-            <TouchableOpacity
-              onPress={() => toggleExpand(index)}
-              style={styles.questionContainer}
-            >
-              <Text style={styles.question}>{faq.question}</Text>
-              <Icon
-                name={expandedIndex === index ? "chevron-up" : "chevron-down"}
-                size={20}
-                color="#00796B"
-              />
-            </TouchableOpacity>
-            {expandedIndex === index && (
-              <Text style={styles.answer}>{faq.answer}</Text>
-            )}
-          </View>
-        ))}
-      </ScrollView>
+      <View style={{ padding: 20 }}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search using keywords"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <ScrollView>
+          {faqs.map((faq, index) => (
+            <View key={index} style={styles.faqContainer}>
+              <TouchableOpacity
+                onPress={() => toggleExpand(index)}
+                style={styles.questionContainer}
+              >
+                <Text style={styles.question}>{faq.question}</Text>
+                <Icon
+                  name={expandedIndex === index ? "chevron-up" : "chevron-down"}
+                  size={20}
+                  color="#00796B"
+                />
+              </TouchableOpacity>
+              {expandedIndex === index && (
+                <Text style={styles.answer}>{faq.answer}</Text>
+              )}
+            </View>
+          ))}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -75,13 +84,8 @@ const FAQs: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    // padding: 20,
     backgroundColor: "#F2F2F2",
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
   },
   searchInput: {
     height: 40,

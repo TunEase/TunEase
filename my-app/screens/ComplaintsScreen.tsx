@@ -8,11 +8,16 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native"; // Import the useNavigation hook
+import Header from "../components/Form/header"; // Import the Header component
+
 const ComplaintsScreen: React.FC = () => {
+  const navigation = useNavigation(); // Initialize the navigation hook
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
     null
   );
+
   const categories = {
     "Product Issues": [
       "Defective Item",
@@ -55,55 +60,63 @@ const ComplaintsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <Text style={styles.header}>Report an Issue</Text>
-        <View style={styles.complaintsContainer}>
-          {Object.keys(categories).map((category, index) => (
-            <View key={index} style={styles.categoryContainer}>
-              <TouchableOpacity
-                onPress={() => toggleCategory(category)}
-                style={styles.categoryButton}
-              >
-                <View style={styles.categoryTextContainer}>
-                  <Text style={styles.categoryText}>{category}</Text>
-                  <Text style={styles.arrow}>
-                    {selectedCategory === category ? "▲" : "▼"}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              {selectedCategory === category &&
-                categories[category].map((sub, subIndex) => (
-                  <TouchableOpacity
-                    key={subIndex}
-                    onPress={() => setSelectedSubCategory(sub)}
-                    style={[
-                      styles.subCategoryButton,
-                      selectedSubCategory === sub && styles.subCategorySelected,
-                    ]}
-                  >
-                    <Text style={styles.subCategoryText}>{sub}</Text>
-                  </TouchableOpacity>
-                ))}
-            </View>
-          ))}
-        </View>
-        {selectedSubCategory && (
-          <Text style={styles.selectedText}>
-            Selected: {selectedCategory} - {selectedSubCategory}
-          </Text>
-        )}
-        <TouchableOpacity
-          style={[
-            styles.submitButton,
-            !(selectedCategory && selectedSubCategory) &&
-              styles.submitButtonDisabled,
-          ]}
-          onPress={handleSubmit}
-          disabled={!(selectedCategory && selectedSubCategory)}
-        >
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </ScrollView>
+      <Header
+        title="Complaints"
+        showBackButton={true}
+        onBack={() => navigation.goBack()} // Use navigation.goBack() to handle back action
+      />
+      <View style={{ padding: 20 }}>
+        <ScrollView>
+          <Text style={styles.header}>Report an Issue</Text>
+          <View style={styles.complaintsContainer}>
+            {Object.keys(categories).map((category, index) => (
+              <View key={index} style={styles.categoryContainer}>
+                <TouchableOpacity
+                  onPress={() => toggleCategory(category)}
+                  style={styles.categoryButton}
+                >
+                  <View style={styles.categoryTextContainer}>
+                    <Text style={styles.categoryText}>{category}</Text>
+                    <Text style={styles.arrow}>
+                      {selectedCategory === category ? "▲" : "▼"}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+                {selectedCategory === category &&
+                  categories[category].map((sub, subIndex) => (
+                    <TouchableOpacity
+                      key={subIndex}
+                      onPress={() => setSelectedSubCategory(sub)}
+                      style={[
+                        styles.subCategoryButton,
+                        selectedSubCategory === sub &&
+                          styles.subCategorySelected,
+                      ]}
+                    >
+                      <Text style={styles.subCategoryText}>{sub}</Text>
+                    </TouchableOpacity>
+                  ))}
+              </View>
+            ))}
+          </View>
+          {selectedSubCategory && (
+            <Text style={styles.selectedText}>
+              Selected: {selectedCategory} - {selectedSubCategory}
+            </Text>
+          )}
+          <TouchableOpacity
+            style={[
+              styles.submitButton,
+              !(selectedCategory && selectedSubCategory) &&
+                styles.submitButtonDisabled,
+            ]}
+            onPress={handleSubmit}
+            disabled={!(selectedCategory && selectedSubCategory)}
+          >
+            <Text style={styles.submitButtonText}>Submit</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -111,7 +124,7 @@ const ComplaintsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    // padding: 20,
     backgroundColor: "#F9FAFB",
   },
   header: {

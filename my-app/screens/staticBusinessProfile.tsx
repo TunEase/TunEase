@@ -15,9 +15,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 import { supabase } from "../services/supabaseClient";
+import MainFooter from "../components/HomePage/MainFooter"; // Import MainFooter
 
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Item } from "react-native-paper/lib/typescript/components/Drawer/Drawer";
 import { RootStackParamList } from "../types/business";
 const { width } = Dimensions.get("window");
 
@@ -234,6 +234,8 @@ const Profile = () => {
           </View>
         </View>
       </Modal>
+
+      <MainFooter navigation={navigation} />
     </SafeAreaView>
   );
 };
@@ -341,7 +343,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666666",
     textAlign: "center",
-    marginTop: 10,
+    marginTop: 20,
   },
   modalContainer: {
     flex: 1,
@@ -350,16 +352,16 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: 300,
+    backgroundColor: "#FFFFFF",
     padding: 20,
-    backgroundColor: "#FFF",
     borderRadius: 10,
+    width: "80%",
     alignItems: "center",
   },
   modalText: {
     fontSize: 18,
-    marginBottom: 20,
-    textAlign: "center",
+    fontWeight: "bold",
+    marginBottom: 10,
   },
   modalButtons: {
     flexDirection: "row",
@@ -367,16 +369,14 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   modalButton: {
-    flex: 1,
-    padding: 10,
-    marginHorizontal: 5,
     backgroundColor: "#00796B",
+    padding: 10,
     borderRadius: 5,
-    alignItems: "center",
+    marginHorizontal: 10,
   },
   modalButtonText: {
-    color: "#FFF",
-    fontSize: 16,
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
 });
 

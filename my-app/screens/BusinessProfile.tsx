@@ -21,7 +21,6 @@ type RootStackParamList = {
   EditProfileScreen: { businessId: number };
   Statistics: { businessId: string };
   AddService: { businessId: number }; // Add this line
-
 };
 
 const BusinessProfile: React.FC<BusinessProfileProps> = ({ businessId }) => {
@@ -111,15 +110,15 @@ const BusinessProfile: React.FC<BusinessProfileProps> = ({ businessId }) => {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Services</Text>
           <TouchableOpacity
-           style={styles.button}
-           onPress={() =>
-           navigation.navigate("AddService", {
-           businessId: businessId,
-    })
-  }
->
-  <Text style={styles.buttonText}>View Services</Text>
-</TouchableOpacity>
+            style={styles.button}
+            onPress={() =>
+              navigation.navigate("AddService", {
+                businessId: businessId,
+              })
+            }
+          >
+            <Text style={styles.buttonText}>View Services</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Statistics */}
@@ -242,5 +241,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
   },
-  
 });
