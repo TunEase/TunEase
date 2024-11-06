@@ -1,13 +1,15 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
+import { supabase } from "../../services/supabaseClient";
 
 type RootStackParamList = {
   UserProfile: undefined;
   Login: undefined;
   MessageScreen: undefined;
+  Home: undefined; // Add Home to the navigation stack
 };
 
 interface FooterProps {
@@ -17,10 +19,34 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ navigation }) => {
   const { user } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchUnreadMessagesCount = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from("messages")
+          .select("is_read")
+          .eq("is_read", false)
+          .eq("sender_id", user.id);
+
+        if (error) {
+          console.error("Error fetching unread messages count:", error);
+        } else {
+          setUnreadCount(data.length);
+        }
+      }
+    };
+
+    fetchUnreadMessagesCount();
+  }, [user]);
 
   return (
     <View style={styles.footerContainer}>
-      <TouchableOpacity style={styles.iconContainer}>
+      <TouchableOpacity
+        style={styles.iconContainer}
+        onPress={() => navigation.navigate("Home")} // Navigate to Home
+      >
         <FontAwesome5 name="home" size={24} color="#004D40" />
         <Text style={styles.footerText}>Home</Text>
       </TouchableOpacity>
@@ -30,16 +56,21 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.iconContainer}
-        onPress={() => navigation.navigate("MessageScreen")} // Navigate to Messages
+        onPress={() => navigation.navigate("MessageScreen")}
       >
         <FontAwesome5 name="envelope" size={24} color="#004D40" />
+        {unreadCount > 0 && (
+          <View style={styles.unreadBadge}>
+            <Text style={styles.unreadCount}>{unreadCount}</Text>
+          </View>
+        )}
         <Text style={styles.footerText}>Messages</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.iconContainer}
         onPress={() => {
           if (!user) {
-            setModalVisible(true); // Show modal if user is not logged in
+            setModalVisible(true);
           } else {
             navigation.navigate("UserProfile");
           }
@@ -56,7 +87,6 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
         <Text style={styles.footerText}>Logout</Text>
       </TouchableOpacity>
 
-      {/* Custom Styled Modal Alert */}
       <Modal
         transparent={true}
         animationType="fade"
@@ -108,11 +138,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
+    position: "relative",
   },
   footerText: {
     fontSize: 12,
     color: "#004D40",
     marginTop: 3,
+  },
+  unreadBadge: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "#FF0000",
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  unreadCount: {
+    color: "#FFF",
+    fontSize: 12,
+    fontWeight: "bold",
   },
   modalOverlay: {
     flex: 1,

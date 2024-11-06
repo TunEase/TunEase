@@ -8,10 +8,11 @@ import {
   TextInput,
   Image,
 } from "react-native";
-import { FontAwesome5, FontAwesome } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { supabase } from "../services/supabaseClient";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+import MainFooter from "../components/HomePage/MainFooter"; // Import MainFooter
 
 interface Conversation {
   id: string;
@@ -160,13 +161,7 @@ const MessageScreen: React.FC = () => {
           </TouchableOpacity>
         )}
       />
-      <View style={styles.footer}>
-        <FontAwesome name="home" size={24} color="#888" />
-        <View style={styles.footerButton}>
-          <FontAwesome name="comments" size={24} color="#FFF" />
-        </View>
-        <FontAwesome name="user" size={24} color="#888" />
-      </View>
+      <MainFooter navigation={navigation} />
     </View>
   );
 };
@@ -243,20 +238,6 @@ const styles = StyleSheet.create({
   unreadCount: {
     color: "#FFF",
     fontSize: 12,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingVertical: 10,
-    backgroundColor: "#FFF",
-    borderTopWidth: 1,
-    borderColor: "#EEE",
-  },
-  footerButton: {
-    backgroundColor: "#00796B",
-    borderRadius: 30,
-    padding: 10,
   },
 });
 

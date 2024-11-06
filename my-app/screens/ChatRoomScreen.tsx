@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native"; // Import useNavigation
 import { supabase } from "../services/supabaseClient";
 import { ResizeMode, Video } from "expo-av";
 import { useSendMessage } from "../hooks/useSendMesage";
@@ -25,8 +25,7 @@ interface Message {
 }
 
 const ChatRoomScreen: React.FC = () => {
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const navigation = useNavigation(); // Initialize the navigation hook
   const route = useRoute();
   const { conversationId, businessName, authenticatedUserId } =
     route.params as {
@@ -34,6 +33,9 @@ const ChatRoomScreen: React.FC = () => {
       businessName: string;
       authenticatedUserId: string;
     };
+
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const {
     loading,
@@ -51,7 +53,8 @@ const ChatRoomScreen: React.FC = () => {
       .select(
         "*,user_profile(name,media(media_url, media_type)), media:media!media_message_id_fkey(media_url, media_type)"
       )
-      .eq("conversation_id", conversationId);
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: false }); // Order by created_at descending
 
     if (error) {
       console.error("Error fetching messages:", error);
@@ -114,6 +117,12 @@ const ChatRoomScreen: React.FC = () => {
                 />
               )
             )}
+          <Text style={styles.timestamp}>
+            {new Date(item.created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
         </View>
       </View>
     );
@@ -122,7 +131,7 @@ const ChatRoomScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <FontAwesome name="chevron-left" size={20} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerText}>{businessName}</Text>
@@ -239,6 +248,12 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
     marginVertical: 5,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 5,
+    alignSelf: "flex-end",
   },
   inputContainer: {
     flexDirection: "row",

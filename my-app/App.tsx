@@ -82,6 +82,8 @@ import MessageScreen from "./screens/MessageScreen";
 import ChatRoomScreen from "./screens/ChatRoomScreen";
 import FeesScreen from "./screens/options/fees";
 import EligibilitityScreen from "./screens/options/eligibilitity";
+import FavoritesScreen from "./screens/FavoritesScreen";
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -457,6 +459,11 @@ export default function App() {
             <Stack.Screen
               name="EligibilitityScreen"
               component={EligibilitityScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="FavoritesScreen"
+              component={FavoritesScreen}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>
