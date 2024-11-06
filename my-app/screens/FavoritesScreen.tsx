@@ -83,7 +83,7 @@ const FavoritesScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     <View style={styles.container}>
       <Header
         title="Favorites"
-        onBack={() => navigation.goBack()} // Handle back navigation
+        onBack={() => navigation.goBack()}
         showBackButton={true}
       />
       <View style={{ padding: 20 }}>
@@ -136,7 +136,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F8F8F8",
-    paddingHorizontal: 10,
     paddingTop: 20,
   },
   text: {
