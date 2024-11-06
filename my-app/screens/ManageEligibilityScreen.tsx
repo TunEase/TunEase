@@ -158,7 +158,7 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
         showBackButton={true}
         onBack={() => navigation.goBack()}
       />
-      <View style={{ padding: 20 }}>
+      <View style={{ flex: 1, padding: 20 }}>
         <FlatList
           data={eligibilities}
           keyExtractor={(item) => item.id}
