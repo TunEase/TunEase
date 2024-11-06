@@ -56,7 +56,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
       `
       )
       .eq("business_id", id);
-
+      
     if (error) {
       console.error("Error fetching services:", error.message);
     } else {
@@ -161,7 +161,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
                   style={styles.availabilityButton}
                   onPress={() =>
                     navigation.navigate("AvailabilityScreen", {
-                      serviceId: item.id,
+                      service: services,
                     })
                   }
                 >
@@ -199,7 +199,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
       <TouchableOpacity
         style={styles.addButton}
         onPress={() =>
-          navigation.navigate("CreateServiceScreen", { businessId: id })
+          navigation.navigate("ServiceOnboardingScreen", { businessId: id })
         }
     
       >

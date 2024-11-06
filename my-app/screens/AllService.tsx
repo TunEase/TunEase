@@ -26,7 +26,8 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
       const { data, error } = await supabase.from("services").select(`
           *,
           media:media(service_id, media_url)
-        `);
+        `)
+        .order('created_at', { ascending: false });
       if (error) {
         console.error("Error fetching services:", error);
         setError("Failed to load services. Please try again later.");

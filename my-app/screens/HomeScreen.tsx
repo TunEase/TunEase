@@ -23,7 +23,7 @@ import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome5 } from '@expo/vector-icons';
-
+import HomeScreenLoader from "../components/loadingCompo/HomeScreenLoader";
 interface HomeProps {
   navigation: any;
 }
@@ -48,7 +48,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
 
   const adScrollRef = useRef<ScrollView>(null);
-
+  const shimmerAnimation = useRef(new Animated.Value(0)).current;
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -85,7 +85,26 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     fetchCategories();
 
   }, []);
-
+  useEffect(() => {
+    if (loading) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(shimmerAnimation, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(shimmerAnimation, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      shimmerAnimation.setValue(0);
+    }
+  }, [loading]);
   const checkUserRole = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -187,7 +206,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       setLoading(false);
     }
   };
-
  
 
   const renderHeader = () => (
@@ -230,7 +248,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     </View>
       </View>
       <View style={styles.headerIcons}>
-  <TouchableOpacity 
+  {/* <TouchableOpacity 
           onPress={() => setNotificationsModalVisible(true)} 
           style={styles.notificationButton}
         >
@@ -240,7 +258,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
               <Text style={styles.badgeText}>{unreadCount}</Text>
             </View>
           )}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       <TouchableOpacity
         style={styles.profileIcon}
         onPress={() => navigation.navigate("BusinessProfileApp")}
@@ -596,6 +614,10 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     </View>
   );
 
+  if (loading) {
+    return <HomeScreenLoader animationValue={shimmerAnimation} />;
+  }
+ 
   return (
     <SafeAreaView style={styles.container}>
       <FlatList

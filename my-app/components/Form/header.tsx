@@ -13,6 +13,7 @@ interface HeaderProps {
   subtitle?: string;
   onBack?: () => void;
   showBackButton?: boolean;
+  rightComponent?: React.ReactNode;
   backgroundColor?: string;
 }
 
@@ -21,7 +22,8 @@ const Header: React.FC<HeaderProps> = ({
   subtitle,
   onBack,
   showBackButton = true,
-  backgroundColor = "#004D40"
+  backgroundColor = "#004D40",
+  rightComponent
 }) => {
   return (
     <>
@@ -37,6 +39,7 @@ const Header: React.FC<HeaderProps> = ({
         )}
         <Text style={styles.headerTitle}>{title}</Text>
         {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
+        {rightComponent && rightComponent}
       </View>
     </>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,14 @@ import {
   ScrollView,
   FlatList,
   Keyboard,
+  Animated,
 } from 'react-native';
 import { supabase } from '../../services/supabaseClient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Header from '../../components/Form/header';
-
+import CreateNewsLoader from '../../components/loadingCompo/CreateNewsLoader';
+import ConfirmationModal from '../../components/StatusComponents/ConfirmationModal';
+import SuccessScreen from '../SuccessScreen';
 const CreateNews = ({ navigation }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -24,6 +27,10 @@ const CreateNews = ({ navigation }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const shimmerAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const fetchUserBusinessId = async () => {
@@ -46,13 +53,34 @@ const CreateNews = ({ navigation }) => {
 
           if (error) throw error;
 
-          setServices(services || []);
+          setServices(services || [] );
         }
       }
     };
 
     fetchUserBusinessId();
   }, []);
+   // Add shimmer animation effect
+   useEffect(() => {
+    if (loading) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(shimmerAnimation, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(shimmerAnimation, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      shimmerAnimation.setValue(0);
+    }
+  }, [loading]);
 
   const handleTagChange = (text) => {
     setTags(text);
@@ -83,25 +111,51 @@ const CreateNews = ({ navigation }) => {
       Alert.alert('Error', 'Title and content are required.');
       return;
     }
-
-    const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag); // Filter out empty tags
-    const validTags = tagArray.map(tag => {
-      const matchedService = services.find(service => service.name.toLowerCase() === tag.toLowerCase());
-      return matchedService ? { tag_name: matchedService.name, link: matchedService.id } : null;
-    }).filter(tag => tag !== null); // Filter out null values
-
-    if (validTags.length === 0) {
-      Alert.alert('Error', 'No valid tags found.');
-      return;
-    }
-
-    if (!businessId) {
-      Alert.alert('Error', 'Business ID is required.');
-      return;
-    }
-
-    navigation.navigate('MediaScreen', { title, content, tags: validTags, status, type, businessId });
+    setShowConfirmation(true); // Show confirmation modal
   };
+
+  const handleConfirm = async () => {
+    setShowConfirmation(false);
+    setLoading(true); // Start loading
+
+    try {
+      const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      const validTags = tagArray.map(tag => {
+        const matchedService = services.find(service => 
+          service.name.toLowerCase() === tag.toLowerCase()
+        );
+        return matchedService ? { tag_name: matchedService.name, link: matchedService.id } : null;
+      }).filter(tag => tag !== null);
+
+      if (validTags.length === 0) {
+        Alert.alert('Error', 'No valid tags found.');
+        return;
+      }
+
+      if (!businessId) {
+        Alert.alert('Error', 'Business ID is required.');
+        return;
+      }
+
+      // Navigate to MediaScreen with the data
+      navigation.navigate('MediaScreen', { 
+        title, 
+        content, 
+        tags: validTags, 
+        status, 
+        type, 
+        businessId 
+      });
+      
+      setShowSuccess(true); // Show success screen after navigation
+    } catch (error) {
+      Alert.alert('Error', 'Failed to create news post.');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   // Function to render tags as labels
   const renderTags = () => {
@@ -122,6 +176,24 @@ const CreateNews = ({ navigation }) => {
       </View>
     );
   };
+//loading check
+   if (loading) {
+    return <CreateNewsLoader animationValue={shimmerAnimation} />;
+  }
+
+  //Success Check
+  if (showSuccess) {
+    return (
+      <SuccessScreen
+        title="News Created!"
+        description="Your news post has been created successfully."
+        primaryButtonText="View News"
+        secondaryButtonText="Create Another"
+        primaryNavigateTo="NewsScreen"
+        secondaryNavigateTo="CreateNews"
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -160,7 +232,7 @@ const CreateNews = ({ navigation }) => {
         {isSuggestionVisible && (
           <FlatList
             data={suggestions}
-            keyExtractor={item => item.id}
+            keyExtractor={item => item.id }
             renderItem={({ item }) => (
               <TouchableOpacity onPress={() => handleSuggestionSelect(item)} style={styles.suggestion}>
                 <Text>{item.name}</Text>
@@ -197,9 +269,21 @@ const CreateNews = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <ConfirmationModal
+        visible={showConfirmation}
+        title="Create News Post"
+        description="Are you sure you want to proceed with creating this news post?"
+        icon="article"
+        onCancel={() => setShowConfirmation(false)}
+        onConfirm={handleConfirm}
+        confirmText="Continue"
+        cancelText="Cancel"
+        confirmButtonColor="#00796B"
+      />
       <TouchableOpacity style={styles.button} onPress={handleNext}>
         <Text style={styles.buttonText}>Next</Text>
       </TouchableOpacity>
+
     </View>
   );
 };
