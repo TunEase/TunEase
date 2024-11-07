@@ -1,7 +1,7 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useState, useEffect } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../services/supabaseClient";
 
@@ -17,7 +17,7 @@ interface FooterProps {
 }
 
 const Footer: React.FC<FooterProps> = ({ navigation }) => {
-  const { user } = useAuth();
+  const { user,logout  } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
@@ -40,6 +40,44 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
 
     fetchUnreadMessagesCount();
   }, [user]);
+  const handleLogout = async () => {
+    if (!user) {
+      navigation.navigate("Login");
+      return;
+    }
+
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const success = await logout();
+              if (success) {
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'Login' }],
+                });
+              }
+            } catch (error) {
+              console.error("Logout error:", error);
+              Alert.alert(
+                "Error",
+                "Failed to logout. Please try again."
+              );
+            }
+          }
+        }
+      ]
+    );
+  };
 
   return (
     <View style={styles.footerContainer}>
@@ -81,10 +119,16 @@ const Footer: React.FC<FooterProps> = ({ navigation }) => {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.iconContainer}
-        onPress={() => navigation.navigate("Login")}
+        onPress={handleLogout}
       >
-        <FontAwesome5 name="sign-out-alt" size={24} color="#004D40" />
-        <Text style={styles.footerText}>Logout</Text>
+        <FontAwesome5 
+          name={user ? "sign-out-alt" : "sign-in-alt"} 
+          size={24} 
+          color="#004D40" 
+        />
+        <Text style={styles.footerText}>
+          {user ? "Logout" : "Login"}
+        </Text>
       </TouchableOpacity>
 
       <Modal
