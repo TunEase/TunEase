@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Modal,
   ScrollView,
   StyleSheet,
@@ -10,6 +11,9 @@ import {
 import { Calendar } from "react-native-calendars";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
+import BookScreenLoader from "../components/loadingCompo/BookScreenLoader";
+import SuccessScreen from "./SuccessScreen";
+import ConfirmationModal from "../components/StatusComponents/ConfirmationModal";
 const BookNowScreen = ({
   route,
   navigation,
@@ -17,7 +21,7 @@ const BookNowScreen = ({
   route: any;
   navigation: any;
 }) => {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const userId = user?.id;
 
   const [confirmationVisible, setConfirmationVisible] = useState(false);
@@ -27,7 +31,10 @@ const BookNowScreen = ({
   const [modalVisible, setModalVisible] = useState(false);
   const [showPicker, setShowPicker] = useState(false); // State for time picker visibility
   const [availableTimes, setAvailableTimes] = useState<string[]>([]); // State for available times
-
+  const [showSuccess, setShowSuccess] = useState(false);
+  const shimmerAnimation = useRef(new Animated.Value(0)).current;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // const { service } = route.params;
   const serviceId = service.id;
   const { start_date, end_date, duration, start_time, end_time } = service; // Assuming duration is in minutes
@@ -89,79 +96,82 @@ const BookNowScreen = ({
 
     setMarkedDates(marked); // Set marked dates state
   };
+  const convertTo24Hour = (time12h: string): string => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    
+    if (hours === '12') hours = '00';
+    if (modifier === 'PM') hours = String(parseInt(hours, 10) + 12);
 
+    return `${hours.padStart(2, '0')}:${minutes}:00`; // Ensuring "HH:MM:SS"
+};
   const calculateAvailableTimes = (availability: any[]) => {
     const availableSlots: string[] = [];
-    const serviceDurationInMinutes = duration; // Assuming duration is in minutes
-
-    // Generate time slots based on the service's start and end time
-    const startTimeParts = start_time.split(":");
-    const endTimeParts = end_time.split(":");
-
+    const serviceDurationInMinutes = duration;
+  
+    // Convert service start/end times to 24-hour format for calculations
     const serviceStartTime = new Date();
-    serviceStartTime.setHours(
-      parseInt(startTimeParts[0]),
-      parseInt(startTimeParts[1]),
-      0
-    );
-
     const serviceEndTime = new Date();
-    serviceEndTime.setHours(
-      parseInt(endTimeParts[0]),
-      parseInt(endTimeParts[1]),
-      0
-    );
-
+    
+    // Parse start_time and end_time (assuming they're in HH:MM format)
+    const [startHour, startMinute] = start_time.split(':').map(Number);
+    const [endHour, endMinute] = end_time.split(':').map(Number);
+    
+    serviceStartTime.setHours(startHour, startMinute, 0);
+    serviceEndTime.setHours(endHour, endMinute, 0);
+  
     // Generate time slots
     for (
-      let time = serviceStartTime;
+      let time = new Date(serviceStartTime);
       time < serviceEndTime;
       time.setMinutes(time.getMinutes() + serviceDurationInMinutes)
     ) {
+      // Store times in 12-hour format for display
       availableSlots.push(
-        time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        time.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          hour12: true 
+        })
       );
     }
-
-    // Filter out unavailable times based on the fetched availability
+  
+    // Filter out booked times
     const bookedTimes = availability
       .map((slot) => {
         const start = new Date();
         const end = new Date();
-        const startTimeParts = slot.start_time.split(":");
-        const endTimeParts = slot.end_time.split(":");
-
-        start.setHours(
-          parseInt(startTimeParts[0]),
-          parseInt(startTimeParts[1]),
-          0
-        );
-        end.setHours(parseInt(endTimeParts[0]), parseInt(endTimeParts[1]), 0);
-
+        const [startHour, startMinute] = slot.start_time.split(':').map(Number);
+        const [endHour, endMinute] = slot.end_time.split(':').map(Number);
+  
+        start.setHours(startHour, startMinute, 0);
+        end.setHours(endHour, endMinute, 0);
+  
         const times = [];
         for (
-          let t = start;
+          let t = new Date(start);
           t < end;
           t.setMinutes(t.getMinutes() + serviceDurationInMinutes)
         ) {
           times.push(
             //@ts-ignore
-            t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            t.toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              hour12: true 
+            })
           );
         }
-        console.log("Booked Times:", bookedTimes);
-
         return times;
       })
       .flat();
-
-    // Remove booked times from available slots
+  
     const finalAvailableTimes = availableSlots.filter(
       //@ts-ignore
-      (time) => !bookedTimes.includes(time)
+      (time :any) => !bookedTimes.includes(time)
     );
-    console.log("Final Available Times:", finalAvailableTimes);
-    setAvailableTimes(finalAvailableTimes); // Set available times state
+  console.log("finalAvailableTimesffffffffffffffffffffff",finalAvailableTimes);
+    setAvailableTimes(finalAvailableTimes);
   };
 
   const handleDayPress = async (day: { dateString: string }) => {
@@ -203,119 +213,65 @@ const BookNowScreen = ({
     }
   };
 
-  const handleTimeChange = (event: any, selectedTime: Date | undefined) => {
-    const currentTime = selectedTime || new Date();
-    setShowPicker(false); // Hide the time picker after selection
-    setSelectedTime(
-      currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    );
-  };
 
   const handleBookNow = () => {
     console.log("Booking button pressed");
     setConfirmationVisible(true); // Show confirmation modal
   };
-  const confirmBooking = () => {
-    console.log("Booking confirmed");
-    setConfirmationVisible(false); // Close modal after confirmation
-    setModalVisible(true); // Show booking confirmation modal
-    navigation.navigate("AppointmentBook", {
-      selectedBusiness,
-      service,
-      selectedDate, // Pass selectedDate
-      selectedTime, // Pass selectedTime
-    });
+  const confirmBooking = async () => {
+    setConfirmationVisible(false);
+    setLoading(true);
+    
+    try {
+      await createAvailability(selectedDate!, selectedTimeSlot!);
+      setShowSuccess(true);
+    } catch (error) {
+      console.error('Booking error:', error);
+      setError('Failed to create booking');
+    } finally {
+      setLoading(false);
+    }
   };
   const createAvailability = async (date: string, time: string) => {
-    // Log the input values for debugging
     console.log("Input date:", date);
     console.log("Input time:", time);
 
-    // Parse the selected time into hours and minutes
-    const timeParts = time.split(":");
-    if (timeParts.length !== 2) {
-      console.error("Invalid time format:", time);
-      return; // Exit if the time format is invalid
-    }
+    // Convert 12-hour time to 24-hour format for database
+    const startTime24 = convertTo24HourFormat(time);
+    console.log("startTime24ffffffffffffffffffffff",startTime24);
+    // Calculate end time
+    const [hours, minutes] = startTime24.split(':');
+    const endDateTime = new Date();
+    endDateTime.setHours(parseInt(hours), parseInt(minutes) + duration);
+    const endTime24 = `${endDateTime.getHours().toString().padStart(2, '0')}:${endDateTime.getMinutes().toString().padStart(2, '0')}`;
 
-    const hours = parseInt(timeParts[0]);
-    const minutes = parseInt(timeParts[1]);
-
-    // Create a Date object for the start time
-    const dateParts = date.split("-"); // Assuming date is in "YYYY-MM-DD" format
-    const startDateTime = new Date(
-      parseInt(dateParts[0]), // Year
-      parseInt(dateParts[1]) - 1, // Month (0-based index)
-      parseInt(dateParts[2]) // Day
-    );
-
-    // Set the hours and minutes
-    startDateTime.setHours(hours, minutes, 0); // Set the hours and minutes
-
-    // Check if startDateTime is valid
-    if (isNaN(startDateTime.getTime())) {
-      console.error("Invalid start date:", startDateTime);
-      return; // Exit if the date is invalid
-    }
-
-    // Calculate end time by adding the service duration in minutes
-    const endDateTime = new Date(startDateTime);
-    endDateTime.setMinutes(endDateTime.getMinutes() + duration); // Add service duration
-
-    // Check if endDateTime is valid
-    if (isNaN(endDateTime.getTime())) {
-      console.error("Invalid end date:", endDateTime);
-      return; // Exit if the date is invalid
-    }
-
-    // Format end time to a string
-    const endTime = endDateTime.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const hasAppointment = await checkExistingAppointment(userId, date, time); // Replace with actual client ID
+    const hasAppointment = await checkExistingAppointment(userId, date, startTime24);
 
     if (hasAppointment) {
-      alert("You already have an appointment at this time.");
-      return; // Exit if the user already has an appointment
+      return;
     }
-    // Debugging: Log the values before inserting
-    console.log("Inserting availability with:", {
-      service_id: serviceId,
-      currentdate: date,
-      start_time: time,
-      end_time: endTime,
-      start_date: date,
-      end_date: date,
-      duration: duration,
-      days_of_week: [],
-    });
 
     const { data, error } = await supabase.from("availability").insert({
       service_id: serviceId,
       currentdate: date,
-      start_time: time,
+      start_time: startTime24, // Use 24-hour format
       start_date: date,
       end_date: date,
-      end_time: endTime,
+      end_time: endTime24, // Use 24-hour format
       duration: duration,
-      days_of_week: [], // Adjust this if you want to store the days of the week
+      days_of_week: [],
     });
 
     if (error) {
-      console.error(
-        "Error creating availability:",
-        error.message,
-        error.details
-      );
+      console.error("Error creating availability:", error.message, error.details);
     } else {
       console.log("Availability created:", data);
       await createAppointment(
         serviceId,
         userId,
         date,
-        time,
-        endTime,
+        startTime24, // Use 24-hour format
+        endTime24, // Use 24-hour format
         "SCHEDULED"
       );
     }
@@ -330,14 +286,14 @@ const BookNowScreen = ({
       .select("*")
       .eq("client_id", clientId)
       .eq("date", date)
-      .eq("start_time", startTime);
+      .eq("start_time", startTime); // Now using 24-hour format
 
     if (error) {
       console.error("Error checking existing appointments:", error);
-      return false; // Return false if there's an error
+      return false;
     }
 
-    return data.length > 0; // Return true if there are existing appointments
+    return data.length > 0;
   };
   const createAppointment = async (
     serviceId: string,
@@ -362,15 +318,64 @@ const BookNowScreen = ({
       console.log("Appointment created:", data);
     }
   };
+  function convertTo24HourFormat(timeString) {
+    // Use a regular expression to extract hours, minutes, and AM/PM parts
+    const match = timeString.match(/^(\d{1,2}):(\d{2})\s?(AM|PM)/i);
+  
+    if (!match) {
+      throw new Error("Invalid time format");
+    }
+  
+    let [_, hours, minutes, period] = match;
+  
+    // Convert hours and minutes to integers
+    hours = parseInt(hours, 10);
+    minutes = parseInt(minutes, 10);
+  
+    // Convert to 24-hour format
+    if (period.toUpperCase() === "PM" && hours !== 12) {
+      hours += 12;
+    } else if (period.toUpperCase() === "AM" && hours === 12) {
+      hours = 0;
+    }
+  
+    // Format hours and minutes to always be two digits
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+  
+    // Return the result in "HH:MM" 24-hour format
+    return `${formattedHours}:${formattedMinutes}`;
+  }
   const handleTimeSelect = (time: string) => {
     if (selectedDate) {
-      createAvailability(selectedDate, time);
+      const time24Hour = convertTo24HourFormat(time); // Convert to 24-hour format
+      console.log("handleTimeSelect",time24Hour);
+      console.log("selectedDateffffffffffffffffffffff",selectedDate);
+      createAvailability(selectedDate, time24Hour); // Pass 24-hour time
       setSelectedTime(time);
     }
     setSelectedTimeSlot(time);
-  };
+};
   console.log("business 💀💀", selectedBusiness);
 
+  if (showSuccess) {
+    return (
+      <SuccessScreen
+        title="Booking Confirmed!"
+        description={`Your appointment has been scheduled for ${selectedDate} at ${selectedTimeSlot}`}
+        primaryButtonText="View Appointments"
+        secondaryButtonText="Book Another"
+        primaryNavigateTo="AppointmentBook"
+        secondaryNavigateTo="Home"
+        primaryParams={{
+          selectedBusiness,
+          service,
+          selectedDate,
+          selectedTime: selectedTimeSlot
+        }}
+      />
+    );
+  }
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerContainer}>
@@ -443,58 +448,29 @@ const BookNowScreen = ({
       </TouchableOpacity>
 
       {/* Confirmation Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
+          <ConfirmationModal
         visible={confirmationVisible}
-        onRequestClose={() => setConfirmationVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>Are you sure you want to book?</Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.button} onPress={confirmBooking}>
-                <Text style={styles.buttonText}>Yes</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => setConfirmationVisible(false)}
-              >
-                <Text style={styles.buttonText}>No</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-      {/* Booking Confirmation Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>
-              Booking confirmed for {selectedDate} at {selectedTime}!
-            </Text>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => {
-                setModalVisible(false);
-                navigation.navigate("AppointmentBook", {
-                  selectedBusiness: selectedBusiness,
-                  service: service,
-                  selectedDate: selectedDate,
-                  selectedTime: selectedTime,
-                });
-              }}
-            >
-              <Text style={styles.buttonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        title="Confirm Booking"
+        description={`Would you like to book this appointment for ${selectedDate} at ${selectedTimeSlot}?`}
+        icon="event"
+        onCancel={() => setConfirmationVisible(false)}
+        onConfirm={confirmBooking}
+        confirmText="Book Now"
+        cancelText="Cancel"
+        confirmButtonColor="#00796B"
+      />
+
+      <ConfirmationModal
+        visible={!!error}
+        title="Booking Error"
+        description={error || ''}
+        icon="error"
+        onCancel={() => setError(null)}
+        onConfirm={() => setError(null)}
+        confirmText="OK"
+        cancelText="Try Again"
+        confirmButtonColor="#D32F2F"
+      />
     </ScrollView>
   );
 };

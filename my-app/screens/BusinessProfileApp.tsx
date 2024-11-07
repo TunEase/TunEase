@@ -47,7 +47,7 @@ const BusinessProfileApp: React.FC = () => {
           setError("User is not logged in");
           return;
         }
-        const { data, error } = (await supabase
+        const { data, error } = await supabase
           .from("business")
           .select(
             `*,
@@ -59,14 +59,16 @@ const BusinessProfileApp: React.FC = () => {
           )`
           )
           .eq("manager_id", user.id)
-          .single()) as { data: Business | null; error: any };
+          .limit(1);
 
         if (error) {
           setError(error.message);
+        } else if (!data || data.length === 0) {
+          setError("No business found");
         } else {
           console.log("Business data:", data);
-          setBusiness(data);
-          Animated.timing(animation, {
+          setBusiness(data[0]);
+          Animated.timing(animation, {  
             toValue: 1,
             duration: 500,
             useNativeDriver: true,

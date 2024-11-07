@@ -43,16 +43,24 @@ export interface Service {
   business?: Business;
   eligibility: string;
   fees: string;
-  service_type: string;
-  service_duration: string;
-  processing_time: string;
+  duration: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  business_id: string;
+  start_date: string;
+  end_date: string;
+  start_time: string;
+  end_time: string;
   disable_availability: boolean;
-  disable_service: boolean;
   accept_cash: boolean;
   accept_card: boolean;
   accept_online: boolean;
   accept_cheque: boolean;
+  service_type: string;
+  processing_time: string;
 }
+
 
 export interface Review {
   id: string;

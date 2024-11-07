@@ -1,262 +1,233 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView, TextInput } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, SafeAreaView, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { supabase } from '../services/supabaseClient';
 import { format } from 'date-fns';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
-interface Service {
-  id: string;
-  name: string;
-}
+import Header from '../components/Form/header';
 
 const AddAvailabilityScreen = ({ navigation, route }) => {
-  const { serviceId } = route.params || {};
-  const [services, setServices] = useState<Service[]>([]);
-  const [selectedService, setSelectedService] = useState('');
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  // const { service } = route.params;
+  const service=route.params.service[0];
+  console.log('route',route.params);
+  
+  console.log("servicezz",service);
+  // Date states
+  const [startDate, setStartDate] = useState(
+    service.start_date ? new Date(service.start_date) : new Date()
+  );
+  const [endDate, setEndDate] = useState(
+    service.end_date ? new Date(service.end_date) : new Date()
+  );
+  
+  // Time states
+  const [startTime, setStartTime] = useState(
+    service.start_time ? new Date(`2000-01-01T${service.start_time}`) : new Date()
+  );
+  const [endTime, setEndTime] = useState(
+    service.end_time ? new Date(`2000-01-01T${service.end_time}`) : new Date()
+  );
+  
+  // Show/Hide picker states
   const [showStartDate, setShowStartDate] = useState(false);
   const [showEndDate, setShowEndDate] = useState(false);
-  const [duration, setDuration] = useState(0); // New state for duration
-  useEffect(() => {
-    if (serviceId) {
-      fetchServiceDetails();
-    } else {
-      fetchAllServices();
-    }
-  }, [serviceId]);
-
-  const fetchAllServices = async () => {
-    const { data, error } = await supabase
-      .from('services')
-      .select('*');
-
-    if (error) {
-      console.error('Error fetching services:', error);
-    } else {
-      setServices(data);
-      if (data.length > 0) {
-        setSelectedService(data[0].id);
-      }
-    }
-  };
-
-  const fetchServiceDetails = async () => {
-    const { data, error } = await supabase
-      .from('services')
-      .select('*')
-      .eq('id', serviceId)
-      .single();
-
-    if (error) {
-      console.error('Error fetching service details:', error);
-    } else {
-      setSelectedService(data.id);
-      setStartDate(new Date(data.start_date));
-      setEndDate(new Date(data.end_date));
-    }
-  };
+  const [showStartTime, setShowStartTime] = useState(false);
+  const [showEndTime, setShowEndTime] = useState(false);
 
   const onChangeDate = (event, selectedDate, setDate, showSetter) => {
+    if (event.type === 'dismissed') {
+      showSetter(false);
+      return;
+    }
     const currentDate = selectedDate || startDate;
     showSetter(Platform.OS === 'ios');
     setDate(currentDate);
   };
-  const handleNext = () => {
-    navigation.navigate('AddAvailabilityTimeScreen', {
-      selectedService,
-      startDate: format(startDate, 'yyyy-MM-dd'),
-      endDate: format(endDate, 'yyyy-MM-dd'),
-      duration,
-    });
+
+  const onChangeTime = (event, selectedTime, setTime, showSetter) => {
+    if (event.type === 'dismissed') {
+      showSetter(false);
+      return;
+    }
+    const currentTime = selectedTime || startTime;
+    showSetter(Platform.OS === 'ios');
+    setTime(currentTime);
   };
 
+  const handleSave = async () => {
+    try {
+      // Validate dates and times
+      if (endDate < startDate) {
+        Alert.alert('Error', 'End date cannot be before start date');
+        return;
+      }
+
+      if (endTime < startTime && startDate.getTime() === endDate.getTime()) {
+        Alert.alert('Error', 'End time cannot be before start time on the same day');
+        return;
+      }
+console.log("service.id",service.id);
+
+      const { error } = await supabase
+        .from('services')
+        .update({
+          start_date: format(startDate, 'yyyy-MM-dd'),
+          end_date: format(endDate, 'yyyy-MM-dd'),
+          start_time: format(startTime, 'HH:mm:ss'),
+          end_time: format(endTime, 'HH:mm:ss'),
+        })
+        .eq('id', service.id);
+
+      if (error) throw error;
+
+      Alert.alert('Success', 'Service availability updated successfully', [
+        { text: 'OK', onPress: () => navigation.navigate('AvailabilityScreen', { service }) }
+      ]);
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Update Availability (1/2)</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <Header 
+        title="Update Service Availability"
+        onBack={() => navigation.goBack()}
+        backgroundColor="#00796B"
+      />
+      
       <ScrollView style={styles.content}>
-        {/* <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={selectedService}
-            onValueChange={(itemValue) => setSelectedService(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select a service" value="" />
-            {services.map((service) => (
-              <Picker.Item key={service.id} label={service.name} value={service.id} />
-            ))}
-          </Picker>
-        </View> */}
-
-        <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowStartDate(true)}>
+        <Text style={styles.sectionTitle}>Date Range</Text>
+        <TouchableOpacity 
+          style={styles.dateTimeButton} 
+          onPress={() => setShowStartDate(true)}
+        >
           <Icon name="event" size={20} color="#00796B" style={styles.buttonIcon} />
-          <Text style={styles.dateTimeButtonText}>Start Date: {format(startDate, 'yyyy-MM-dd')}</Text>
+          <Text style={styles.dateTimeButtonText}>
+            Start Date: {format(startDate, 'MMM dd, yyyy')}
+          </Text>
         </TouchableOpacity>
-        {showStartDate && (
-          <DateTimePicker
-            value={startDate}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => onChangeDate(event, selectedDate, setStartDate, setShowStartDate)}
-          />
-        )}
 
-        <TouchableOpacity style={styles.dateTimeButton} onPress={() => setShowEndDate(true)}>
+        <TouchableOpacity 
+          style={styles.dateTimeButton} 
+          onPress={() => setShowEndDate(true)}
+        >
           <Icon name="event" size={20} color="#00796B" style={styles.buttonIcon} />
-          <Text style={styles.dateTimeButtonText}>End Date: {format(endDate, 'yyyy-MM-dd')}</Text>
+          <Text style={styles.dateTimeButtonText}>
+            End Date: {format(endDate, 'MMM dd, yyyy')}
+          </Text>
         </TouchableOpacity>
-        {showEndDate && (
-          <DateTimePicker
-            value={endDate}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => onChangeDate(event, selectedDate, setEndDate, setShowEndDate)}
-          />
-        )}
-         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Duration (minutes):</Text>
-          <TextInput
-            style={styles.input}
-            value={duration.toString()}
-            onChangeText={(text) => setDuration(parseInt(text) || 0)}
-            keyboardType="numeric"
-          />
-        </View> 
 
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-          <Text style={styles.nextButtonText}>Next</Text>
+        <Text style={styles.sectionTitle}>Service Hours</Text>
+        <TouchableOpacity 
+          style={styles.dateTimeButton} 
+          onPress={() => setShowStartTime(true)}
+        >
+          <Icon name="access-time" size={20} color="#00796B" style={styles.buttonIcon} />
+          <Text style={styles.dateTimeButtonText}>
+            Start Time: {format(startTime, 'hh:mm a')}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.dateTimeButton} 
+          onPress={() => setShowEndTime(true)}
+        >
+          <Icon name="access-time" size={20} color="#00796B" style={styles.buttonIcon} />
+          <Text style={styles.dateTimeButtonText}>
+            End Time: {format(endTime, 'hh:mm a')}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText} onPress={handleSave}>Save Changes</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Date Pickers */}
+      {showStartDate && (
+        <DateTimePicker
+          value={startDate}
+          mode="date"
+          display="default"
+          onChange={(event, date) => onChangeDate(event, date, setStartDate, setShowStartDate)}
+        />
+      )}
+      {showEndDate && (
+        <DateTimePicker
+          value={endDate}
+          mode="date"
+          display="default"
+          onChange={(event, date) => onChangeDate(event, date, setEndDate, setShowEndDate)}
+        />
+      )}
+
+      {/* Time Pickers */}
+      {showStartTime && (
+        <DateTimePicker
+          value={startTime}
+          mode="time"
+          display="default"
+          onChange={(event, time) => onChangeTime(event, time, setStartTime, setShowStartTime)}
+        />
+      )}
+      {showEndTime && (
+        <DateTimePicker
+          value={endTime}
+          mode="time"
+          display="default"
+          onChange={(event, time) => onChangeTime(event, time, setEndTime, setShowEndTime)}
+        />
+      )}
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-container: {
-  flex: 1,
-  backgroundColor: '#F2F2F2',
-},
-header: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingHorizontal: 16,
-  paddingVertical: 20,
-  backgroundColor: '#FFFFFF',
-},
-headerTitle: {
-  fontSize: 20,
-  fontWeight: 'bold',
-  color: '#333',
-},
-content: {
-  flex: 1,
-  padding: 16,
-},
-pickerContainer: {
-  backgroundColor: '#FFFFFF',
-  borderRadius: 10,
-  marginBottom: 16,
-  elevation: 2,
-},
-picker: {
-  height: 50,
-},
-dateTimeButton: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  backgroundColor: '#FFFFFF',
-  borderRadius: 10,
-  padding: 12,
-  marginBottom: 16,
-  elevation: 2,
-},
-buttonIcon: {
-  marginRight: 10,
-},
-dateTimeButtonText: {
-  fontSize: 16,
-  color: '#333',
-},
-sectionTitle: {
-  fontSize: 18,
-  fontWeight: 'bold',
-  color: '#333',
-  marginTop: 16,
-  marginBottom: 8,
-},
-daysContainer: {
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  justifyContent: 'space-between',
-  marginBottom: 16,
-},
-dayButton: {
-  padding: 10,
-  margin: 4,
-  borderWidth: 1,
-  borderColor: '#00796B',
-  borderRadius: 5,
-  width: '13%',
-  alignItems: 'center',
-},
-selectedDay: {
-  backgroundColor: '#00796B',
-},
-dayButtonText: {
-  fontSize: 14,
-  color: '#00796B',
-},
-selectedDayText: {
-  color: '#FFFFFF',
-},
-submitButton: {
-  backgroundColor: '#00796B',
-  padding: 16,
-  borderRadius: 10,
-  alignItems: 'center',
-  marginTop: 16,
-},
-submitButtonText: {
-  color: '#FFFFFF',
-  fontWeight: 'bold',
-  fontSize: 18,
-},
-nextButton: {
-  backgroundColor: '#00796B',
-  padding: 16,
-  borderRadius: 10,
-  alignItems: 'center',
-  marginTop: 16,
-},
-nextButtonText: {
-  color: '#FFFFFF',
-  fontWeight: 'bold',
-  fontSize: 18,
-},
-inputContainer: {
-  marginBottom: 16,
-},
-inputLabel: {
-  fontSize: 16,
-  marginBottom: 8,
-},
-input: {
-  height: 40,
-  borderWidth: 1,
-  borderColor: '#00796B',
-  borderRadius: 5,
-  paddingHorizontal: 10,
-},
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F2',
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  dateTimeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  buttonIcon: {
+    marginRight: 12,
+  },
+  dateTimeButtonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  saveButton: {
+    backgroundColor: '#00796B',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 24,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
 
 export default AddAvailabilityScreen;

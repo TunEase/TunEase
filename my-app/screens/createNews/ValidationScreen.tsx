@@ -7,16 +7,21 @@ import {
   Alert,
   ScrollView,
   Image,
+  Animated,
 } from 'react-native';
 import { supabase } from '../../services/supabaseClient';
 import Header from '../../components/Form/header';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import CreateNewsLoader from '../../components/loadingCompo/CreateNewsLoader';
+import SuccessScreen from '../SuccessScreen';
 const ValidationScreen = ({ navigation, route }) => {
   const { title, content, tags, mediaUrls, status, type ,businessId} = route.params;
-
+  const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
 
   const handleSubmit = async () => {
+    setLoading(true);
     if (!businessId) {
       Alert.alert('Error', 'Business ID is required.');
       return;
@@ -63,15 +68,31 @@ const ValidationScreen = ({ navigation, route }) => {
 
       await Promise.all(tagPromises);
 
-      Alert.alert('Success', 'News post created successfully!');
-      navigation.navigate('NewsScreen'); // Navigate back to the news screen
+ 
+      setShowSuccess(true);
+      // navigation.navigate('NewsScreen'); // Navigate back to the news screen
     } catch (error) {
       console.error('Error creating news post:', error);
       Alert.alert('Error', 'Failed to create news post.');
     }
   };
 
+  if (showSuccess) {
+    return (
+      <SuccessScreen
+        title="News Created Successfully!"
+        description="Your news post has been published and is now visible to users."
+        primaryButtonText="View News"
+        secondaryButtonText="Home"
+        primaryNavigateTo="NewsScreen"
+        secondaryNavigateTo="Home"
+      />
+    );
+  }
 
+  if (loading) {
+    return <CreateNewsLoader animationValue={new Animated.Value(0)} />;
+  }
   return (
     <View style={styles.container}>
       <Header
@@ -112,6 +133,7 @@ const ValidationScreen = ({ navigation, route }) => {
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
       </ScrollView>
+      
     </View>
   );
 };

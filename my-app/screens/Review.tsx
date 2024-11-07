@@ -16,6 +16,7 @@ import Header from "../components/Form/header"; // Import the Header component
 const Review: React.FC = () => {
   const navigation = useNavigation(); // Initialize the navigation hook
   const { user } = useAuth(); // Ensure this is called outside of any conditionals
+  console.log("user",user);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [helpfulCount, setHelpfulCount] = useState(4923);
@@ -26,7 +27,7 @@ const Review: React.FC = () => {
       const newReview = {
         rating,
         text: reviewText,
-        name: user?.name || "Anonymous",
+        name: user?.user_metadata.name || "Anonymous",
         date: new Date().toLocaleString(),
       };
 

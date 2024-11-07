@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import { Picker } from '@react-native-picker/picker';
 import {
   Alert,
   FlatList,
@@ -45,7 +45,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
   const [showInputs, setShowInputs] = useState<Record<string, boolean>>({});
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [currentServiceId, setCurrentServiceId] = useState<string | null>(null);
-
+  const [selectedService, setSelectedService] = useState<string>('all');
   const fetchServices = async () => {
     const { data, error } = await supabase
       .from("services")
@@ -56,7 +56,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
       `
       )
       .eq("business_id", id);
-
+      
     if (error) {
       console.error("Error fetching services:", error.message);
     } else {
@@ -83,6 +83,16 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
       fetchServices(); // Use the last added service ID
     }
   };
+  
+  const handleServiceSelect = (serviceId: string) => {
+    setSelectedService(serviceId);
+    if (serviceId !== 'all') {
+      navigation.navigate('AppointmentListScreen', {
+        serviceId: serviceId,
+        businessId: id
+      });
+    }
+  };
 
   const toggleInputs = (id: string) => {
     setCurrentServiceId(id);
@@ -106,6 +116,22 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
 
   return (
     <SafeAreaView style={styles.container}>
+        <View style={styles.filterContainer}>
+  <Picker
+    selectedValue={selectedService}
+    onValueChange={handleServiceSelect}
+    style={styles.picker}
+  >
+    <Picker.Item label="All Services" value="all" />
+    {services.map((service) => (
+      <Picker.Item 
+        key={service.id} 
+        label={service.name} 
+        value={service.id} 
+      />
+    ))}
+  </Picker>
+</View>
       <FlatList
         data={services}
         renderItem={({ item }) => (
@@ -135,7 +161,7 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
                   style={styles.availabilityButton}
                   onPress={() =>
                     navigation.navigate("AvailabilityScreen", {
-                      serviceId: item.id,
+                      service: services,
                     })
                   }
                 >
@@ -173,12 +199,9 @@ const AddService: React.FC<{ route: any; navigation: any }> = ({
       <TouchableOpacity
         style={styles.addButton}
         onPress={() =>
-          navigation.navigate("CreateServiceScreen", { businessId: id })
-        }
-        style={styles.addButton}
-        onPress={() =>
           navigation.navigate("ServiceOnboardingScreen", { businessId: id })
         }
+    
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -308,6 +331,18 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: "center",
     justifyContent: "center",
+  },
+  filterContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  picker: {
+    height: 50,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
   },
 });
 

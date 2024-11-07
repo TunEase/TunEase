@@ -87,7 +87,6 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
       <Text style={styles.ratingText}>{` ${rating.toFixed(1)}`}</Text>
     </View>
   );
-
   const renderItem: ListRenderItem<Business> = ({ item }) => {
     const randomImageUrl =
       item.media[Math.floor(Math.random() * item.media.length)].media_url;

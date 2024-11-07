@@ -14,13 +14,15 @@ import {
   ActivityIndicator,
   Dimensions,
 } from "react-native";
+import { useNotifications } from "../hooks/useNotifications";
+import { NotificationsModal } from "../components/Notifications/NotificationsModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome5 } from "@expo/vector-icons";
-
+import HomeScreenLoader from "../components/loadingCompo/HomeScreenLoader";
 interface HomeProps {
   navigation: any;
 }
@@ -36,15 +38,21 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [Error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [isManualScroll, setIsManualScroll] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [notificationsModalVisible, setNotificationsModalVisible] = useState(false);
+  const { notifications,unreadCount } = useNotifications();
   const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
 
   //top businesses scrolling
   const topBusinessScrollRef = useRef<FlatList>(null);
   const [currentBusinessIndex, setCurrentBusinessIndex] = useState(0);
   const businessAutoScrollTimer = useRef<NodeJS.Timeout | null>(null);
+ 
+  const shimmerAnimation = useRef(new Animated.Value(0)).current;
+
 
   useEffect(() => {
     const startBusinessAutoScroll = () => {
@@ -101,11 +109,70 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   }, [currentAdIndex, news.length, isManualScroll]);
 
   useEffect(() => {
+    
     fetchBusinesses();
     fetchPopularServices();
+    fetchNews()
     fetchNews();
+    checkUserRole();
     fetchCategories();
   }, []);
+  useEffect(() => {
+    if (loading) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(shimmerAnimation, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(shimmerAnimation, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      shimmerAnimation.setValue(0);
+    }
+  }, [loading]);
+  const checkUserRole = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found');
+        return;
+      }
+
+      // Fetch user profile to get the role
+      const { data: profileData, error: profileError } = await supabase
+        .from('user_profile')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching user role:', profileError);
+        return;
+      }
+
+      if (profileData) {
+        console.log('User role:', profileData.role); // Debugging
+        setUserRole(profileData.role);
+      }
+
+    } catch (error) {
+      console.error('Error checking user role:', error);
+    }
+  };
+  useEffect(() => {
+    checkUserRole();
+  }, []);
+  useEffect(() => {
+    console.log('Current userRole:', userRole); // Debugging
+  }, [userRole]);
+
 
   const fetchPopularServices = async () => {
     try {
@@ -168,6 +235,62 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       setLoading(false);
     }
   };
+ 
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Image
+        source={require("../assets/background.jpg")}
+        style={styles.headerImage}
+      />
+      <View style={styles.overlay}>
+        <Text style={styles.headerTitle}>ASAP</Text>
+        <Text style={styles.headerSubtitle}>As Soon As Possible Services</Text>
+        
+        <View style={styles.searchContainer}>
+          <Icon name="search" size={24} color="#888" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search for services..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+        <View style={styles.appointmentButtonsContainer}>
+          {userRole === 'CLIENT' && (
+            <TouchableOpacity
+              style={styles.appointmentButton}
+              onPress={() => navigation.navigate("AppointmentBook")}
+            >
+              <Icon name="event-available" size={24} color="#FFF" />
+              <Text style={styles.appointmentButtonText}>Next Appointment</Text>
+            </TouchableOpacity>
+          )}
+
+          {userRole === 'BUSINESS_MANAGER' && (
+            <TouchableOpacity
+              style={styles.appointmentButton}
+              onPress={() => navigation.navigate("AppointmentListScreen")}
+            >
+              <Icon name="event-note" size={24} color="#FFF" />
+              <Text style={styles.appointmentButtonText}>Manage Appointments</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+      <View style={styles.headerIcons}>
+        {userRole === 'BUSINESS_MANAGER' && (
+          <TouchableOpacity
+            style={styles.profileIcon}
+            onPress={() => navigation.navigate("BusinessProfileApp")}
+          >
+            <Icon name="person" size={30} color="#FFF" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+  
 
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
@@ -316,6 +439,10 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       );
     }
 
+    if (loading) {
+      return <ActivityIndicator size="large" color="#00796B" />;
+    }
+
     return (
       <View style={styles.adSection}>
         <View style={styles.sectionHeaderContainer}>
@@ -323,14 +450,17 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             <View style={styles.headerAccent} />
             <Text style={styles.sectionHeader}>News</Text>
           </View>
-          <TouchableOpacity
-            style={styles.viewAllButton}
-            onPress={() => navigation.navigate("NewsScreen")}
-          >
-            <Text style={styles.viewAllText}>View All</Text>
-            <Icon name="arrow-forward" size={16} color="#00796B" />
-          </TouchableOpacity>
+          {userRole === 'BUSINESS_MANAGER' && (
+            <TouchableOpacity
+              style={styles.viewAllButton}
+              onPress={() => navigation.navigate("NewsScreen")}
+            >
+              <Text style={styles.viewAllText}>View All</Text>
+              <Icon name="arrow-forward" size={16} color="#00796B" />
+            </TouchableOpacity>
+          )}
         </View>
+
 
         <ScrollView
           ref={adScrollRef}
@@ -441,94 +571,55 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     );
   };
 
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <Image
-        source={require("../assets/background.jpg")}
-        style={styles.headerImage}
-      />
-      <View style={styles.overlay}>
-        <Text style={styles.headerTitle}>ASAP</Text>
-        <Text style={styles.headerSubtitle}>As Soon As Possible Services</Text>
-        <View style={styles.searchContainer}>
-          <Icon name="search" size={24} color="#888" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search for services..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-        {/* {Error && <Text style={styles.errorText}>{Error}</Text>}
-        {loading ? (
-          <Text>Loading...</Text>
-        ) : (
-          <FlatList
-            data={news}
-            // renderItem={renderNewsItem}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            pagingEnabled
-          />
-        )} */}
-      </View>
-
-      <TouchableOpacity
-        style={styles.profileIcon}
-        onPress={() => navigation.navigate("BusinessProfileApp")}
-      >
-        <Icon name="person" size={30} color="#FFF" />
-      </TouchableOpacity>
-    </View>
-  );
-
-  // const renderCategories = () => {
-  //   if (loading) {
-  //     return (
-  //       <View style={[styles.categorySection, { justifyContent: 'center', alignItems: 'center' }]}>
-  //         <ActivityIndicator size="large" color="#00796B" />
-  //       </View>
-  //     );
-  //   }
-
-  //   return (
-  //     <View style={styles.categorySection}>
-  //       <View style={styles.sectionHeaderContainer}>
-  //         <View style={styles.headerLeft}>
-  //           <View style={styles.headerAccent} />
-  //           <Text style={styles.sectionHeader}>Categories</Text>
-  //         </View>
-  //       </View>
-
-  //       <ScrollView
-  //         horizontal
-  //         showsHorizontalScrollIndicator={false}
-  //         contentContainerStyle={styles.categoryScrollContainer}
-  //       >
-  //         {categories.map((category, index) => (
-  //           <TouchableOpacity
-  //             key={category.id}
-  //             style={styles.categoryCard}
-  //             onPress={() => navigation.navigate("CategoryDetails", { category })}
-  //           >
-  //             <LinearGradient
-  //               colors={category.gradient}
-  //               style={styles.categoryGradient}
-  //               start={{ x: 0, y: 0 }}
-  //               end={{ x: 1, y: 1 }}
-  //             >
-  //               <View style={styles.categoryIconContainer}>
-  //                 <FontAwesome5 name={category.icon} size={24} color="#FFFFFF" />
-  //               </View>
-  //               <Text style={styles.categoryTitle}>{category.name}</Text>
-  //             </LinearGradient>
-  //           </TouchableOpacity>
-  //         ))}
-  //       </ScrollView>
-  //     </View>
-  //   );
-  // };
+  
+ 
+  
+    // const renderCategories = () => {
+    //   if (loading) {
+    //     return (
+    //       <View style={[styles.categorySection, { justifyContent: 'center', alignItems: 'center' }]}>
+    //         <ActivityIndicator size="large" color="#00796B" />
+    //       </View>
+    //     );
+    //   }
+  
+    //   return (
+    //     <View style={styles.categorySection}>
+    //       <View style={styles.sectionHeaderContainer}>
+    //         <View style={styles.headerLeft}>
+    //           <View style={styles.headerAccent} />
+    //           <Text style={styles.sectionHeader}>Categories</Text>
+    //         </View>
+    //       </View>
+  
+    //       <ScrollView
+    //         horizontal
+    //         showsHorizontalScrollIndicator={false}
+    //         contentContainerStyle={styles.categoryScrollContainer}
+    //       >
+    //         {categories.map((category, index) => (
+    //           <TouchableOpacity
+    //             key={category.id}
+    //             style={styles.categoryCard}
+    //             onPress={() => navigation.navigate("CategoryDetails", { category })}
+    //           >
+    //             <LinearGradient
+    //               colors={category.gradient}
+    //               style={styles.categoryGradient}
+    //               start={{ x: 0, y: 0 }}
+    //               end={{ x: 1, y: 1 }}
+    //             >
+    //               <View style={styles.categoryIconContainer}>
+    //                 <FontAwesome5 name={category.icon} size={24} color="#FFFFFF" />
+    //               </View>
+    //               <Text style={styles.categoryTitle}>{category.name}</Text>
+    //             </LinearGradient>
+    //           </TouchableOpacity>
+    //         ))}
+    //       </ScrollView>
+    //     </View>
+    //   );
+    // };
 
   const renderPopularServices = () => (
     <View style={styles.adSection}>
@@ -591,6 +682,10 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     </View>
   );
 
+  if (loading) {
+    return <HomeScreenLoader animationValue={shimmerAnimation} />;
+  }
+ 
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
@@ -726,10 +821,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
+  // },
   headerTitle: {
     fontSize: 28,
     color: "#FFF",
@@ -835,12 +931,16 @@ const styles = StyleSheet.create({
   newsCardContent: {
     gap: 15,
   },
-  // tagRow: {
-  //   flexDirection: 'row',
-  //   justifyContent: 'space-between',
-  //   alignItems: 'center',
-  //   marginBottom: 12,
+  // newsCardSecondary: {
+  //   width: 280,  // Slightly smaller than primary card
+  //   height: 340,
   // },
+  tagRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   tagContainer: {
     backgroundColor: "#00796B",
     flexDirection: "row",
@@ -982,6 +1082,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: "center",
   },
+  
+  // navigationContainer: {
+  //   flexDirection: 'row',
+  //   gap: 8,
+  // },
+  // navButton: {
+  //   backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  //   borderRadius: 20,
+  //   padding: 8,
+  // },
 
   adImage: {
     width: "100%",
@@ -1060,87 +1170,146 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   // Add to your existing styles
-  loadingContainer: {
-    height: 200,
-    justifyContent: "center",
-    alignItems: "center",
+loadingContainer: {
+  height: 200,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+emptyContainer: {
+  height: 200,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#F5F5F5',
+  borderRadius: 15,
+  gap: 8,
+},
+emptyText: {
+  color: '#666',
+  fontSize: 16,
+},
+// tagRow: {
+//   flexDirection: 'row',
+//   alignItems: 'center',
+//   gap: 8,
+// },
+tag: {
+  backgroundColor: 'rgba(255,255,255,0.2)',
+  paddingHorizontal: 12,
+  paddingVertical: 4,
+  borderRadius: 20,
+},
+tagText: {
+  color: '#FFF',
+  fontSize: 12,
+  fontWeight: '600',
+},
+dateText: {
+  color: 'rgba(255,255,255,0.8)',
+  fontSize: 12,
+},
+viewAll:{
+  color: '#00796B',
+  fontWeight: '600',
+},categorySection: {
+  marginVertical: 20,
+  
+},
+categoryScrollContainer: {
+  paddingHorizontal: 15,
+  paddingVertical: 10,
+
+},
+categoryCard: {
+  width: 100,
+  height: 100,
+  marginRight: 15,
+  borderRadius: 15,
+  overflow: 'hidden',
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 2,
   },
-  emptyContainer: {
-    height: 200,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-    borderRadius: 15,
-    gap: 8,
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+  elevation: 5,
+},
+categoryGradient: {
+  flex: 1,
+  padding: 15,
+  justifyContent: 'space-between',
+},
+categoryIconContainer: {
+  width: 45,
+  height: 45,
+  borderRadius: 22.5,
+  backgroundColor: 'rgba(255,255,255,0.2)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+categoryTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  color: '#FFFFFF',
+},
+appointmentButtonsContainer: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  paddingHorizontal: 20,
+  paddingTop: 15,
+  gap: 10,
+},
+appointmentButton: {
+  flex: 1,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#00796B',
+  paddingVertical: 10,
+  paddingHorizontal: 15,
+  borderRadius: 25,
+  gap: 8,
+  elevation: 2,
+  shadowColor: "#000",
+  shadowOffset: {
+    width: 0,
+    height: 2,
   },
-  emptyText: {
-    color: "#666",
-    fontSize: 16,
-  },
-  tagRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  tagText: {
-    color: "#FFF",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  dateText: {
-    color: "rgba(255,255,255,0.8)",
-    fontSize: 12,
-  },
-  viewAll: {
-    color: "#00796B",
-    fontWeight: "600",
-  },
-  categorySection: {
-    marginVertical: 20,
-  },
-  categoryScrollContainer: {
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-  },
-  categoryCard: {
-    width: 100,
-    height: 100,
-    marginRight: 15,
-    borderRadius: 15,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  categoryGradient: {
-    flex: 1,
-    padding: 15,
-    justifyContent: "space-between",
-  },
-  categoryIconContainer: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  categoryTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-  },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+},
+appointmentButtonText: {
+  color: '#FFF',
+  fontSize: 14,
+  fontWeight: 'bold',
+},
+headerIcons: {
+  flexDirection: 'row',
+  position: 'absolute',
+  top: 20,
+  right: 20,
+  gap: 15,
+},
+notificationButton: {
+  position: 'relative',
+  padding: 5,
+},
+badge: {
+  position: 'absolute',
+  right: 0,
+  top: 0,
+  backgroundColor: 'red',
+  borderRadius: 10,
+  minWidth: 20,
+  height: 20,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+badgeText: {
+  color: 'white',
+  fontSize: 12,
+  fontWeight: 'bold',
+},
 });
 
 export default Home;

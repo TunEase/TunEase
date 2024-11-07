@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
-
+import { Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
   const [role, setRole] = useState<string | null>(null);
@@ -34,10 +35,63 @@ export const useAuth = () => {
   }, []);
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setRole(null); // Clear role on logout
+    try {
+      setLoading(true);
+      
+      // Clear all local storage data
+      await AsyncStorage.multiRemove([
+        'user',
+        'userProfile',
+        'authToken',
+        'lastLoginTime',
+        // Add any other keys you're storing
+      ]);
+
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      // Clear all states
+      setUser(null);
+      setRole(null);
+      setLoading(false);
+
+      // Optional: Clear any other app states or context you might have
+      // Example: clearCartItems(), clearUserPreferences(), etc.
+
+      console.log('Logout successful');
+      return true;
+
+    } catch (error) {
+      console.error('Logout error:', error);
+      setLoading(false);
+      
+      Alert.alert(
+        'Logout Error',
+        'There was a problem signing out. Please try again.',
+        [{ text: 'OK' }]
+      );
+      
+      return false;
+
+    } finally {
+      // Ensure loading state is always turned off
+      setLoading(false);
+    }
+  };  
+
+  const checkSessionExpiry = async () => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error || !session) {
+      console.log('Session expired or error:', error);
+      await logout();
+      return false;
+    }
+    
+    return true;
   };
+
   const updatePassword = async (
     currentPassword: string,
     newPassword: string
@@ -65,5 +119,5 @@ export const useAuth = () => {
 
   //   return { user, role, loading, logout, updatePassword }; // Expose role in return
   // };
-  return { user, role, loading, logout, updatePassword, updateUserRole }; // Expose role in return
+  return { user, role, loading, logout, updatePassword, updateUserRole, checkSessionExpiry }; // Expose role in return
 };

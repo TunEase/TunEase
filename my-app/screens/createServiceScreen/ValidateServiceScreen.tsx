@@ -12,7 +12,8 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { supabase } from '../../services/supabaseClient';
 import Header from '../../components/Form/header';
-
+import ConfirmationModal from '../../components/StatusComponents/ConfirmationModal';
+import SuccessScreen from '../SuccessScreen';
 interface ServiceDetails {
   id: string;
   name: string;
@@ -40,7 +41,9 @@ const ValidateServiceScreen: React.FC<{ route: any; navigation: any }> = ({
   const [service, setService] = useState<ServiceDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     fetchServiceDetails();
   }, []);
@@ -67,48 +70,17 @@ const ValidateServiceScreen: React.FC<{ route: any; navigation: any }> = ({
 
   const handleConfirm = async () => {
     try {
-      await supabase
-        .from('services')
-        .update({ status: 'active' })
-        .eq('id', serviceId);
-
-      Alert.alert(
-        'Success',
-        'Service has been created successfully!',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('BusinessProfile', { businessId })
-          }
-        ]
-      );
+      
+      setShowSuccessScreen(true);
     } catch (error) {
-      Alert.alert('Error', 'Failed to confirm service');
+      setError('Failed to confirm service');
     }
   };
 
-  const handleDelete = () => {
-    Alert.alert(
-      'Delete Service',
-      'Are you sure you want to delete this service? This action cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: deleteService
-        }
-      ]
-    );
-  };
 
   const deleteService = async () => {
     setDeleting(true);
     try {
-      // Delete media files from storage
       if (service?.media) {
         for (const media of service.media) {
           const mediaPath = media.media_url.split('/').pop();
@@ -118,20 +90,63 @@ const ValidateServiceScreen: React.FC<{ route: any; navigation: any }> = ({
         }
       }
 
-      // Delete service record
-      await supabase
+      const { error } = await supabase
         .from('services')
         .delete()
         .eq('id', serviceId);
-
+      console.log(error);
+      if (error) throw error;
       navigation.navigate('BusinessProfile', { businessId });
     } catch (error) {
-      Alert.alert('Error', 'Failed to delete service');
+      setError('Failed to delete service');
     } finally {
       setDeleting(false);
+      setShowDeleteModal(false);
     }
   };
+  const renderSettings = () => {
+    const settings = [
+      { key: 'disable_availability', icon: 'event-busy' },
+      { key: 'disable_service', icon: 'block' },
+      { key: 'accept_cash', icon: 'payments' },
+      { key: 'accept_card', icon: 'credit-card' },
+      { key: 'accept_online', icon: 'language' },
+      { key: 'accept_cheque', icon: 'receipt' },
+      { key: 'accept_notification', icon: 'notifications' },
+      { key: 'accept_complaint', icon: 'feedback' },
+      { key: 'accept_review', icon: 'star' }
+    ];
 
+    return settings.map(({ key, icon }) => (
+      <View key={key} style={styles.settingRow}>
+        <Icon
+          name={icon}
+          size={24}
+          color={service?.[key] ? '#004D40' : '#CCCCCC'}
+        />
+        <Text style={styles.settingText}>
+          {key.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1)
+          ).join(' ')}
+        </Text>
+      </View>
+    ));
+  };
+
+  if (showSuccessScreen) {
+    return (
+      <SuccessScreen
+        title="Service Created Successfully!"
+        description="Your service has been created and is now available for booking."
+        primaryButtonText="Go to Business Profile"
+        secondaryButtonText="Create Another Service"
+        primaryNavigateTo="BusinessProfile"
+        secondaryNavigateTo="CreateService"
+        primaryParams={{ businessId }}
+        secondaryParams={{ businessId }}
+      />
+    );
+  }
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -149,7 +164,6 @@ const ValidateServiceScreen: React.FC<{ route: any; navigation: any }> = ({
       />
 
       <ScrollView style={styles.content}>
-        {/* Service Basic Info */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Basic Information</Text>
           <View style={styles.infoCard}>
@@ -167,40 +181,25 @@ const ValidateServiceScreen: React.FC<{ route: any; navigation: any }> = ({
           </View>
         </View>
 
-        {/* Media Preview */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Media</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {service?.media.map((item, index) => (
-              <Image
-                key={index}
-                source={{ uri: item.media_url }}
-                style={styles.mediaPreview}
-              />
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Service Settings */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Service Settings</Text>
-          <View style={styles.settingsCard}>
-            {Object.entries(service || {})
-              .filter(([key]) => key.startsWith('accept_') || key.startsWith('disable_'))
-              .map(([key, value]) => (
-                <View key={key} style={styles.settingRow}>
-                  <Icon
-                    name={value ? 'check-circle' : 'cancel'}
-                    size={24}
-                    color={value ? '#004D40' : '#B0BEC5'}
-                  />
-                  <Text style={styles.settingText}>
-                    {key.split('_').map(word => 
-                      word.charAt(0).toUpperCase() + word.slice(1)
-                    ).join(' ')}
-                  </Text>
-                </View>
+        {service?.media && service.media.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Media</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {service.media.map((media, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: media.media_url }}
+                  style={styles.mediaPreview}
+                />
               ))}
+            </ScrollView>
+          </View>
+        )}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Settings</Text>
+          <View style={styles.settingsCard}>
+            {renderSettings()}
           </View>
         </View>
       </ScrollView>
@@ -208,7 +207,7 @@ const ValidateServiceScreen: React.FC<{ route: any; navigation: any }> = ({
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, styles.deleteButton]}
-          onPress={handleDelete}
+          onPress={() => setShowDeleteModal(true)}
           disabled={deleting}
         >
           <Icon name="delete-outline" size={24} color="#FFF" />
@@ -224,6 +223,30 @@ const ValidateServiceScreen: React.FC<{ route: any; navigation: any }> = ({
           <Text style={styles.buttonText}>Confirm Service</Text>
         </TouchableOpacity>
       </View>
+
+      <ConfirmationModal
+        visible={showDeleteModal}
+        title="Delete Service"
+        description="Are you sure you want to delete this service? This action cannot be undone."
+        icon="delete-forever"
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={deleteService}
+        confirmText="Yes, Delete"
+        cancelText="No, Keep"
+        confirmButtonColor="#D32F2F"
+      />
+
+      <ConfirmationModal
+        visible={!!error}
+        title="Error"
+        description={error || ''}
+        icon="error"
+        onCancel={() => setError(null)}
+        onConfirm={() => setError(null)}
+        confirmText="OK"
+        cancelText="Try Again"
+        confirmButtonColor="#D32F2F"
+      />
     </View>
   );
 };

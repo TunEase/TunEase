@@ -20,7 +20,7 @@ import {
 } from "../services/userProfileService";
 import { useAuth } from "../hooks/useAuth";
 import * as ImagePicker from "expo-image-picker";
-
+import { useSupabaseUpload } from "../hooks/uploadFile";
 import starBookmark from "../assets/FAV.png";
 
 interface UserProfile {
@@ -48,7 +48,7 @@ const UserProfile: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const { uploadFile, handleProfilePicture } = useSupabaseUpload("application");
   const userId = user?.id;
 
   useEffect(() => {
@@ -61,7 +61,11 @@ const UserProfile: React.FC = () => {
         const userProfile = await fetchUserProfile(userId);
         if (userProfile) {
           setProfile(userProfile as UserProfile);
-          setImage(userProfile.avatarUrl || null);
+          // If avatarUrl exists in the profile, set it as the image
+          if (userProfile.avatarUrl) {
+            console.log("Found avatar URL:", userProfile.avatarUrl);
+            setImage(userProfile.avatarUrl);
+          }
           setName(userProfile.name || "");
           setEmail(userProfile.email || "");
           setPhone(userProfile.phone || null);
@@ -86,11 +90,21 @@ const UserProfile: React.FC = () => {
       aspect: [4, 3],
       quality: 1,
     });
-
-    if (!result.canceled) {
+  
+    if (!result.canceled && userId) {
       const selectedImage = result.assets[0].uri;
       setImage(selectedImage);
-      handleProfileUpdate(selectedImage);
+      
+      // Upload the image using uploadFile instead
+      const uploadResult = await uploadFile(selectedImage, 'image/jpeg', `profiles/${userId}`);
+      
+      if (uploadResult.error) {
+        Alert.alert('Error', 'Failed to upload profile picture');
+        return;
+      }
+  
+      // Update profile with new avatar URL
+      await handleProfileUpdate(uploadResult.url);
     }
     setIsModalVisible(false);
   };
@@ -111,11 +125,16 @@ const UserProfile: React.FC = () => {
     setIsModalVisible(false);
   };
 
-  const removeImage = () => {
-    setImage(null);
-    handleProfileUpdate(null);
+  const removeImage = async () => {
+    if (userId) {
+      // Remove image by passing null
+      await handleProfilePicture(userId, null);
+      setImage(null);
+      await handleProfileUpdate(null);
+    }
     setIsModalVisible(false);
   };
+
 
   const handleProfileUpdate = async (newImage?: string | null) => {
     if (!userId) {
@@ -214,8 +233,14 @@ const UserProfile: React.FC = () => {
           onPress={() => setIsModalVisible(true)}
           style={styles.avatarContainer}
         >
-          <Image
-            source={image ? { uri: image } : require("../assets/avat.jpg")}
+           <Image
+      source={
+        image 
+          ? { uri: image }
+          : profile?.avatarUrl 
+            ? { uri: profile.avatarUrl }
+            : require("../assets/avat.jpg")
+      }
             style={styles.avatar}
           />
           <View style={styles.editOverlay}>

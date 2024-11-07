@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import React, { useEffect, useState } from "react";
 import {
-  FlatList,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -10,23 +9,10 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { supabase } from "../services/supabaseClient";
-
-interface Availability {
-  id: string;
-  service_id: string;
-  service_name: string;
-  start_date: string;
-  end_date: string;
-  start_time: string;
-  end_time: string;
-  duration: number;
-  days_of_week: number[];
-}
+import Header from "../components/Form/header";
 
 const AvailabilityScreen = ({ navigation, route }) => {
-  const { serviceId } = route.params || {};
-  const [availabilities, setAvailabilities] = useState<Availability[]>([]);
+  const { service } = route.params || {};
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
   );
@@ -35,77 +21,50 @@ const AvailabilityScreen = ({ navigation, route }) => {
   }>({});
 
   useEffect(() => {
-    fetchAvailabilities();
-  }, [serviceId]);
-
-  const fetchAvailabilities = async () => {
-    const { data, error } = await supabase.from("availability").select(`
-        *,
-        services:service_id (name)
-      `);
-
-    if (error) {
-      console.error("Error fetching availabilities:", error);
-      return;
+    if (service) {
+      updateServiceDates();
     }
+  }, [service]);
 
-    const formattedData = data.map((item) => ({
-      ...item,
-      service_name: item.services.name,
-    }));
-
-    setAvailabilities(formattedData as Availability[]);
-    updateMarkedDates(formattedData as Availability[]);
-  };
-
-  const updateMarkedDates = (availabilityData: Availability[]) => {
+  const updateServiceDates = () => {
+    if (!service) return;
+  
     const marked: { [key: string]: { marked: boolean; dotColor: string } } = {};
-    availabilityData.forEach((availability) => {
-      const start = new Date(availability.start_date);
-      const end = new Date(availability.end_date);
+    
+    // Only mark dates if both start_date and end_date exist
+    if (service.start_date && service.end_date) {
+      const start = new Date(service.start_date);
+      const end = new Date(service.end_date);
+      
       for (let day = start; day <= end; day.setDate(day.getDate() + 1)) {
         const dateString = format(day, "yyyy-MM-dd");
-        marked[dateString] = { marked: true, dotColor: "#00796B" };
+        marked[dateString] = { marked: true, dotColor: '#00796B' }; // Green color for service dates
       }
-    });
+    }
+    
     setMarkedDates(marked);
   };
 
-  const getAvailabilityForDate = (date: string) => {
-    return availabilities.filter((availability) => {
-      const start = new Date(availability.start_date);
-      const end = new Date(availability.end_date);
-      const current = new Date(date);
-      return (
-        current >= start &&
-        current <= end &&
-        availability.days_of_week.includes(current.getDay())
-      );
-    });
-  };
+const isDateAvailable = (date: string) => {
+  if (!service.start_date || !service.end_date) {
+    return false; // If no dates set, no dates are available
+  }
 
- const renderAvailabilityItem = ({ item }: { item: Availability }) => (
-    <View style={styles.availabilityItem}>
-      <Icon
-        name="event-available"
-        size={24}
-        color="#00796B"
-        style={styles.availabilityIcon}
-      />
-      <View style={styles.availabilityInfo}>
-        <Text style={styles.serviceName}>{item.service_name}</Text>
-        <Text style={styles.availabilityTime}>
-          {item.start_time} - {item.end_time} (Duration: {item.duration} min)
-        </Text>
-      </View>
-    </View>
-  );
+  const selectedDay = new Date(date);
+  const start = new Date(service.start_date);
+  const end = new Date(service.end_date);
+
+    return selectedDay >= start && selectedDay <= end;
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Service Availability</Text>
-      </View>
+      <Header
+        title="Service Availability"
+        onBack={() => navigation.goBack()}
+        backgroundColor="#00796B"
+      />
+      
       <Calendar
         current={selectedDate}
         onDayPress={(day) => setSelectedDate(day.dateString)}
@@ -128,30 +87,49 @@ const AvailabilityScreen = ({ navigation, route }) => {
           textDayFontSize: 16,
           textMonthFontSize: 18,
         }}
+        minDate={service.start_date || undefined}
+        maxDate={service.end_date || undefined}
       />
+
       <View style={styles.availabilityContainer}>
         <Text style={styles.subtitle}>
-          Availability for {format(new Date(selectedDate), "MMMM d, yyyy")}:
+          Service Hours for {format(new Date(selectedDate), "MMMM d, yyyy")}:
         </Text>
-        <FlatList
-          data={getAvailabilityForDate(selectedDate)}
-          renderItem={renderAvailabilityItem}
-          keyExtractor={(item) => item.id}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>
-              No availability set for this date.
-            </Text>
-          }
-          contentContainerStyle={styles.availabilityList}
-        />
+        
+        {isDateAvailable(selectedDate) ? (
+          <View style={styles.availabilityItem}>
+            <Icon
+              name="event-available"
+              size={24}
+              color="#00796B"
+              style={styles.availabilityIcon}
+            />
+            <View style={styles.availabilityInfo}>
+              <Text style={styles.serviceName}>{service.name}</Text>
+              <Text style={styles.availabilityTime}>
+                {format(new Date(`2000-01-01T${service.start_time}`), 'hh:mm a')} - 
+                {format(new Date(`2000-01-01T${service.end_time}`), 'hh:mm a')}
+              </Text>
+              <Text style={styles.durationText}>
+                Duration: {service.duration} minutes
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <Text style={styles.emptyText}>
+            This service is not available on this date.
+          </Text>
+        )}
       </View>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate("AddAvailabilityScreen", { serviceId: serviceId })}
-      >
-        <Icon name="add" size={24} color="#FFFFFF" />
-        <Text style={styles.addButtonText}>Update Availability</Text>
-      </TouchableOpacity>
+      <View style={styles.editButtonContainer}>
+      <TouchableOpacity 
+                style={styles.editButton}
+                onPress={() => navigation.navigate('AddAvailabilityScreen', { service })}
+              >
+                <Icon name="edit" size={20} color="#00796B" />
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -160,19 +138,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    backgroundColor: "#FFFFFF",
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
   },
   calendar: {
     borderWidth: 1,
@@ -191,9 +156,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
     marginBottom: 10,
-  },
-  availabilityList: {
-    flexGrow: 1,
   },
   availabilityItem: {
     flexDirection: "row",
@@ -219,6 +181,12 @@ const styles = StyleSheet.create({
   availabilityTime: {
     fontSize: 14,
     color: "#666",
+    fontWeight: '500',
+  },
+  durationText: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 4,
   },
   emptyText: {
     fontSize: 16,
@@ -226,20 +194,23 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
   },
-  addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#00796B",
-    borderRadius: 10,
-    padding: 16,
-    margin: 16,
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 121, 107, 0.1)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 15,
   },
-  addButtonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
+  editButtonText: {
+    color: '#00796B',
+    fontWeight: 'bold',
     marginLeft: 8,
+  },
+  editButtonContainer: {
+    marginTop: 7,
+    alignItems: 'center',
+    fontSize: 16,
   },
 });
 

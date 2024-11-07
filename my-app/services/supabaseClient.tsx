@@ -15,9 +15,9 @@ export const supabase = createClient(
   process.env.SUPABASE_API_KEY
 );
 WebBrowser.maybeCompleteAuthSession();
-const EXPO_CLIENT_ID = '1083491834363-3nk7has4fjuq6vngqkhorpkvq2khql55.apps.googleusercontent.com';
-const ANDROID_CLIENT_ID = '1083491834363-3nk7has4fjuq6vngqkhorpkvq2khql55.apps.googleusercontent.com';
-const IOS_CLIENT_ID = 'YOUR_IOS_CLIENT_ID';
+const EXPO_CLIENT_ID = process.env.EXPO_CLIENT_ID;
+const ANDROID_CLIENT_ID = process.env.ANDROID_CLIENT_ID;
+const IOS_CLIENT_ID = process.env.IOS_CLIENT_ID;
 export const googleSignUpAction = async () => {
   
   try {

@@ -1,96 +1,189 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, FlatList, Alert, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
-import { supabase } from '../../services/supabaseClient';
+import { Alert, SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import Header from '../../components/Form/header';
+import AppointmentFilters from '../../components/Appointment/AppointmentFilters';
+import AppointmentContent from '../../components/Appointment/AppointmentContent';
+import LoadingScreen from '../../components/Appointment/LoadingScreen';
+import { useAppointments } from '../../hooks/useAppointments';
+import { useBusinessAccess } from '../../hooks/useBusinessAccess';
+import { format,addMinutes,isBefore } from 'date-fns';
+import HeaderEditButton from '../../components/Appointment/HeaderEditButton';
+import ConfirmationModal from '../../components/StatusComponents/ConfirmationModal';
 import { Appointment } from '../../types/Appointment';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { format } from 'date-fns';
-const AppointmentListScreen = ({navigation}:{navigation:any}) => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [userRole, setUserRole] = useState<string | null>(null);
+import {supabase} from '../../services/supabaseClient';
+const AppointmentListScreen = ({ navigation }) => {
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedService, setSelectedService] = useState('all');
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const { userRole, checkAccess } = useBusinessAccess(navigation);
+  const { appointments, services, isLoading, fetchAppointments ,cancelAppointment} = useAppointments(selectedDate, selectedService);
 
+  
   useEffect(() => {
-    fetchAppointments();
-    checkUserRole();
+    
+    checkAccess();
   }, []);
 
-  const fetchAppointments = async () => {
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*')
-      .order('date', { ascending: true })
-      .order('start_time', { ascending: true });
-    
-    if (error) {
-      Alert.alert('Error fetching appointments', error.message);
-    } else {
-      setAppointments(data);
-    }
-  };
+// Check if appointment can be cancelled (60 minutes before)
+const canCancelAppointment = (appointmentDate: string, appointmentTime: string) => {
+  const appointmentDateTime = new Date(`${appointmentDate}T${appointmentTime}`);
+  const currentTime = new Date();
+  const timeLimit = addMinutes(currentTime, 60);
+  return isBefore(timeLimit, appointmentDateTime);
+};
 
-  const checkUserRole = async () => {
-    const { data, error } = await supabase
-      .from('user_profile')
-      .select('role')
-      .eq('id', (await supabase.auth.getUser()).data.user?.id);
-    if (error) {
-      Alert.alert('Error fetching user role', error.message);
-    } else {
-      setUserRole(data[0].role);
-    }
-  };
+const handleCancelPress = (appointmentId: string, date: string, time: string) => {
+  if (!canCancelAppointment(date, time)) {
+    Alert.alert(
+      'Cannot Cancel',
+      'Appointments can only be cancelled 60 minutes before the scheduled time.'
+    );
+    return;
+  }
+  setSelectedAppointment(appointmentId);
+  setShowCancelModal(true);
+};
+const handleReorderComplete = async (reorderedAppointments: Appointment[]) => {
+  try {
+    const changes = appointments.map((originalApt, index) => {
+      const newApt = reorderedAppointments[index];
+      if (originalApt.id !== newApt.id) {
+        return {
+          originalApt,
+          newApt,
+          originalIndex: index,
+          newIndex: reorderedAppointments.findIndex(apt => apt.id === originalApt.id)
+        };
+      }
+      return null;
+    }).filter(Boolean);
 
-  const handleReorder = () => {
-    if (userRole !== 'BUSINESS_MANAGER') {
-      Alert.alert('Access Denied', 'Only business managers can reorder appointments');
-      return;
+    if (changes.length > 0) {
+      const swap = changes[0]!;
+      const apt1 = swap.originalApt;
+      const apt2 = reorderedAppointments[swap.originalIndex];
+
+      // Calculate end times based on service duration (assuming 30 minutes if not specified)
+      const getEndTime = (startTime: string) => {
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const endMinutes = minutes + 30; // Default 30-minute duration
+        const endHours = hours + Math.floor(endMinutes / 60);
+        const finalMinutes = endMinutes % 60;
+        return `${String(endHours).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}:00`;
+      };
+
+      const apt1EndTime = getEndTime(apt2.start_time);
+      const apt2EndTime = getEndTime(apt1.start_time);
+
+      const { error } = await supabase
+        .from('appointments')
+        .upsert([
+          {
+            id: apt1.id,
+            date: apt1.date,
+            start_time: apt2.start_time,
+            end_time: apt1EndTime,
+            service_id: apt1.service?.id,
+            client_id: apt1.user_profile?.id,
+            status: apt1.status
+          },
+          {
+            id: apt2.id,
+            date: apt2.date,
+            start_time: apt1.start_time,
+            end_time: apt2EndTime,
+            service_id: apt2.service?.id,
+            client_id: apt2.user_profile?.id,
+            status: apt2.status
+          }
+        ]);
+
+      if (error) throw error;
+
+      // Refresh the appointments after successful swap
+      await fetchAppointments();
     }
-    // Navigate to Reordering Screen
-    // navigate('ReorderingScreen');
-  };
-  const renderAppointmentItem = ({ item }: { item: Appointment }) => (
-    <TouchableOpacity
-      style={styles.appointmentItem}
-      onPress={() => navigation.navigate('AppointmentDetailsScreen', { appointment: item })}
-    >
-      <View style={styles.appointmentInfo}>
-        <Text style={styles.appointmentDate}>{format(new Date(item.date), 'MMM dd, yyyy')}</Text>
-        <Text style={styles.appointmentTime}>{format(new Date(`2000-01-01T${item.start_time}`), 'h:mm a')}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={24} color="#00796B" />
-    </TouchableOpacity>
-  );
+  } catch (error) {
+    Alert.alert('Error', 'Failed to update appointment times');
+    console.error('Error updating appointment times:', error);
+  }
+};
+
+const handleCancelConfirm = async () => {
+  if (selectedAppointment) {
+    await cancelAppointment(selectedAppointment);
+    setShowCancelModal(false);
+    setSelectedAppointment(null);
+  }
+};
+
+
+  if (isLoading) {
+    return <LoadingScreen title="Appointments" onBack={() => navigation.goBack()} />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#00796B" barStyle="light-content" />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Appointment List</Text>
-      </View>
       
-      <FlatList
-        data={appointments}
-        renderItem={renderAppointmentItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+      <Header 
+        title="Appointments"
+        onBack={() => navigation.goBack()}
+        backgroundColor="#00796B"
+        rightComponent={
+          userRole === 'BUSINESS_MANAGER' && (
+            <HeaderEditButton 
+              isEditMode={isEditMode} 
+              onPress={() => setIsEditMode(!isEditMode)} 
+            />
+          )
+        }
       />
-      {userRole === 'BUSINESS_MANAGER' && (
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.reorderButton} 
-            onPress={() => navigation.navigate("AutoReorderingScreen")}
-          >
-            <Ionicons name="flash-outline" size={24} color="#FFFFFF" style={styles.buttonIcon} />
-            <Text style={styles.reorderButtonText}>Auto Reorder</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.reorderButton} 
-            onPress={() => navigation.navigate("CustomReorderingScreen")}
-          >
-            <Ionicons name="list-outline" size={24} color="#FFFFFF" style={styles.buttonIcon} />
-            <Text style={styles.reorderButtonText}>Custom Reorder</Text>
-          </TouchableOpacity>
-        </View>
+
+      {!isEditMode && (
+        <AppointmentFilters
+          selectedDate={selectedDate}
+          selectedService={selectedService}
+          services={services}
+          showCalendar={showCalendar}
+          onDateSelect={(date) => {
+            setSelectedDate(date);
+            setShowCalendar(false);
+          }}
+          onServiceSelect={setSelectedService}
+          onCalendarToggle={() => setShowCalendar(!showCalendar)}
+        />
       )}
+
+      <AppointmentContent
+        appointments={appointments}
+        isLoading={isLoading}
+        isEditMode={isEditMode}
+        userRole={userRole}
+        onRefresh={fetchAppointments}
+        onCancelAppointment={handleCancelPress}
+        canCancelAppointment={canCancelAppointment}
+        onReorderComplete={handleReorderComplete}
+        navigation={navigation}
+      />
+
+      <ConfirmationModal
+        visible={showCancelModal}
+        title="Cancel Appointment"
+        description="Are you sure you want to cancel this appointment? This action cannot be undone."
+        icon="event-busy"
+        onCancel={() => {
+          setShowCancelModal(false);
+          setSelectedAppointment(null);
+        }}
+        onConfirm={handleCancelConfirm}
+        confirmText="Cancel Appointment"
+        cancelText="Keep Appointment"
+        confirmButtonColor="#D32F2F"
+      />
     </SafeAreaView>
   );
 };
@@ -98,68 +191,8 @@ const AppointmentListScreen = ({navigation}:{navigation:any}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F2F2F2",
-  },
-  header: {
-    backgroundColor: "#00796B",
-    padding: 20,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-  listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  appointmentItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 15,
-    marginVertical: 8,
-    elevation: 3,
-  },
-  appointmentInfo: {
-    flex: 1,
-  },
-  appointmentDate: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  appointmentTime: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 5,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  reorderButton: {
-    backgroundColor: "#00796B",
-    borderRadius: 25,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    flexDirection: 'row',
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  reorderButtonText: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    fontWeight: 'bold',
-  },
-  buttonIcon: {
-    marginRight: 10,
+    backgroundColor: "#F5F5F5",
   },
 });
+
 export default AppointmentListScreen;

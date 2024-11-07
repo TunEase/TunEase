@@ -216,7 +216,7 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
           style={styles.iconButton}
           onPress={() => {
             if (user) {
-              navigation.navigate("Book", { serviceId });
+              navigation.navigate("Book", { service });
             } else {
               navigation.navigate("Login");
             }

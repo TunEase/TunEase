@@ -24,7 +24,6 @@ import ManageEligibilityScreen from "./screens/ManageEligibilityScreen";
 import NewsCommentScreen from "./screens/news/NewsCommentScreen";
 import MediaGalleryScreen from "./screens/MediaGalleryScreen";
 import FAQsScreen from "./screens/FAQsScreen";
-
 import Onboarding from "./screens/OnBoarding";
 
 // import { insertFakeData } from "./services/supabaseClient";
@@ -65,7 +64,6 @@ import StaticBusinessProfile from "./screens/staticBusinessProfile";
 import Statistics from "./screens/Statistics";
 import UpdateQA from "./screens/UpdateQ&A";
 import UserProfile from "./screens/UserProfile";
-import AppointmentDetailsScreen from "./screens/reordering/AppointmentDetailsScreen";
 import ReorderingConfirmationScreen from "./screens/reordering/ReorderingConfirmationScreen";
 import AppointmentListScreen from "./screens/reordering/AppointmentListScreen";
 import CustomReorderingScreen from "./screens/reordering/CustomReorderingScreen";
@@ -305,11 +303,6 @@ export default function App() {
             />
 
             <Stack.Screen
-              name="AppointmentDetailsScreen"
-              component={AppointmentDetailsScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
               name="CreateServiceScreen"
               component={CreateServiceScreen}
               options={{ headerShown: false }}
@@ -380,11 +373,7 @@ export default function App() {
               component={ManageEligibilityScreen}
               options={{ headerShown: false }}
             />
-            <Stack.Screen
-              name="AppointmentBook"
-              component={AppointmentBook}
-              options={{ headerShown: false }}
-            />
+       
             <Stack.Screen
               name="ServiceOnboardingScreen"
               component={ServiceOnboardingScreen}
@@ -464,6 +453,11 @@ export default function App() {
             <Stack.Screen
               name="FavoritesScreen"
               component={FavoritesScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="AppointmentBook"
+              component={AppointmentBook}
               options={{ headerShown: false }}
             />
           </Stack.Navigator>

@@ -19,6 +19,12 @@ type UploadFileResponse = {
   url?: string;
 };
 
+type ProfilePicResponse = {
+  url?: string;
+  error?: string;
+  path?: string;
+};
+
 export function useSupabaseUpload(bucketName: string) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -153,6 +159,49 @@ export function useSupabaseUpload(bucketName: string) {
         return;
       }
 
+      const handleProfilePicture = async (
+  userId: string,
+  imageUri?: string | null
+): Promise<ProfilePicResponse> => {
+  if (!imageUri) {
+    return { url: undefined };
+  }
+
+  try {
+    // Upload new image to a specific profiles folder with a consistent naming pattern
+    const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpeg';
+    const fileName = `profiles/${userId}/avatar.${fileExt}`;
+    
+    const fileArrayBuffer = await fetch(imageUri).then((res) => res.arrayBuffer());
+
+    const { data, error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(fileName, fileArrayBuffer, {
+        contentType: 'image/jpeg',
+        upsert: true // This will replace existing file if it exists
+      });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      return { error: uploadError.message };
+    }
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(fileName);
+
+    return {
+      path: fileName,
+      url: publicUrlData.publicUrl
+    };
+  } catch (error) {
+    console.error('Profile picture update error:', error);
+    return { error: 'Failed to update profile picture' };
+  }
+};
+
+  return { uploading, error, pickFile, uploadFile, fileUrls, uploadMultipleFiles, handleProfilePicture };
       const uploadPromises = result.assets.map(async (asset) => {
         console.log(`Uploading file: ${asset.uri}`);
         const response = await uploadFile(
@@ -189,5 +238,6 @@ export function useSupabaseUpload(bucketName: string) {
     fileUrls,
     uploadMultipleFiles,
     uploadPdfFiles,
+    
   };
 }

@@ -33,3 +33,16 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+
+# Environment and secrets
+.env
+.env.*
+*.env
+credentials.json
+service-account.json
+google-credentials.json
+*-credentials.json
+
+# Remove or move this comment to a separate documentation file
+# bubblesort, dropdown, are you sure , custom hook notifications
