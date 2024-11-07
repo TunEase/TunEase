@@ -9,11 +9,15 @@ import {
   Image,
   ActivityIndicator,
   TextInput,
+  Alert,
 } from "react-native";
 import { supabase } from "../services/supabaseClient";
 import { FontAwesome } from "@expo/vector-icons";
+import { useAuth } from "../hooks/useAuth";
+import MainFooter from "../components/HomePage/MainFooter";
 
 const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { user } = useAuth();
   const [services, setServices] = useState<any[]>([]);
   const [visibleCount, setVisibleCount] = useState(6);
   const [loading, setLoading] = useState(true);
@@ -23,11 +27,16 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   useEffect(() => {
     const fetchServices = async () => {
-      const { data, error } = await supabase.from("services").select(`
+      const { data, error } = await supabase
+        .from("services")
+        .select(
+          `
           *,
-          media:media(service_id, media_url)
-        `)
-        .order('created_at', { ascending: false });
+          media:media(service_id, media_url),
+          reviews:reviews(service_id, rating)
+        `
+        )
+        .order("created_at", { ascending: false });
       if (error) {
         console.error("Error fetching services:", error);
         setError("Failed to load services. Please try again later.");
@@ -43,8 +52,33 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
   const loadMoreServices = async () => {
     if (visibleCount < services.length) {
       setLoadingMore(true);
-      setVisibleCount((prevCount) => prevCount + 6); // Load 6 more services
+      setVisibleCount((prevCount) => prevCount + 6);
       setLoadingMore(false);
+    }
+  };
+
+  const calculateAverageRating = (reviews) => {
+    if (!reviews || reviews.length === 0) return 0;
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return (total / reviews.length).toFixed(1);
+  };
+
+  const handleAddToFavorites = async (serviceId) => {
+    console.log("User Profile:", user);
+    if (!user) {
+      Alert.alert("Error", "User is not logged in.");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("favorites")
+        .insert([{ user_profile_id: user.id, service_id: serviceId }]);
+      if (error) throw error;
+      Alert.alert("Success", "Service added to favorites!");
+    } catch (error) {
+      console.error("Error adding to favorites:", error);
+      Alert.alert("Error", "Failed to add service to favorites.");
     }
   };
 
@@ -69,83 +103,94 @@ const AllService: React.FC<{ navigation: any }> = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>All Services</Text>
-      <View style={styles.searchContainer}>
-        <FontAwesome
-          name="search"
-          size={20}
-          color="#333"
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search services..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
-      {filteredServices.length === 0 ? (
-        <Text style={styles.noServicesText}>No services found.</Text>
-      ) : (
-        <FlatList
-          data={filteredServices.slice(0, visibleCount)} // Show only the visibleCount number of services
-          renderItem={({ item }) => (
-            <View style={styles.serviceCard}>
+    <View style={styles.container}>
+      <FlatList
+        data={filteredServices.slice(0, visibleCount)}
+        ListHeaderComponent={
+          <>
+            <Text style={styles.header}>All Services</Text>
+            <View style={styles.searchContainer}>
+              <FontAwesome
+                name="search"
+                size={20}
+                color="#333"
+                style={styles.searchIcon}
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search services..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+            </View>
+          </>
+        }
+        renderItem={({ item }) => {
+          const averageRating = calculateAverageRating(item.reviews);
+          return (
+            <TouchableOpacity
+              style={styles.serviceCard}
+              onPress={() =>
+                navigation.navigate("ServiceDetails", {
+                  serviceId: item.id,
+                })
+              }
+            >
               {item.media && item.media.length > 0 && (
                 <Image
                   source={{
                     uri: item.media[
                       Math.floor(Math.random() * item.media.length)
                     ].media_url,
-                  }} // Use a random media image
+                  }}
                   style={styles.serviceImage}
                 />
               )}
               <Text style={styles.serviceName}>{item.name}</Text>
-              <Text style={styles.serviceDescription}>{item.description}</Text>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={() =>
-                    navigation.navigate("ServiceDetails", {
-                      serviceId: item.id,
-                    })
-                  }
-                >
-                  <Text style={styles.buttonText}>Details</Text>
+              <View style={styles.iconRow}>
+                <Text style={styles.serviceRating}>
+                  {`⭐ ${averageRating} (${item.reviews.length} Reviews)`}
+                </Text>
+                <TouchableOpacity onPress={() => handleAddToFavorites(item.id)}>
+                  <FontAwesome
+                    name="bookmark"
+                    size={24}
+                    color="#FF6347"
+                    style={styles.bookmarkIcon}
+                  />
                 </TouchableOpacity>
               </View>
-            </View>
-          )}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-        />
-      )}
-      {visibleCount < filteredServices.length && ( // Show Load More button if there are more services
-        <TouchableOpacity
-          style={styles.loadMoreButton}
-          onPress={loadMoreServices}
-        >
-          {loadingMore ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.loadMoreText}>Load More</Text>
-          )}
-        </TouchableOpacity>
-      )}
-    </SafeAreaView>
+              <Text style={styles.serviceDescription}>{item.description}</Text>
+            </TouchableOpacity>
+          );
+        }}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        ListFooterComponent={
+          visibleCount < filteredServices.length ? (
+            <TouchableOpacity
+              style={styles.loadMoreButton}
+              onPress={loadMoreServices}
+            >
+              {loadingMore ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.loadMoreText}>Load More</Text>
+              )}
+            </TouchableOpacity>
+          ) : null
+        }
+      />
+      <MainFooter navigation={navigation} />
+    </View>
   );
 };
-
-export default AllService;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F2",
-    paddingHorizontal: 10,
   },
   header: {
     fontSize: 28,
@@ -201,6 +246,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
   },
+  iconRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 5,
+    marginTop: 5,
+    marginBottom: 5,
+  },
+  bookmarkIcon: {
+    marginLeft: "auto",
+  },
   serviceName: {
     fontSize: 18,
     fontWeight: "600",
@@ -215,23 +271,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     flex: 1,
   },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  button: {
-    backgroundColor: "#00796B",
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 5,
-    flex: 1,
-    marginHorizontal: 2,
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    textAlign: "center",
-    fontSize: 12,
+  serviceRating: {
+    fontSize: 14,
+    color: "#666",
   },
   row: {
     justifyContent: "space-between",
@@ -242,6 +284,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginVertical: 20,
     alignItems: "center",
+    marginHorizontal: 20,
   },
   loadMoreText: {
     color: "#FFFFFF",
@@ -252,3 +295,5 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 });
+
+export default AllService;

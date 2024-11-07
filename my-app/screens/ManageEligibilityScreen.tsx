@@ -6,13 +6,26 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  Image,
+  Alert,
 } from "react-native";
 import Modal from "react-native-modal";
 import { supabase } from "../services/supabaseClient";
-import { FontAwesome } from "@expo/vector-icons"; // Import FontAwesome from @expo/vector-icons
+import { FontAwesome } from "@expo/vector-icons";
+import ImageView from "react-native-image-viewing";
+import { Linking } from "react-native";
+import { useSupabaseUpload } from "../hooks/uploadFile";
+import { useMedia } from "../hooks/useMedia";
+import Header from "../components/Form/header";
+import { useNavigation } from "@react-navigation/native";
 
 const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
+  const navigation = useNavigation();
+  const { insertMediaRecord } = useMedia();
+  const { uploadMultipleFiles } = useSupabaseUpload("application");
   const { serviceId } = route.params;
+
+  // Hooks should be declared at the top level
   const [eligibilities, setEligibilities] = useState<
     {
       id: string;
@@ -20,11 +33,14 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
       description: string;
       created_at: string;
       updated_at: string;
+      media: { media_url: string; media_type: string }[];
     }[]
   >([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentEligibility, setCurrentEligibility] = useState<any>(null);
-  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [isImageViewVisible, setImageViewVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [images, setImages] = useState<{ uri: string }[]>([]);
 
   useEffect(() => {
     fetchEligibilities();
@@ -33,7 +49,9 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
   const fetchEligibilities = async () => {
     const { data, error } = await supabase
       .from("eligibility")
-      .select("id, name, description, created_at, updated_at") // Include created_at and updated_at
+      .select(
+        "id, name, description, created_at, updated_at, media (media_url, media_type)"
+      )
       .eq("service_id", serviceId);
 
     if (error) {
@@ -55,7 +73,6 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
 
   const handleSaveEligibility = async () => {
     if (currentEligibility.id) {
-      // Update existing eligibility
       const { error } = await supabase
         .from("eligibility")
         .update({
@@ -68,7 +85,6 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
         console.error("Error updating eligibility:", error);
       }
     } else {
-      // Add new eligibility
       const { error } = await supabase.from("eligibility").insert([
         {
           name: currentEligibility.name,
@@ -86,100 +102,185 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
     fetchEligibilities();
   };
 
-  const handleUploadImage = (eligibilityId: string) => {
-    // Toggle the expanded state of the card
-    setExpandedCardId(expandedCardId === eligibilityId ? null : eligibilityId);
+  const handleUploadImage = async (eligibilityId: string) => {
+    try {
+      console.log("Starting file upload...");
+      const { urls, error } = await uploadMultipleFiles({ quality: 0.5 });
+      if (error) {
+        console.error("Error during file upload:", error);
+        return;
+      }
+
+      if (urls.length > 0) {
+        console.log("File uploaded successfully, inserting media record...");
+        const { data, error: insertError } = await insertMediaRecord(
+          urls[0],
+          "image",
+          { eligibility_id: eligibilityId }
+        );
+        if (insertError) {
+          console.error("Error inserting media record:", insertError);
+        } else {
+          console.log("Media record inserted successfully:", data);
+          fetchEligibilities();
+        }
+      } else {
+        console.log("No URLs returned from upload.");
+      }
+    } catch (err) {
+      console.error("Unexpected error during upload:", err);
+    }
+  };
+
+  const openImageViewer = (
+    media: { media_url: string; media_type: string }[],
+    index: number
+  ) => {
+    setImages(
+      media
+        .filter((m) => m.media_type === "image")
+        .map((m) => ({ uri: m.media_url }))
+    );
+    setSelectedImageIndex(index);
+    setImageViewVisible(true);
+  };
+
+  const openPDF = (url: string) => {
+    Linking.openURL(url).catch((err) =>
+      console.error("Failed to open PDF:", err)
+    );
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Manage Eligibility</Text>
-      <FlatList
-        data={eligibilities}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.eligibilityItem}>
-            <View style={styles.iconContainer}>
-              <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
-                <FontAwesome name="cloud-upload" size={20} color="#00796B" />
+      <Header
+        title="Manage Eligibility"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
+      />
+      <View style={{ flex: 1, padding: 20 }}>
+        <FlatList
+          data={eligibilities}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.eligibilityItem}>
+              <View style={styles.iconContainer}>
+                <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
+                  <FontAwesome name="cloud-upload" size={20} color="#00796B" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.eligibilityTextContainer}>
+                <Text style={styles.eligibilityName}>{item.name}</Text>
+                <Text style={styles.eligibilityDescription}>
+                  {item.description}
+                </Text>
+                <Text style={styles.eligibilityDate}>
+                  Created: {new Date(item.created_at).toLocaleDateString()}
+                </Text>
+                <Text style={styles.eligibilityDate}>
+                  Updated: {new Date(item.updated_at).toLocaleDateString()}
+                </Text>
+                {item.media.length > 0 && (
+                  <View style={styles.mediaContainer}>
+                    {item.media.map((mediaItem, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() =>
+                          mediaItem.media_type === "image"
+                            ? openImageViewer(item.media, index)
+                            : openPDF(mediaItem.media_url)
+                        }
+                      >
+                        {mediaItem.media_type === "image" ? (
+                          <Image
+                            source={{ uri: mediaItem.media_url }}
+                            style={styles.mediaImage}
+                          />
+                        ) : (
+                          <View style={styles.pdfThumbnail}>
+                            <FontAwesome
+                              name="file-pdf-o"
+                              size={40}
+                              color="#FF5252"
+                            />
+                            <Text style={styles.pdfText}>PDF</Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => handleEditEligibility(item)}>
+                <FontAwesome name="edit" size={20} color="#00796B" />
               </TouchableOpacity>
             </View>
-            <View style={styles.eligibilityTextContainer}>
-              <Text style={styles.eligibilityName}>{item.name}</Text>
-              <Text style={styles.eligibilityDescription}>
-                {item.description}
-              </Text>
-              <Text style={styles.eligibilityDate}>
-                Created: {new Date(item.created_at).toLocaleDateString()}
-              </Text>
-              <Text style={styles.eligibilityDate}>
-                Updated: {new Date(item.updated_at).toLocaleDateString()}
-              </Text>
-              {expandedCardId === item.id && (
-                <View style={styles.imageUploadSection}>
-                  <Text style={styles.uploadText}>Upload Image Section</Text>
-                  {/* Add your image upload logic here */}
-                </View>
-              )}
-            </View>
-            <TouchableOpacity onPress={() => handleEditEligibility(item)}>
-              <FontAwesome name="edit" size={20} color="#00796B" />
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-      <TouchableOpacity style={styles.addButton} onPress={handleAddEligibility}>
-        <Text style={styles.addButtonText}>+</Text>
-      </TouchableOpacity>
+          )}
+        />
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={handleAddEligibility}
+        >
+          <Text style={styles.addButtonText}>+</Text>
+        </TouchableOpacity>
 
-      <Modal
-        isVisible={modalVisible}
-        onBackdropPress={() => setModalVisible(false)}
-        style={styles.modal}
-        swipeDirection="down"
-        onSwipeComplete={() => setModalVisible(false)}
-        animationInTiming={800}
-        animationOutTiming={800}
-      >
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>
-            {currentEligibility?.id ? "Edit Eligibility" : "Add Eligibility"}
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Eligibility Name"
-            value={currentEligibility?.name}
-            onChangeText={(text) =>
-              setCurrentEligibility({ ...currentEligibility, name: text })
-            }
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Eligibility Description"
-            value={currentEligibility?.description}
-            onChangeText={(text) =>
-              setCurrentEligibility({
-                ...currentEligibility,
-                description: text,
-              })
-            }
-          />
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.saveButton]}
-              onPress={handleSaveEligibility}
-            >
-              <Text style={styles.buttonText}>Save</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
+        <Modal
+          isVisible={modalVisible}
+          onBackdropPress={() => setModalVisible(false)}
+          style={styles.modal}
+          swipeDirection="down"
+          onSwipeComplete={() => setModalVisible(false)}
+          animationInTiming={800}
+          animationOutTiming={800}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {currentEligibility?.id ? "Edit Eligibility" : "Add Eligibility"}
+            </Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Eligibility Name"
+              value={currentEligibility?.name}
+              onChangeText={(text) =>
+                setCurrentEligibility({ ...currentEligibility, name: text })
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Eligibility Description"
+              value={currentEligibility?.description}
+              onChangeText={(text) =>
+                setCurrentEligibility({
+                  ...currentEligibility,
+                  description: text,
+                })
+              }
+            />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleSaveEligibility}
+              >
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+
+        <ImageView
+          images={images}
+          imageIndex={selectedImageIndex}
+          visible={isImageViewVisible}
+          onRequestClose={() => setImageViewVisible(false)}
+          backgroundColor="#ffffff"
+        />
+      </View>
     </View>
   );
 };
@@ -187,8 +288,9 @@ const ManageEligibilityScreen: React.FC<{ route: any }> = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    // padding: 20,
   },
+
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -232,26 +334,43 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#888",
   },
-  imageUploadSection: {
+  mediaContainer: {
     marginTop: 10,
-    padding: 10,
-    backgroundColor: "#f0f0f0",
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  mediaImage: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+    marginBottom: 10,
     borderRadius: 5,
   },
-  uploadText: {
-    fontSize: 14,
-    color: "#333",
+  pdfThumbnail: {
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+    backgroundColor: "#F0F0F0",
+  },
+  pdfText: {
+    fontSize: 10,
+    color: "#FF5252",
   },
   addButton: {
     position: "absolute",
-    bottom: 20,
-    alignSelf: "center",
+    bottom: 20, // Distance from the bottom of the screen
+    alignSelf: "center", // Center horizontally
     backgroundColor: "#00796B",
-    borderRadius: 50,
+    borderRadius: 30, // Half of the width/height for a perfect circle
     width: 60,
     height: 60,
     justifyContent: "center",
     alignItems: "center",
+    zIndex: 1, // Ensure the button is above other elements
   },
   addButtonText: {
     color: "#FFFFFF",

@@ -19,7 +19,10 @@ import { Linking } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { useSupabaseUpload } from "../hooks/uploadFile";
 import { useMedia } from "../hooks/useMedia";
+import Header from "../components/Form/header";
+import { useNavigation } from "@react-navigation/native";
 const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
+  const navigation = useNavigation();
   const { insertMediaRecord, Mediaerror, MediaUploading } = useMedia();
   const { uploadMultipleFiles, fileUrls, uploadPdfFiles, error, uploading } =
     useSupabaseUpload("application");
@@ -40,15 +43,8 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
   const [isImageViewVisible, setImageViewVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [images, setImages] = useState<{ uri: string }[]>([]);
-  const handleUploadImage = async (feeId: string) => {
-    // // Logic to handle image upload for the specific fee
-    // const { urls } = await uploadPdfFiles();
-    // console.log("urls", urls);
 
-    // console.log(`Upload image for fee with ID: ${feeId}`);
-    // insertMediaRecord(urls[0], "pdf", {
-    //   fee_id: feeId,
-    // });
+  const handleUploadImage = async (feeId: string) => {
     const { urls } = await uploadMultipleFiles({ quality: 0.5 });
     console.log("urls", urls);
     insertMediaRecord(urls[0], "image", {
@@ -144,62 +140,72 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
   };
   return (
     <View style={styles.container}>
-      <Text style={styles.serviceName}>{serviceName}</Text>
-      <FlatList
-        data={fees}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.feeItem}>
-            <View style={styles.iconContainer}>
-              <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
-                <FontAwesome name="cloud-upload" size={20} color="#00796B" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.feeTextContainer}>
-              <Text style={styles.feeName}>{item.name}</Text>
-              <Text style={styles.feeDescription}>{item.description}</Text>
-              <Text style={styles.feeDate}>
-                Created: {new Date(item.created_at).toLocaleDateString()}
-              </Text>
-              <Text style={styles.feeDate}>
-                Updated: {new Date(item.updated_at).toLocaleDateString()}
-              </Text>
-              {item.media.length > 0 && (
-                <View style={styles.mediaContainer}>
-                  {item.media.map((mediaItem, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() =>
-                        mediaItem.media_type === "image"
-                          ? openImageViewer(item.media, index)
-                          : openPDF(mediaItem.media_url)
-                      }
-                    >
-                      {mediaItem.media_type === "image" ? (
-                        <Image
-                          source={{ uri: mediaItem.media_url }}
-                          style={styles.mediaImage}
-                        />
-                      ) : (
-                        <View style={styles.pdfThumbnail}>
-                          <Icon name="cloud-upload" size={40} color="#FF5252" />
-                          <Text style={styles.pdfText}>PDF</Text>
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
-            <View style={styles.amountAndEditContainer}>
-              <Text style={styles.feeAmount}>${item.fee.toFixed(2)}</Text>
-              <TouchableOpacity onPress={() => handleEditFee(item)}>
-                <FontAwesome name="edit" size={20} color="#00796B" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+      <Header
+        title={serviceName}
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
       />
+      <View style={{ padding: 20 }}>
+        <FlatList
+          data={fees}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.feeItem}>
+              <View style={styles.iconContainer}>
+                <TouchableOpacity onPress={() => handleUploadImage(item.id)}>
+                  <FontAwesome name="cloud-upload" size={20} color="#00796B" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.feeTextContainer}>
+                <Text style={styles.feeName}>{item.name}</Text>
+                <Text style={styles.feeDescription}>{item.description}</Text>
+                <Text style={styles.feeDate}>
+                  Created: {new Date(item.created_at).toLocaleDateString()}
+                </Text>
+                <Text style={styles.feeDate}>
+                  Updated: {new Date(item.updated_at).toLocaleDateString()}
+                </Text>
+                {item.media.length > 0 && (
+                  <View style={styles.mediaContainer}>
+                    {item.media.map((mediaItem, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() =>
+                          mediaItem.media_type === "image"
+                            ? openImageViewer(item.media, index)
+                            : openPDF(mediaItem.media_url)
+                        }
+                      >
+                        {mediaItem.media_type === "image" ? (
+                          <Image
+                            source={{ uri: mediaItem.media_url }}
+                            style={styles.mediaImage}
+                          />
+                        ) : (
+                          <View style={styles.pdfThumbnail}>
+                            <Icon
+                              name="cloud-upload"
+                              size={40}
+                              color="#FF5252"
+                            />
+                            <Text style={styles.pdfText}>PDF</Text>
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+              <View style={styles.amountAndEditContainer}>
+                <Text style={styles.feeAmount}>${item.fee.toFixed(2)}</Text>
+                <TouchableOpacity onPress={() => handleEditFee(item)}>
+                  <FontAwesome name="edit" size={20} color="#00796B" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        />
+      </View>
       <TouchableOpacity style={styles.addButton} onPress={handleAddFee}>
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -217,10 +223,11 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
           <Text style={styles.modalTitle}>
             {currentFee?.id ? "Edit Fee" : "Add Fee"}
           </Text>
+
           <TextInput
             style={styles.input}
             placeholder="Fee Name"
-            value={currentFee?.name}
+            value={currentFee?.name || ""} // Use optional chaining and provide a default value
             onChangeText={(text) =>
               setCurrentFee({ ...currentFee, name: text })
             }
@@ -228,7 +235,7 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
           <TextInput
             style={styles.input}
             placeholder="Fee Amount"
-            value={currentFee?.fee.toString()}
+            value={currentFee?.fee?.toString() || ""} // Use optional chaining and provide a default value
             onChangeText={(text) => {
               const feeValue = parseFloat(text);
               setCurrentFee({
@@ -241,11 +248,12 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
           <TextInput
             style={styles.input}
             placeholder="Description"
-            value={currentFee?.description}
+            value={currentFee?.description || ""} // Use optional chaining and provide a default value
             onChangeText={(text) =>
               setCurrentFee({ ...currentFee, description: text })
             }
           />
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.modalButton, styles.saveButton]}
@@ -269,7 +277,7 @@ const ManageFeesScreen: React.FC<{ route: any }> = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    // padding: 20,
     backgroundColor: "#f5f5f5", // Light background for contrast
   },
   serviceName: {

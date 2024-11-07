@@ -14,11 +14,11 @@ import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../services/supabaseClient";
 import { Service } from "../types/business";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RouteProp } from "@react-navigation/native";
+import { RouteProp, useNavigation } from "@react-navigation/native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import PagerView from "react-native-pager-view";
-import { useNavigation } from "@react-navigation/native";
+import MainFooter from "../components/HomePage/MainFooter";
 
 const { width, height } = Dimensions.get("window");
 
@@ -29,6 +29,7 @@ type RootStackParamList = {
   FAQsScreen: undefined;
   EligibilityScreen: undefined;
   FeesScreen: undefined;
+  Review: undefined; // Add Review screen to the navigation stack
 };
 
 type ServiceDetailsNavigationProp = StackNavigationProp<
@@ -181,13 +182,19 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
           <Text style={styles.servicePrice}>{`$${service.price}/hr`}</Text>
         </View>
         <Text style={styles.serviceRating}>
-          {`тнР ${calculateAverageRating(service.reviews)} (${service.reviews.length} Reviews)`}
+          {`⭐ ${calculateAverageRating(service.reviews)} (${service.reviews.length} Reviews)`}
         </Text>
         <Text style={styles.serviceAvailability}>
           {isServiceAvailableToday()
             ? `Available today from ${service.start_time} to ${service.end_time}`
             : "Not available today"}
         </Text>
+        <TouchableOpacity
+          style={styles.addReviewButton}
+          onPress={() => navigation.navigate("Review")}
+        >
+          <Text style={styles.addReviewButtonText}>Add Review</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.iconContainer}>
@@ -235,6 +242,7 @@ const ServiceDetails: React.FC<{ route: ServiceDetailsRouteProp }> = ({
           <Text style={styles.iconText}>Fees</Text>
         </TouchableOpacity>
       </View>
+      <MainFooter navigation={navigation} />
     </SafeAreaView>
   );
 };
@@ -340,6 +348,17 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 12,
     color: "#666",
+  },
+  addReviewButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#00796B",
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  addReviewButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
   },
 });
 

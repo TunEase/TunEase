@@ -76,5 +76,14 @@ export type RootStackParamList = {
   selectedBusiness: {
     selectedBusiness: Business;
     ServiceDetails: { serviceId: string };
+    // ChatRoomScreen: { businessName: string };
   };
 };
+
+export interface Conversation {
+  id: string;
+  business: { name: string };
+  last_message: string;
+  created_at: string;
+  avatar_url: string;
+}

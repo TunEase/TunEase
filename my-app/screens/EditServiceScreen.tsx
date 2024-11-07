@@ -83,6 +83,12 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
       setTimeout(() => setShowModal(false), 2000);
     }
   };
+  const handdleShowMediaGallery = () => {
+    navigation.navigate("MediaGalleryScreen", {
+      type: "service",
+      id: serviceId,
+    });
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -234,10 +240,7 @@ const EditServiceScreen: React.FC<{ route: any; navigation: any }> = ({
           </View>
         )}
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => toggleCard("mediaManagement")}
-      >
+      <TouchableOpacity style={styles.card} onPress={handdleShowMediaGallery}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Media Management</Text>
           <FontAwesome name="image" size={20} color="#00796B" />

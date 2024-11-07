@@ -1,135 +1,220 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons, Entypo } from '@expo/vector-icons';
-import DraggableFlatList, { 
-  RenderItemParams,
-  ScaleDecorator 
-} from 'react-native-draggable-flatlist';
-import AppointmentCard from '../components/Appointment/AppointmentCard';
-import { Appointment } from '../types/Appointment';
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import React, { useEffect, useState } from "react";
+import {
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
+import Icon from "react-native-vector-icons/FontAwesome";
+import Header from "../components/Form/header";
+import { useAuth } from "../hooks/useAuth";
+import { supabase } from "../services/supabaseClient";
+import { Appointment } from "../types/Appointment";
+import BookingCard from "./BookingCard";
 
-interface AppointmentContentProps {
-  appointments: Appointment[];
-  isLoading: boolean;
-  isEditMode: boolean;
-  userRole: string | null;
-  onRefresh: () => void;
-  onCancelAppointment: (id: string, date: string, time: string) => void;
-  canCancelAppointment: (date: string, time: string) => boolean;
-  onReorderComplete: (reorderedAppointments: Appointment[]) => Promise<void>;
-  navigation: any;
-}
+const AppointmentBookingScreen = ({ route }) => {
+  const { user } = useAuth();
+  const userId = user?.id;
+  const navigation = useNavigation<StackNavigationProp<any>>();
+  const { selectedBusiness, service } = route.params || {};
 
-const AppointmentContent = ({
-  appointments,
-  isLoading,
-  isEditMode,
-  userRole,
-  onRefresh,
-  onCancelAppointment,
-  canCancelAppointment,
-  onReorderComplete,
-  navigation
-}: AppointmentContentProps) => {
-  const [localAppointments, setLocalAppointments] = useState(appointments);
-  const [isDragging, setIsDragging] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState(false);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [markedDates, setMarkedDates] = useState({});
+  const [showAll, setShowAll] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isDragging) {
-      setLocalAppointments(appointments);
+    fetchAppointments();
+  }, [userId]);
+
+  const fetchAppointments = async () => {
+    if (userId) {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select(
+          "*,services(name,media(media_url),business(name,media(media_url))),user_profile(name,media(media_url))"
+        )
+        .eq("client_id", userId);
+      if (error) {
+        console.error("Error fetching appointments:", error.message);
+        return;
+      }
+      setAppointments(data);
+      markAppointmentDates(data);
     }
-  }, [appointments, isDragging]);
-
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <Ionicons name="calendar-outline" size={64} color="#00796B" />
-      <Text style={styles.emptyText}>No appointments found</Text>
-      <Text style={styles.emptySubText}>Your upcoming appointments will appear here</Text>
-    </View>
-  );
-
-  const renderItem = ({ item, drag, isActive }: RenderItemParams<Appointment>) => (
-    <ScaleDecorator>
-      <AppointmentCard
-        item={item}
-        isEditMode={isEditMode}
-        isDragging={isActive}
-        onCancel={userRole === 'BUSINESS_MANAGER' ? onCancelAppointment : undefined}
-        canCancel={canCancelAppointment}
-        onDragStart={drag}
-      />
-    </ScaleDecorator>
-  );
-
-  const handleDragBegin = () => {
-    setIsDragging(true);
   };
 
-  const handleDragEnd = async ({ data }: { data: Appointment[] }) => {
-    setIsDragging(false);
-    setLocalAppointments(data);
-    if (onReorderComplete) {
-      await onReorderComplete(data);
-    }
+  const markAppointmentDates = (appointments) => {
+    const marked = {};
+    appointments.forEach((appointment) => {
+      const date = appointment.date;
+      marked[date] = { marked: true, dotColor: "#00796B" };
+    });
+    setMarkedDates(marked);
+  };
+
+  const handleDayPress = (day) => {
+    const selectedAppointments = appointments.filter(
+      (appointment) => appointment.date === day.dateString
+    );
+    setSelectedDate(day.dateString);
+    setSelectedTime(selectedAppointments[0]?.start_time);
+  };
+
+  const handleSeeAllPress = () => {
+    setShowAll(true);
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAll(false);
+    setModalVisible(false);
+  };
+  const handleRemoveAppointment = (appointmentId) => {
+    setAppointments((prevAppointments) =>
+      prevAppointments.filter((appointment) => appointment.id !== appointmentId)
+    );
   };
 
   return (
     <View style={styles.container}>
-      {localAppointments.length === 0 ? renderEmptyState() : (
-        <DraggableFlatList
-          data={localAppointments}
-          onDragBegin={handleDragBegin}
-          onDragEnd={handleDragEnd}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          enabled={isEditMode}
-          containerStyle={styles.listContainer}
-          contentContainerStyle={[
-            styles.listContent,
-            userRole === 'BUSINESS_MANAGER' && !isEditMode && styles.listWithButtons
-          ]}
-          refreshing={isLoading && !isDragging}
-          onRefresh={!isDragging ? onRefresh : undefined}
-        />
-      )}
+      <Header
+        title="Appointment Book"
+        // backgroundColor="#00796B"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
+      />
+      <TouchableOpacity
+        style={styles.calendarButton}
+        onPress={() => setCalendarVisible(true)}
+      >
+        <Text style={styles.calendarText}>View Calendar</Text>
+        <Icon name="calendar" size={30} color="#00796B" />
+      </TouchableOpacity>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={calendarVisible}
+        onRequestClose={() => setCalendarVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.calendarContainer}>
+            <TouchableOpacity
+              style={styles.modalClose}
+              onPress={() => setCalendarVisible(false)}
+            >
+              <Icon name="close" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Calendar
+              onDayPress={handleDayPress}
+              markedDates={markedDates}
+              theme={{
+                calendarBackground: "#F5F5F5",
+                selectedDayBackgroundColor: "#00796B",
+                arrowColor: "#00796B",
+                todayTextColor: "#00796B",
+                dayTextColor: "#333",
+                monthTextColor: "#00796B",
+                textDayFontWeight: "600",
+                textMonthFontWeight: "bold",
+                textDayHeaderFontWeight: "600",
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
 
-      {userRole === 'BUSINESS_MANAGER' && !isEditMode && (
-        <ReorderingButtons navigation={navigation} />
-      )}
+      <View style={styles.serviceContainer}>
+        <FlatList
+          data={showAll ? appointments : appointments.slice(0, 1)}
+          renderItem={({ item }) => (
+            <View style={styles.bookingCardWrapper}>
+              <BookingCard
+                date={item.date}
+                time={item.start_time}
+                serviceName={item.services?.name || ""}
+                businessName={item.services?.business?.name || ""}
+                userName={item.user_profile?.name || ""}
+                media={item.services?.media[0]?.media_url || ""}
+                mediaBusiness={
+                  item.services?.business?.media[0]?.media_url || ""
+                }
+                icon={
+                  <TouchableOpacity
+                    onPress={() => handleRemoveAppointment(item.id)}
+                  >
+                    <Icon name="remove" size={24} color="#800000" />
+                  </TouchableOpacity>
+                }
+              />
+              {!showAll && (
+                <TouchableOpacity onPress={handleSeeAllPress}>
+                  <Text style={styles.seeAllText}>See All Bookings</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      </View>
+
+      {/* All Bookings Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity
+              style={styles.modalClose}
+              onPress={handleCloseModal}
+            >
+              <Icon name="close" size={24} color="#00796B" />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>All Bookings</Text>
+            <FlatList
+              style={{ width: "100%" }}
+              data={appointments}
+              renderItem={({ item }) => (
+                <BookingCard
+                  date={item.date}
+                  time={item.start_time}
+                  serviceName={item.services?.name || ""}
+                  businessName={item.services?.business?.name || ""}
+                  userName={item.user_profile?.name || ""}
+                  media={item.services?.media[0]?.media_url || ""}
+                  mediaBusiness={
+                    item.services?.business?.media[0]?.media_url || ""
+                  }
+                  icon={<Icon name="remove" size={24} color="#800000" />}
+                />
+              )}
+              keyExtractor={(item) => item.id.toString()}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
-export default AppointmentContent;
+export default AppointmentBookingScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
-  listContainer: {
-    flex: 1,
-  },
-  listContent: {
-    padding: 16,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 20,
-    color: "#00796B",
-    marginTop: 10,
-  },
-  emptySubText: {
-    fontSize: 16,
-    color: "#00796B",
-  },
-  listWithButtons: {
-    paddingBottom: 100,
-  },
-
   serviceContainer: {
     paddingTop: 20,
   },

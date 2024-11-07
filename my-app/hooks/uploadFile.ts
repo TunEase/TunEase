@@ -24,6 +24,7 @@ type ProfilePicResponse = {
   error?: string;
   path?: string;
 };
+
 export function useSupabaseUpload(bucketName: string) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,6 +113,7 @@ export function useSupabaseUpload(bucketName: string) {
         quality: options.quality || 1, // Default quality,
         allowsMultipleSelection: true,
       });
+      console.log("result", result);
 
       if ((result.canceled && !result.assets) || result.assets.length === 0) {
         console.log("User cancelled file picker.");
@@ -157,34 +159,47 @@ export function useSupabaseUpload(bucketName: string) {
         return;
       }
 
-  const handleProfilePicture = async (
-    userId: string,
-    imageUri?: string | null
-  ): Promise<ProfilePicResponse> => {
-    if (!imageUri) {
-      // Handle image removal
-      return { url: undefined };
+      const handleProfilePicture = async (
+  userId: string,
+  imageUri?: string | null
+): Promise<ProfilePicResponse> => {
+  if (!imageUri) {
+    return { url: undefined };
+  }
+
+  try {
+    // Upload new image to a specific profiles folder with a consistent naming pattern
+    const fileExt = imageUri.split('.').pop()?.toLowerCase() || 'jpeg';
+    const fileName = `profiles/${userId}/avatar.${fileExt}`;
+    
+    const fileArrayBuffer = await fetch(imageUri).then((res) => res.arrayBuffer());
+
+    const { data, error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(fileName, fileArrayBuffer, {
+        contentType: 'image/jpeg',
+        upsert: true // This will replace existing file if it exists
+      });
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      return { error: uploadError.message };
     }
 
-    try {
-      // Upload new image
-      const uploadResult = await uploadFile(
-        imageUri,
-        'image/jpeg',
-        `profiles/${userId}`
-      );
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(fileName);
 
-      if (uploadResult.error) {
-        return { error: uploadResult.error };
-      }
-
-      return { url: uploadResult.url };
-    } catch (error) {
-      console.error('Profile picture update error:', error);
-      return { error: 'Failed to update profile picture' };
-    }
-  };
-
+    return {
+      path: fileName,
+      url: publicUrlData.publicUrl
+    };
+  } catch (error) {
+    console.error('Profile picture update error:', error);
+    return { error: 'Failed to update profile picture' };
+  }
+};
 
   return { uploading, error, pickFile, uploadFile, fileUrls, uploadMultipleFiles, handleProfilePicture };
       const uploadPromises = result.assets.map(async (asset) => {
@@ -223,5 +238,6 @@ export function useSupabaseUpload(bucketName: string) {
     fileUrls,
     uploadMultipleFiles,
     uploadPdfFiles,
+    
   };
 }

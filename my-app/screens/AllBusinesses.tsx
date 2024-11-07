@@ -1,4 +1,3 @@
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -16,6 +15,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 import { supabase } from "../services/supabaseClient";
 import { Business } from "../types/business";
+import MainFooter from "../components/HomePage/MainFooter"; // Import MainFooter
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 interface AllBusinessesProps {
   navigation: NativeStackNavigationProp<any>;
@@ -104,7 +105,7 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
         <View style={styles.ratingAndFavoriteContainer}>
           {renderStars(rating)}
           <TouchableOpacity style={styles.favoriteIcon}>
-            <FontAwesome name="heart-o" size={24} color="#FF6347" />
+            <FontAwesome name="bookmark" size={24} color="#FF6347" />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -224,6 +225,7 @@ const AllBusinesses: React.FC<AllBusinessesProps> = ({ navigation }) => {
           </TouchableOpacity>
         }
       />
+      <MainFooter navigation={navigation} />
     </SafeAreaView>
   );
 };

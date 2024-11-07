@@ -13,7 +13,6 @@ import {
   Animated,
   ActivityIndicator,
   Dimensions,
- 
 } from "react-native";
 import { useNotifications } from "../hooks/useNotifications";
 import { NotificationsModal } from "../components/Notifications/NotificationsModal";
@@ -22,13 +21,13 @@ import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Footer from "../components/HomePage/MainFooter";
 import { supabase } from "../services/supabaseClient";
 import { LinearGradient } from "expo-linear-gradient";
-import { FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome5 } from "@expo/vector-icons";
 import HomeScreenLoader from "../components/loadingCompo/HomeScreenLoader";
 interface HomeProps {
   navigation: any;
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const AD_CARD_WIDTH = SCREEN_WIDTH - 40; // 20px padding on eac
 const Home: React.FC<HomeProps> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,8 +46,42 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const { notifications,unreadCount } = useNotifications();
   const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const adScrollRef = useRef<ScrollView>(null);
+  //top businesses scrolling
+  const topBusinessScrollRef = useRef<FlatList>(null);
+  const [currentBusinessIndex, setCurrentBusinessIndex] = useState(0);
+  const businessAutoScrollTimer = useRef<NodeJS.Timeout | null>(null);
+ 
   const shimmerAnimation = useRef(new Animated.Value(0)).current;
+
+
+  useEffect(() => {
+    const startBusinessAutoScroll = () => {
+      if (businesses.length > 1) {
+        businessAutoScrollTimer.current = setInterval(() => {
+          const nextIndex = (currentBusinessIndex + 1) % businesses.length;
+          topBusinessScrollRef.current?.scrollToIndex({
+            index: nextIndex,
+            animated: true,
+            viewPosition: 0.5,
+          });
+          setCurrentBusinessIndex(nextIndex);
+        }, 5000);
+      }
+    };
+    if (businesses.length > 0) {
+      startBusinessAutoScroll();
+    }
+
+    return () => {
+      if (businessAutoScrollTimer.current) {
+        clearInterval(businessAutoScrollTimer.current);
+      }
+    };
+  }, [currentBusinessIndex, businesses.length]);
+
+  ////////
+
+  const adScrollRef = useRef<ScrollView>(null);
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -59,15 +92,15 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           const nextIndex = (currentAdIndex + 1) % news.length;
           adScrollRef.current?.scrollTo({
             x: nextIndex * AD_CARD_WIDTH,
-            animated: true
+            animated: true,
           });
           setCurrentAdIndex(nextIndex);
         }, 5000);
       }
     };
-  
+
     startAutoScroll();
-  
+
     return () => {
       if (autoScrollTimer.current) {
         clearInterval(autoScrollTimer.current);
@@ -83,7 +116,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     fetchNews();
     checkUserRole();
     fetchCategories();
-
   }, []);
   useEffect(() => {
     if (loading) {
@@ -112,38 +144,35 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         console.log('No user found');
         return;
       }
-  
-      // First check user_profile
+
+      // Fetch user profile to get the role
       const { data: profileData, error: profileError } = await supabase
         .from('user_profile')
         .select('role')
         .eq('id', user.id)
         .single();
-  
+
       if (profileError) {
-        console.error('Profile fetch error:', profileError);
+        console.error('Error fetching user role:', profileError);
         return;
       }
-  
-      // Then verify if they're actually managing any business
-      const { data: businessData, error: businessError } = await supabase
-        .from('business')
-        .select('*')
-        .eq('manager_id', user.id)
-        .single();
-  
-      if (profileData?.role === 'BUSINESS_MANAGER' && businessData) {
-        console.log('Confirmed business manager');
-        setUserRole('BUSINESS_MANAGER');
-      } else {
-        console.log('Not a business manager');
-        setUserRole(profileData?.role || null);
+
+      if (profileData) {
+        console.log('User role:', profileData.role); // Debugging
+        setUserRole(profileData.role);
       }
-  
+
     } catch (error) {
       console.error('Error checking user role:', error);
     }
   };
+  useEffect(() => {
+    checkUserRole();
+  }, []);
+  useEffect(() => {
+    console.log('Current userRole:', userRole); // Debugging
+  }, [userRole]);
+
 
   const fetchPopularServices = async () => {
     try {
@@ -194,14 +223,14 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const fetchCategories = async () => {
     try {
       const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('created_at', { ascending: true });
+        .from("categories")
+        .select("*")
+        .order("created_at", { ascending: true });
 
       if (error) throw error;
       setCategories(data || []);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     } finally {
       setLoading(false);
     }
@@ -218,8 +247,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         <Text style={styles.headerTitle}>ASAP</Text>
         <Text style={styles.headerSubtitle}>As Soon As Possible Services</Text>
         
-       
-  
         <View style={styles.searchContainer}>
           <Icon name="search" size={24} color="#888" />
           <TextInput
@@ -230,52 +257,51 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           />
         </View>
         <View style={styles.appointmentButtonsContainer}>
-      <TouchableOpacity
-        style={styles.appointmentButton}
-        onPress={() => navigation.navigate("AppointmentBook")}
-      >
-        <Icon name="event-available" size={24} color="#FFF" />
-        <Text style={styles.appointmentButtonText}>Next Appointment</Text>
-      </TouchableOpacity>
+          {userRole === 'CLIENT' && (
+            <TouchableOpacity
+              style={styles.appointmentButton}
+              onPress={() => navigation.navigate("AppointmentBook")}
+            >
+              <Icon name="event-available" size={24} color="#FFF" />
+              <Text style={styles.appointmentButtonText}>Next Appointment</Text>
+            </TouchableOpacity>
+          )}
 
-      <TouchableOpacity
-        style={styles.appointmentButton}
-        onPress={() => navigation.navigate("AppointmentListScreen")}
-      >
-        <Icon name="event-note" size={24} color="#FFF" />
-        <Text style={styles.appointmentButtonText}>Manager Appointments</Text>
-      </TouchableOpacity>
-    </View>
+          {userRole === 'BUSINESS_MANAGER' && (
+            <TouchableOpacity
+              style={styles.appointmentButton}
+              onPress={() => navigation.navigate("AppointmentListScreen")}
+            >
+              <Icon name="event-note" size={24} color="#FFF" />
+              <Text style={styles.appointmentButtonText}>Manage Appointments</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
       <View style={styles.headerIcons}>
-  {/* <TouchableOpacity 
-          onPress={() => setNotificationsModalVisible(true)} 
-          style={styles.notificationButton}
-        >
-          <Icon name="notifications" size={30} color="#FFF" />
-          {unreadCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{unreadCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity> */}
-      <TouchableOpacity
-        style={styles.profileIcon}
-        onPress={() => navigation.navigate("BusinessProfileApp")}
-      >
-        <Icon name="person" size={30} color="#FFF" />
-      </TouchableOpacity>
-    </View>
+        {userRole === 'BUSINESS_MANAGER' && (
+          <TouchableOpacity
+            style={styles.profileIcon}
+            onPress={() => navigation.navigate("BusinessProfileApp")}
+          >
+            <Icon name="person" size={30} color="#FFF" />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
   
+
   const renderTopBusinesses = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
 
     return (
       <View>
         <View style={styles.sectionHeaderContainer}>
-          <Text style={styles.sectionHeader}>Top Businesses</Text>
+          <View style={styles.headerLeft}>
+            <View style={styles.headerAccent} />
+            <Text style={styles.sectionHeader}>Top Businesses</Text>
+          </View>
           <TouchableOpacity
             onPress={() => navigation.navigate("AllBusinesses")}
           >
@@ -283,6 +309,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         <Animated.FlatList
+          ref={topBusinessScrollRef}
           data={businesses}
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -292,15 +319,14 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
             { useNativeDriver: true }
           )}
           renderItem={({ item, index }) => {
-            // console.log("item  ☢️☢️☢️☢️☢️☢️", item);
             const inputRange = [
-              (index - 1) * 200,
-              index * 200,
-              (index + 1) * 200,
+              (index - 1) * 220,
+              index * 220,
+              (index + 1) * 220,
             ];
             const scale = scrollX.interpolate({
               inputRange,
-              outputRange: [0.8, 1, 0.8],
+              outputRange: [0.9, 1, 0.9],
               extrapolate: "clamp",
             });
 
@@ -315,22 +341,45 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                     })
                   }
                 >
-                  <Image
+                  <ImageBackground
                     source={{
                       uri: item.media?.[0]?.media_url || "default-image-url",
                     }}
                     style={styles.recommendedImage}
-                  />
-                  <Text style={styles.recommendedTitle}>{item.name}</Text>
-                  <Text
-                    style={styles.recommendedReview}
-                  >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
+                    imageStyle={{ borderRadius: 15 }}
+                  >
+                    <LinearGradient
+                      colors={["transparent", "rgba(0,0,0,0.7)"]}
+                      style={styles.imageOverlay}
+                    >
+                      <Text style={styles.recommendedTitle}>{item.name}</Text>
+                      <Text
+                        style={styles.recommendedReview}
+                      >{`⭐ ${item.reviews?.[0]?.rating || "No reviews"}`}</Text>
+                    </LinearGradient>
+                  </ImageBackground>
                 </TouchableOpacity>
               </Animated.View>
             );
           }}
-          snapToInterval={200}
-          decelerationRate="fast"
+          snapToAlignment="center"
+          decelerationRate="normal"
+          snapToInterval={220} // Ensure this matches the card width
+          bounces={false} // Prevents bouncing back to the first card
+          getItemLayout={(data, index) => ({
+            length: 220, // Width of each item
+            offset: 220 * index, // Offset for each item
+            index,
+          })}
+          onScrollToIndexFailed={(info) => {
+            const wait = new Promise((resolve) => setTimeout(resolve, 500));
+            wait.then(() => {
+              topBusinessScrollRef.current?.scrollToIndex({
+                index: info.index,
+                animated: true,
+              });
+            });
+          }}
         />
       </View>
     );
@@ -338,8 +387,9 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
   const fetchNews = async () => {
     try {
       const { data: newsData, error: newsError } = await supabase
-        .from('news')
-        .select(`
+        .from("news")
+        .select(
+          `
           *,
           business:business_id (
             id,
@@ -352,11 +402,12 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
           news_tags (
             tag_name
           )
-        `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
+        `
+        )
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
         .limit(10);
-  
+
       if (newsError) throw newsError;
       setNews(newsData || []);
       setLoading(false);
@@ -376,7 +427,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         </View>
       );
     }
-  
+
     if (!news.length) {
       return (
         <View style={styles.adSection}>
@@ -387,80 +438,89 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         </View>
       );
     }
-  
+
+    if (loading) {
+      return <ActivityIndicator size="large" color="#00796B" />;
+    }
+
     return (
       <View style={styles.adSection}>
-      <View style={styles.sectionHeaderContainer}>
-        <View style={styles.headerLeft}>
-          <View style={styles.headerAccent} />
-          <Text style={styles.sectionHeader}>News</Text>
+        <View style={styles.sectionHeaderContainer}>
+          <View style={styles.headerLeft}>
+            <View style={styles.headerAccent} />
+            <Text style={styles.sectionHeader}>News</Text>
+          </View>
+          {userRole === 'BUSINESS_MANAGER' && (
+            <TouchableOpacity
+              style={styles.viewAllButton}
+              onPress={() => navigation.navigate("NewsScreen")}
+            >
+              <Text style={styles.viewAllText}>View All</Text>
+              <Icon name="arrow-forward" size={16} color="#00796B" />
+            </TouchableOpacity>
+          )}
         </View>
-        <TouchableOpacity 
-          style={styles.viewAllButton}
-          onPress={() => navigation.navigate("NewsScreen")}
-        >
-          <Text style={styles.viewAllText}>View All</Text>
-          <Icon name="arrow-forward" size={16} color="#00796B" />
-        </TouchableOpacity>
-      </View>
-  
+
+
         <ScrollView
-  ref={adScrollRef}
-  horizontal
-  pagingEnabled
-  showsHorizontalScrollIndicator={false}
-  onScrollBeginDrag={() => {
-    setIsManualScroll(true);
-    if (autoScrollTimer.current) {
-      clearInterval(autoScrollTimer.current);
-    }
-  }}
-  onScrollEndDrag={() => {
-    setTimeout(() => {
-      setIsManualScroll(false);
-    }, 1000); // Give user a second before auto-scroll resumes
-  }}
-  onMomentumScrollEnd={(event) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    const newIndex = Math.round(offsetX / AD_CARD_WIDTH);
-    setCurrentAdIndex(newIndex);
-  }}
-  style={styles.adScrollView}
-  contentContainerStyle={styles.adScrollContent}
-  snapToInterval={AD_CARD_WIDTH}
-  decelerationRate="fast"
-  scrollEventThrottle={16}
->
-{news.map((ad, index) => (
-    <View 
-      key={ad.id} 
-      style={[
-        styles.adCardContainer,
-        { width: AD_CARD_WIDTH }
-      ]}
-    >
-      <TouchableOpacity
-        style={styles.adCard}
-        onPress={() => navigation.navigate("NewsDetailScreen", { newsId: ad.id })}
-      >
+          ref={adScrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScrollBeginDrag={() => {
+            setIsManualScroll(true);
+            if (autoScrollTimer.current) {
+              clearInterval(autoScrollTimer.current);
+            }
+          }}
+          onScrollEndDrag={() => {
+            setTimeout(() => {
+              setIsManualScroll(false);
+            }, 1000); // Give user a second before auto-scroll resumes
+          }}
+          onMomentumScrollEnd={(event) => {
+            const offsetX = event.nativeEvent.contentOffset.x;
+            const newIndex = Math.round(offsetX / AD_CARD_WIDTH);
+            setCurrentAdIndex(newIndex);
+          }}
+          style={styles.adScrollView}
+          contentContainerStyle={styles.adScrollContent}
+          snapToInterval={AD_CARD_WIDTH}
+          decelerationRate="fast"
+          scrollEventThrottle={16}
+        >
+          {news.map((ad, index) => (
+            <View
+              key={ad.id}
+              style={[styles.adCardContainer, { width: AD_CARD_WIDTH }]}
+            >
+              <TouchableOpacity
+                style={styles.adCard}
+                onPress={() =>
+                  navigation.navigate("NewsDetailScreen", { newsId: ad.id })
+                }
+              >
                 <ImageBackground
-                  source={{ 
-                    uri: ad.media?.find(m => m.is_primary)?.media_url || 
-                         ad.media?.[0]?.media_url || 
-                         'https://via.placeholder.com/400'
+                  source={{
+                    uri:
+                      ad.media?.find((m) => m.is_primary)?.media_url ||
+                      ad.media?.[0]?.media_url ||
+                      "https://via.placeholder.com/400",
                   }}
                   style={styles.adImage}
                   imageStyle={{ borderRadius: 20 }}
                 >
                   <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.9)']}
+                    colors={["transparent", "rgba(0,0,0,0.9)"]}
                     style={styles.adGradient}
                   >
                     <View style={styles.adContent}>
                       <View style={styles.tagRow}>
                         <View style={styles.adBadge}>
                           <Icon name="campaign" size={16} color="#FFF" />
-                          <Text style={styles.adBadgeText}>{ad.type || 'FEATURED'}</Text>
+                          <Text style={styles.adBadgeText}>
+                            {ad.type || "FEATURED"}
+                          </Text>
                         </View>
                         {ad.news_tag?.slice(0, 2).map((tag) => (
                           <View key={tag.tag_name} style={styles.tag}>
@@ -468,28 +528,37 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
                           </View>
                         ))}
                       </View>
-  
+
                       <Text style={styles.adTitle} numberOfLines={2}>
                         {ad.title}
                       </Text>
-  
+
                       <Text style={styles.adDescription} numberOfLines={3}>
                         {ad.content}
                       </Text>
-  
+
                       <View style={styles.adFooter}>
                         <View style={styles.businessInfo}>
-                          <Text style={styles.businessName}>{ad.business?.name.slice(0, 5)}</Text>
+                          <Text style={styles.businessName}>
+                            {ad.business?.name.slice(0, 5)}
+                          </Text>
                           <Text style={styles.dateText}>
                             {new Date(ad.created_at).toLocaleDateString()}
                           </Text>
                         </View>
-                        <TouchableOpacity style={styles.detailsButton} onPress={() => {
-                                  navigation.navigate('NewsDetailScreen', { newsId: ad.id });
-                         }}>
-                             <Text style={styles.detailsButtonText}>See Details</Text>
-   <Icon name="arrow-forward" size={16} color="#FFF" />
-</TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.detailsButton}
+                          onPress={() => {
+                            navigation.navigate("NewsDetailScreen", {
+                              newsId: ad.id,
+                            });
+                          }}
+                        >
+                          <Text style={styles.detailsButtonText}>
+                            See Details
+                          </Text>
+                          <Icon name="arrow-forward" size={16} color="#FFF" />
+                        </TouchableOpacity>
                       </View>
                     </View>
                   </LinearGradient>
@@ -554,19 +623,19 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
   const renderPopularServices = () => (
     <View style={styles.adSection}>
-        <View style={styles.sectionHeaderContainer}>
-          <View style={styles.headerLeft}>
-            <View style={styles.headerAccent} />
-            <Text style={styles.sectionHeader}>Popular Services</Text>
-          </View>
-          <TouchableOpacity 
+      <View style={styles.sectionHeaderContainer}>
+        <View style={styles.headerLeft}>
+          <View style={styles.headerAccent} />
+          <Text style={styles.sectionHeader}>Popular Services</Text>
+        </View>
+        <TouchableOpacity
           style={styles.viewAllButton}
           onPress={() => navigation.navigate("AllService")}
         >
           <Text style={styles.viewAllText}>View All</Text>
           <Icon name="arrow-forward" size={16} color="#00796B" />
         </TouchableOpacity>
-        </View>
+      </View>
       <FlatList
         data={popularServices.slice(0, 4)}
         renderItem={({ item }) => (
@@ -583,7 +652,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
               style={styles.serviceImage}
             />
             <Text style={styles.serviceName}>{item.name}</Text>
-            <Text style={styles.serviceDescription}>{item.description}</Text>
+            {/* <Text style={styles.serviceDescription}>{item.description}</Text> */}
             <Text
               style={styles.serviceReview}
             >{`⭐ ${item.reviews?.[0]?.rating}`}</Text>
@@ -595,7 +664,6 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
       />
     </View>
   );
-
 
   const renderFooterButtons = () => (
     <View style={styles.buttonContainer}>
@@ -624,13 +692,11 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         ListHeaderComponent={() => (
           <>
             {renderHeader()}
-        
-          {renderTopAdvertisement()}
+
+            {renderTopAdvertisement()}
             {renderFooterButtons()}
             {renderTopBusinesses()}
             {renderPopularServices()}
-        
-           
           </>
         )}
         data={[]}
@@ -638,7 +704,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
         keyExtractor={() => ""}
         showsVerticalScrollIndicator={false}
       />
-   
+
       <Footer navigation={navigation} />
     </SafeAreaView>
   );
@@ -646,34 +712,34 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   sectionHeaderContainer: {
-    flexDirection: 'row',
-    justifyContent:'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
     marginBottom: 15,
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap:8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
-  headerAccent:{
-    width:4,
-    height:20,
-    backgroundColor:'#00796B',
-    borderRadius:2,
+  headerAccent: {
+    width: 4,
+    height: 20,
+    backgroundColor: "#00796B",
+    borderRadius: 2,
   },
   viewAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
   viewAllText: {
-    color: '#00796B',
+    color: "#00796B",
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   adScrollView: {
     height: 400,
@@ -688,8 +754,8 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   paginationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginRight: 20,
   },
@@ -697,42 +763,42 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(0,121,107,0.2)',
+    backgroundColor: "rgba(0,121,107,0.2)",
   },
   paginationDotActive: {
-    backgroundColor: '#00796B',
+    backgroundColor: "#00796B",
     width: 24,
   },
   // Add/update these styles
-adCard: {
-  height: 400,
-  borderRadius: 20,
-  overflow: 'hidden',
-  backgroundColor: '#FFF',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.25,
-  shadowRadius: 3.84,
-},
+  adCard: {
+    height: 400,
+    borderRadius: 20,
+    overflow: "hidden",
+    backgroundColor: "#FFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
   // Container
   container: {
     flex: 1,
     backgroundColor: "#F8F8F8",
   },
-  navigationContainer:{
+  navigationContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     gap: 10,
-  },  
-  newsCardSecondary:{
+  },
+  newsCardSecondary: {
     width: 300,
     height: 380,
     marginRight: 20,
     borderRadius: 20,
-    overflow: 'hidden',
-    },
-  navButton:{
+    overflow: "hidden",
+  },
+  navButton: {
     padding: 10,
     backgroundColor: "#00796B",
     borderRadius: 50,
@@ -743,7 +809,7 @@ adCard: {
     height: 250,
     position: "relative",
   },
- 
+
   headerImage: {
     height: "100%",
     width: "100%",
@@ -831,8 +897,8 @@ adCard: {
   },
   sectionHeader: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
 
   newsScrollView: {
@@ -843,7 +909,7 @@ adCard: {
     height: 380,
     marginRight: 20,
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -854,12 +920,12 @@ adCard: {
     elevation: 16,
   },
   newsCardImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   newsGradient: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     padding: 20,
   },
   newsCardContent: {
@@ -876,17 +942,17 @@ adCard: {
     marginBottom: 12,
   },
   tagContainer: {
-    backgroundColor: '#00796B',
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: "#00796B",
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius:20,
-    gap:5,
+    borderRadius: 20,
+    gap: 5,
   },
   dateContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 5,
   },
   // tagText: {
@@ -900,19 +966,19 @@ adCard: {
   // },
   newsCardTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#FFF',
+    fontWeight: "bold",
+    color: "#FFF",
     lineHeight: 28,
   },
   newsCardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 10,
   },
   businessInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   businessLogo: {
@@ -920,23 +986,23 @@ adCard: {
     height: 30,
     borderRadius: 15,
     borderWidth: 2,
-    borderColor: '#FFF',
+    borderColor: "#FFF",
   },
   businessName: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   readMoreButton: {
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
   },
   readMoreText: {
-    color: '#00796B',
+    color: "#00796B",
     fontSize: 13,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   // Service Card Styles
   serviceCard: {
@@ -977,34 +1043,34 @@ adCard: {
   recommendedCard: {
     backgroundColor: "#FFF",
     borderRadius: 15,
-    padding: 10,
     marginRight: 15,
-    width: 200,
+    width: 220,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
+    overflow: "hidden",
   },
   recommendedImage: {
     width: "100%",
-    height: 150,
-    borderRadius: 10,
-    marginBottom: 10,
+    height: 180,
+    justifyContent: "flex-end",
+  },
+  imageOverlay: {
+    padding: 10,
+    borderRadius: 15,
   },
   recommendedTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
+    color: "#FFF",
     marginBottom: 5,
   },
   recommendedReview: {
     fontSize: 14,
-    color: "#888",
+    color: "#FFF",
   },
-
 
   // Utility Styles
   row: {
@@ -1028,80 +1094,80 @@ adCard: {
   // },
 
   adImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   adGradient: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     padding: 20,
   },
   adContent: {
     gap: 12,
   },
   adBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#00796B',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#00796B",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     gap: 6,
   },
   adBadgeText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   adTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFF',
+    fontWeight: "bold",
+    color: "#FFF",
     lineHeight: 32,
   },
   adDescription: {
     fontSize: 16,
-    color: '#FFF',
+    color: "#FFF",
     opacity: 0.9,
     lineHeight: 24,
   },
   adFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 8,
   },
   detailsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.2)",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     gap: 8,
   },
   detailsButtonText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   createUpdateButton: {
     margin: 20,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   createUpdateGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 16,
     gap: 8,
   },
   createUpdateText: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   // Add to your existing styles
 loadingContainer: {
@@ -1245,6 +1311,5 @@ badgeText: {
   fontWeight: 'bold',
 },
 });
-
 
 export default Home;

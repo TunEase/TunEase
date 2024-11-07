@@ -1,6 +1,4 @@
-import { Feather } from "@expo/vector-icons";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import React, { useEffect, useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -10,11 +8,16 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Modal,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Feather, FontAwesome } from "@expo/vector-icons";
+import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
+import { supabase } from "../services/supabaseClient";
+import MainFooter from "../components/HomePage/MainFooter"; // Import MainFooter
 
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Item } from "react-native-paper/lib/typescript/components/Drawer/Drawer";
 import { RootStackParamList } from "../types/business";
 const { width } = Dimensions.get("window");
 
@@ -30,9 +33,7 @@ const Profile = () => {
   const { selectedBusiness } = route.params;
   const { services = [], media = [] } = selectedBusiness || {}; // Default to empty arrays
 
-  if (!selectedBusiness) {
-    return <Text>Loading...</Text>; // Or handle the error appropriately
-  }
+  const [modalVisible, setModalVisible] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -53,6 +54,60 @@ const Profile = () => {
 
     return () => clearInterval(interval);
   }, [services.length]);
+
+  const handleChatConfirmation = async () => {
+    setModalVisible(false);
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) {
+      console.error("Error fetching user:", userError);
+      return;
+    }
+
+    // Check if a chat room already exists
+    const { data: existingRoom, error } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("business_id", selectedBusiness.id)
+      .eq("user_profile_id", user.id) // Replace with actual user profile ID
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      Alert.alert("Error", "Failed to check chat room existence.");
+      return;
+    }
+
+    let conversationId = existingRoom?.id;
+
+    // If no existing room, create a new one
+    if (!conversationId) {
+      const { data: newRoom, error: createError } = await supabase
+        .from("conversations")
+        .insert({
+          business_id: selectedBusiness.id,
+          user_profile_id: user.id, // Replace with actual user profile ID
+        })
+        .select("id")
+        .single();
+
+      if (createError) {
+        Alert.alert("Error", "Failed to create chat room.");
+        return;
+      }
+
+      conversationId = newRoom.id;
+    }
+
+    // Navigate to the chat room
+    navigation.navigate("ChatRoomScreen", {
+      conversationId,
+      businessName: selectedBusiness.name,
+      authenticatedUserId: user.id,
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -80,12 +135,19 @@ const Profile = () => {
 
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{selectedBusiness.name}</Text>
-          <Text style={styles.userTitle}>{selectedBusiness.description}</Text>
-          <View style={styles.locationContainer}>
-            <Feather name="map-pin" size={16} color="#00796B" />
-            <Text style={styles.locationText}>{selectedBusiness.phone}</Text>
-            <Text style={styles.locationText}>{selectedBusiness.email}</Text>
-          </View>
+          <TouchableOpacity
+            style={styles.messageIcon}
+            onPress={() => setModalVisible(true)}
+          >
+            <FontAwesome name="send" size={24} color="#00796B" />
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.userTitle}>{selectedBusiness.description}</Text>
+        <View style={styles.locationContainer}>
+          <Feather name="map-pin" size={16} color="#00796B" />
+          <Text style={styles.locationText}>{selectedBusiness.phone}</Text>
+          <Text style={styles.locationText}>{selectedBusiness.email}</Text>
         </View>
 
         <View style={styles.servicesContainer}>
@@ -107,11 +169,11 @@ const Profile = () => {
                       reviews: service.reviews || [],
                       rating: service.rating || 0,
                       total_reviews: service.total_reviews || 0,
-                      price: service.price || 0
+                      price: service.price || 0,
                     };
                     navigation.navigate("ServiceDetails", {
                       serviceId: service.id,
-                      service: serviceData
+                      service: serviceData,
                     });
                   }}
                 >
@@ -143,6 +205,37 @@ const Profile = () => {
           )}
         </View>
       </ScrollView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>
+              Are you sure you want to chat with this business?
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={handleChatConfirmation}
+              >
+                <Text style={styles.modalButtonText}>Yes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <MainFooter navigation={navigation} />
     </SafeAreaView>
   );
 };
@@ -175,44 +268,37 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   userInfo: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     marginTop: 60,
   },
   userName: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#00796B",
+    marginRight: 10,
+  },
+  messageIcon: {
+    backgroundColor: "#FFF",
+    borderRadius: 20,
+    padding: 10,
+    elevation: 5,
   },
   userTitle: {
     fontSize: 16,
     color: "#666666",
     marginTop: 4,
+    textAlign: "center",
   },
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     marginTop: 8,
   },
   locationText: {
     marginLeft: 4,
-    color: "#666666",
-  },
-  statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 20,
-    paddingHorizontal: 20,
-  },
-  statItem: {
-    alignItems: "center",
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#00796B",
-  },
-  statLabel: {
-    fontSize: 14,
     color: "#666666",
   },
   servicesContainer: {
@@ -257,7 +343,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666666",
     textAlign: "center",
-    marginTop: 10,
+    marginTop: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderRadius: 10,
+    width: "80%",
+    alignItems: "center",
+  },
+  modalText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalButton: {
+    backgroundColor: "#00796B",
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  modalButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
 });
 

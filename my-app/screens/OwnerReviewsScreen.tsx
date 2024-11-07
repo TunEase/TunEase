@@ -10,7 +10,8 @@ import {
 import { supabase } from "../services/supabaseClient";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import ImageView from "react-native-image-viewing";
-
+import Header from "../components/Form/header"; // Import the Header component
+import { useNavigation } from "@react-navigation/native";
 import { Media, User_profile } from "../types/business";
 
 type Review = {
@@ -24,6 +25,7 @@ type Review = {
 };
 
 const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
+  const navigation = useNavigation();
   const { serviceId } = route.params;
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isImageViewVisible, setImageViewVisible] = useState(false);
@@ -109,7 +111,7 @@ const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
             {new Date(item.created_at).toLocaleDateString()}
           </Text>
           <Text style={styles.userName}>
-            {item.user_profile.name
+            {item.user_profile?.name
               ? `Reviewed by: ${item.user_profile.name}`
               : "Anonymous"}
           </Text>
@@ -135,13 +137,19 @@ const OwnerReviewsScreen: React.FC<{ route: any }> = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Service Reviews</Text>
-      <FlatList
-        data={reviews}
-        keyExtractor={(item) => item.id}
-        renderItem={renderReview}
-        contentContainerStyle={styles.listContent}
+      <Header
+        title="Service Reviews"
+        showBackButton={true}
+        onBack={() => navigation.goBack()}
       />
+      <View style={{ padding: 20 }}>
+        <FlatList
+          data={reviews}
+          keyExtractor={(item) => item.id}
+          renderItem={renderReview}
+          contentContainerStyle={styles.listContent}
+        />
+      </View>
       <ImageView
         images={images}
         imageIndex={selectedImageIndex}
@@ -156,7 +164,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9F9F9",
-    padding: 20,
+    // padding: 20,
   },
   header: {
     fontSize: 28,
